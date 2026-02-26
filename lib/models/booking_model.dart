@@ -1,0 +1,63 @@
+class BookingModel {
+  final String id;
+  final String ownerId;
+  final String caregiverId;
+  final String serviceType;
+  final String packageName;
+  final String duration;
+  final DateTime scheduledDate;
+  final String status;
+  final double price;
+  final String? notes;
+  final DateTime createdAt;
+
+  BookingModel({
+    required this.id,
+    required this.ownerId,
+    required this.caregiverId,
+    required this.serviceType,
+    required this.packageName,
+    required this.duration,
+    required this.scheduledDate,
+    required this.status,
+    required this.price,
+    this.notes,
+    required this.createdAt,
+  });
+
+  factory BookingModel.fromMap(Map<String, dynamic> map, String id) {
+    return BookingModel(
+      id: id,
+      ownerId: map['ownerId'] ?? '',
+      caregiverId: map['caregiverId'] ?? '',
+      serviceType: map['serviceType'] ?? '',
+      packageName: map['packageName'] ?? '',
+      duration: map['duration'] ?? '',
+      scheduledDate: map['scheduledDate'] != null
+          ? DateTime.parse(map['scheduledDate'])
+          : DateTime.now(),
+      status: map['status'] ?? 'pending',
+      price: map['price']?.toDouble() ?? 0.0,
+      notes: map['notes'],
+      createdAt: map['createdAt'] != null
+          ? DateTime.parse(map['createdAt'])
+          : DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'ownerId': ownerId,
+      'caregiverId': caregiverId,
+      'serviceType': serviceType,
+      'packageName': packageName,
+      'duration': duration,
+      'scheduledDate': scheduledDate.toIso8601String(),
+      'status': status,
+      'price': price,
+      'notes': notes,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
+}
+

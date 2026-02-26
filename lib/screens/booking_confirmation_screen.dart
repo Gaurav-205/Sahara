@@ -1,0 +1,424 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../theme/app_colors.dart';
+import '../models/service_package_model.dart';
+import '../models/user_model.dart';
+import '../models/booking_model.dart';
+import '../providers/auth_provider.dart';
+import '../services/firestore_service.dart';
+import '../services/sound_service.dart';
+import 'home_screen.dart';
+
+/// Booking Confirmation Screen
+/// 
+/// Final step in the booking flow where users review and confirm their booking:
+/// - Booking summary (service, package, duration, caregiver, price)
+/// - Date and time selection with pickers
+/// - Additional notes/instructions field
+/// - Confirm booking button with loading state
+/// - Success dialog with navigation to home
+/// 
+/// Design Principles:
+/// - Solid colors only (Navy, Orange, Sky Blue, Light Blue)
+/// - 8px grid spacing system
+/// - Montserrat font family
+/// - Clean card-based layout
+/// - Professional information hierarchy
+/// - Clear call-to-action
+/// 
+/// Theme Colors:
+/// - Background: AppColors.surface (white)
+/// - Cards: White with AppColors.border
+/// - Primary button: AppColors.primary (navy)
+/// - Price: AppColors.secondary (orange)
+/// - Success: AppColors.success (green)
+class BookingConfirmationScreen extends StatefulWidget {
+  final String serviceType;
+  final ServicePackageModel selectedPackage;
+  final UserModel selectedCaregiver;
+
+  const BookingConfirmationScreen({
+    super.key,
+    required this.serviceType,
+    required this.selectedPackage,
+    required this.selectedCaregiver,
+  });
+
+  @override
+  State<BookingConfirmationScreen> createState() => _BookingConfirmationScreenState();
+}
+
+class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
+  // ============================================================================
+  // STATE VARIABLES
+  // ============================================================================
+
+  final FirestoreService _firestoreService = FirestoreService();
+  final SoundService _soundService = SoundService();
+  DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
+  TimeOfDay _selectedTime = const TimeOfDay(hour: 10, minute: 0);
+  final TextEditingController _notesController = TextEditingController();
+  bool _isLoading = false;
+
+  // ============================================================================
+  // LIFECYCLE METHODS
+  // ============================================================================
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  // ============================================================================
+  // DATE/TIME SELECTION
+  // ============================================================================
+
+  /// Shows date picker dialog
+  Future<void> _selectDate() async {
+    _soundService.playTap();
+    
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 90)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: AppColors.textPrimary,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  /// Shows time picker dialog
+  Future<void> _selectTime() async {
+    _soundService.playTap();
+    
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: AppColors.textPrimary,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    
+    if (picked != null && picked != _selectedTime) {
+      setState(() {
+        _selectedTime = picked;
+      });
+    }
+  }
+
+  // ============================================================================
+  // BOOKING CONFIRMATION
+  // ============================================================================
+
+  /// Confirms the booking and creates it in Firestore
+  Future<void> _confirmBooking() async {
+    _soundService.playClick();
+    
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentUser = authProvider.currentUser;
+
+    if (currentUser == null) {
+      _soundService.playError();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please login to book'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final scheduledDateTime = DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+        _selectedTime.hour,
+        _selectedTime.minute,
+      );
+
+      final booking = BookingModel(
+        id: '',
+        ownerId: currentUser.uid,
+        caregiverId: widget.selectedCaregiver.uid,
+        serviceType: widget.serviceType,
+        packageName: widget.selectedPackage.packageName,
+        scheduledDate: scheduledDateTime,
+        duration: widget.selectedPackage.duration,
+        price: widget.selectedPackage.price,
+        status: 'pending',
+        notes: _notesController.text.trim(),
+        createdAt: DateTime.now(),
+      );
+
+      await _firestoreService.createBooking(booking);
+
+      if (!mounted) return;
+
+      _soundService.playSuccess();
+      _showSuccessDialog();
+    } catch (e) {
+      _soundService.playError();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Booking failed: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  /// Shows success dialog after booking confirmation
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: AppColors.success,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_rounded,
+                size: 48,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Booking Confirmed!',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Montserrat',
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Your booking with ${widget.selectedCaregiver.name} has been confirmed.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 15,
+                fontFamily: 'Montserrat',
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  _soundService.playClick();
+                  Navigator.of(context).pop(); // Close dialog
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => const HomeScreen()),
+                    (route) => false,
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Back to Home',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Montserrat',
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ============================================================================
+  // BUILD METHOD
+  // ============================================================================
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.surface,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        title: const Text(
+          'Confirm Booking',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Montserrat',
+            color: AppColors.textPrimary,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          onPressed: () {
+            _soundService.playTap();
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSummaryCard(),
+                    const SizedBox(height: 24),
+                    _buildDateTimeSection(),
+                    const SizedBox(height: 24),
+                    _buildNotesSection(),
+                  ],
+                ),
+              ),
+            ),
+            _buildBottomBar(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ============================================================================
+  // UI BUILDERS - SUMMARY CARD
+  // ============================================================================
+
+  /// Builds the booking summary card
+  Widget _buildSummaryCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Booking Summary',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Montserrat',
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildSummaryRow('Service', widget.serviceType),
+          const SizedBox(height: 12),
+          _buildSummaryRow('Package', widget.selectedPackage.packageName),
+          const SizedBox(height: 12),
+          _buildSummaryRow('Duration', widget.selectedPackage.duration),
+          const SizedBox(height: 12),
+          _buildSummaryRow('Caregiver', widget.selectedCaregiver.name),
+          const SizedBox(height: 12),
+          _buildSummaryRow(
+            'Rating',
+            '${widget.selectedCaregiver.rating?.toStringAsFixed(1) ?? '0.0'} ⭐',
+          ),
+          const Divider(height: 32, color: AppColors.border),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Total Price',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Montserrat',
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              Text(
+                '₹${widget.selectedPackage.price.toStringAsFixed(0)}',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Montserrat',
+                  color: AppColors.secondary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Builds a single summary row
+  Widget _buildSummaryRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontFamily: 'Montserrat',
+            color: AppColors.textSecondary,
+          ),
+        ),

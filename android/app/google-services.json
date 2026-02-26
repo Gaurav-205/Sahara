@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "953036067023",
+    "project_id": "sahara-a72",
+    "storage_bucket": "sahara-a72.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:953036067023:android:0f80e1fc44ec5919e6e7ba",
+        "android_client_info": {
+          "package_name": "com.example.sahara"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBALyqIvpmb0UM42RbKPIwmjcKON7RJBE4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
