@@ -184,5 +184,13 @@ class AuthService {
       throw Exception('Password reset failed: $e');
     }
   }
+
+  Future<void> updateUserProfile(String uid, Map<String, dynamic> data) async {
+    try {
+      await _firestore.collection('users').doc(uid).update(data);
+    } catch (e) {
+      throw Exception('Failed to update profile: $e');
+    }
+  }
 }
 

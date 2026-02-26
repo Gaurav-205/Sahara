@@ -6,10 +6,10 @@ import '../services/sound_service.dart';
 import 'login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'my_pets_screen.dart';
-import 'payment_methods_screen.dart';
 import 'notification_settings_screen.dart';
 import 'help_support_screen.dart';
 import 'privacy_policy_screen.dart';
+import 'admin_seed_screen.dart';
 import '../theme/app_colors.dart';
 
 /// Profile Screen
@@ -202,20 +202,6 @@ class ProfileScreen extends StatelessWidget {
           _buildMenuItem(
             context: context,
             soundService: soundService,
-            icon: Icons.payment_rounded,
-            title: 'Payment Methods',
-            subtitle: 'Manage payment options',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PaymentMethodsScreen()),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          _buildMenuItem(
-            context: context,
-            soundService: soundService,
             icon: Icons.notifications_outlined,
             title: 'Notifications',
             subtitle: 'Manage notifications',
@@ -251,6 +237,20 @@ class ProfileScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          _buildMenuItem(
+            context: context,
+            soundService: soundService,
+            icon: Icons.settings_suggest_rounded,
+            title: '🔧 Seed Database',
+            subtitle: 'Add sample caregivers & packages',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminSeedScreen()),
               );
             },
           ),

@@ -6,6 +6,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../theme/app_colors.dart';
 import '../services/sound_service.dart';
+import '../utils/validators.dart';
 import 'signup_screen.dart';
 import 'home_screen.dart';
 import 'forgot_password_screen.dart';
@@ -15,7 +16,6 @@ import 'forgot_password_screen.dart';
 /// This screen allows users to sign in to their Sahara Pet Care account using:
 /// 1. Email and password authentication
 /// 2. Google Sign-In (OAuth)
-/// 3. Apple Sign-In (placeholder for future implementation)
 /// 
 /// Design Principles:
 /// - Clean, minimal form design with focus on usability
@@ -349,16 +349,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       hintText: 'Enter your email',
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                        if (!emailRegex.hasMatch(value)) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
+                      validator: Validators.validateEmail,
                     ),
                     const SizedBox(height: 20),
                     
@@ -369,15 +360,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       hintText: 'Enter your password',
                       prefixIcon: Icons.lock_outline_rounded,
                       obscureText: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
+                      validator: Validators.validateLoginPassword,
                     ),
                     const SizedBox(height: 12),
                     
@@ -438,27 +421,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     ),
                     SizedBox(height: isSmallScreen ? 20 : 24),
                     
-                    // Social login buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildSocialButton(
-                            icon: Icons.g_mobiledata_rounded,
-                            label: 'Google',
-                            onTap: _handleGoogleSignIn,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildSocialButton(
-                            icon: Icons.apple_rounded,
-                            label: 'Apple',
-                            onTap: () {
-                              // TODO: Implement Apple Sign-In
-                            },
-                          ),
-                        ),
-                      ],
+                    // Social login button
+                    _buildSocialButton(
+                      icon: Icons.g_mobiledata_rounded,
+                      label: 'Continue with Google',
+                      onTap: _handleGoogleSignIn,
                     ),
                     SizedBox(height: isSmallScreen ? 24 : 32),
                     
@@ -574,7 +541,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  /// Build social login button (Google/Apple)
+  /// Build social login button (Google)
   Widget _buildSocialButton({
     required IconData icon,
     required String label,

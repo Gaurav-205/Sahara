@@ -2,6 +2,7 @@ class BookingModel {
   final String id;
   final String ownerId;
   final String caregiverId;
+  final String petId; // ID of the dog for this booking
   final String serviceType;
   final String packageName;
   final String duration;
@@ -15,6 +16,7 @@ class BookingModel {
     required this.id,
     required this.ownerId,
     required this.caregiverId,
+    required this.petId,
     required this.serviceType,
     required this.packageName,
     required this.duration,
@@ -30,6 +32,7 @@ class BookingModel {
       id: id,
       ownerId: map['ownerId'] ?? '',
       caregiverId: map['caregiverId'] ?? '',
+      petId: map['petId'] ?? '',
       serviceType: map['serviceType'] ?? '',
       packageName: map['packageName'] ?? '',
       duration: map['duration'] ?? '',
@@ -49,6 +52,7 @@ class BookingModel {
     return {
       'ownerId': ownerId,
       'caregiverId': caregiverId,
+      'petId': petId,
       'serviceType': serviceType,
       'packageName': packageName,
       'duration': duration,

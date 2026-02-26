@@ -5,7 +5,9 @@ import '../theme/app_colors.dart';
 import '../models/service_package_model.dart';
 import '../models/user_model.dart';
 import '../models/booking_model.dart';
+import '../models/pet_model.dart';
 import '../providers/auth_provider.dart';
+import '../providers/pet_provider.dart';
 import '../services/firestore_service.dart';
 import '../services/sound_service.dart';
 import 'home_screen.dart';
@@ -60,10 +62,27 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   TimeOfDay _selectedTime = const TimeOfDay(hour: 10, minute: 0);
   final TextEditingController _notesController = TextEditingController();
   bool _isLoading = false;
+  PetModel? _selectedDog;
 
   // ============================================================================
   // LIFECYCLE METHODS
   // ============================================================================
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDogs();
+  }
+
+  /// Load user's dogs
+  void _loadDogs() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final petProvider = Provider.of<PetProvider>(context, listen: false);
+    
+    if (authProvider.currentUser != null) {
+      petProvider.loadUserPets(authProvider.currentUser!.uid);
+    }
+  }
 
   @override
   void dispose() {
@@ -143,6 +162,19 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   Future<void> _confirmBooking() async {
     _soundService.playClick();
     
+    // Validate dog selection
+    if (_selectedDog == null) {
+      _soundService.playError();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a dog for this booking'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+    
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final currentUser = authProvider.currentUser;
 
@@ -175,6 +207,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         id: '',
         ownerId: currentUser.uid,
         caregiverId: widget.selectedCaregiver.uid,
+        petId: _selectedDog!.id,
         serviceType: widget.serviceType,
         packageName: widget.selectedPackage.packageName,
         scheduledDate: scheduledDateTime,
@@ -328,6 +361,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   children: [
                     _buildSummaryCard(),
                     const SizedBox(height: 24),
+                    _buildDogSelectionSection(),
+                    const SizedBox(height: 24),
                     _buildDateTimeSection(),
                     const SizedBox(height: 24),
                     _buildNotesSection(),
@@ -431,6 +466,181 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             color: AppColors.textPrimary,
           ),
         ),
+      ],
+    );
+  }
+
+  // ============================================================================
+  // UI BUILDERS - DOG SELECTION SECTION
+  // ============================================================================
+
+  /// Builds the dog selection section
+  Widget _buildDogSelectionSection() {
+    final petProvider = Provider.of<PetProvider>(context);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Select Dog',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Montserrat',
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        if (petProvider.isLoading)
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          )
+        else if (petProvider.pets.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.pets_rounded,
+                  size: 48,
+                  color: AppColors.textTertiary,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'No dogs added yet',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Montserrat',
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Please add a dog before booking',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'Montserrat',
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    _soundService.playTap();
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Add Dog',
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          Column(
+            children: petProvider.pets.map((dog) {
+              final isSelected = _selectedDog?.id == dog.id;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: InkWell(
+                  onTap: () {
+                    _soundService.playTap();
+                    setState(() {
+                      _selectedDog = dog;
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isSelected ? AppColors.primary : AppColors.border,
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppColors.primary : AppColors.tertiary,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.pets_rounded,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                dog.name,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Montserrat',
+                                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${dog.breed} • ${dog.age} years • ${dog.weight} kg',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontFamily: 'Montserrat',
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (isSelected)
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            color: AppColors.primary,
+                            size: 24,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
       ],
     );
   }

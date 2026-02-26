@@ -170,6 +170,40 @@ class FirebaseSeeder {
         isAvailable: true,
         phone: '+91 98765 43217',
       ),
+      UserModel(
+        uid: 'caregiver_divya_iyer',
+        email: 'divya.iyer@sahara.app',
+        name: 'Divya Iyer',
+        userType: 'caregiver',
+        rating: 4.9,
+        completedBookings: 156,
+        createdAt: DateTime.now().subtract(const Duration(days: 450)),
+        bio: 'Certified animal behaviorist and pet care specialist. Expert in handling anxious and aggressive pets with care.',
+        services: ['Training', 'Pet Sitting', 'Grooming'],
+        hourlyRate: 600.0,
+        location: 'Jubilee Hills, Hyderabad',
+        yearsOfExperience: 7,
+        isVerified: true,
+        isAvailable: true,
+        phone: '+91 98765 43218',
+      ),
+      UserModel(
+        uid: 'caregiver_amit_gupta',
+        email: 'amit.gupta@sahara.app',
+        name: 'Amit Gupta',
+        userType: 'caregiver',
+        rating: 4.6,
+        completedBookings: 84,
+        createdAt: DateTime.now().subtract(const Duration(days: 220)),
+        bio: 'Dedicated pet walker and sitter. I ensure your pets get proper exercise and attention while you\'re away.',
+        services: ['Dog Walking', 'Pet Sitting'],
+        hourlyRate: 320.0,
+        location: 'Malad West, Mumbai',
+        yearsOfExperience: 3,
+        isVerified: true,
+        isAvailable: true,
+        phone: '+91 98765 43219',
+      ),
     ];
 
     // Batch write for better performance
@@ -444,6 +478,177 @@ class FirebaseSeeder {
     } catch (e) {
       debugPrint('❌ Error clearing data: $e');
       rethrow;
+    }
+  }
+
+  /// ⚠️ DANGER: Clear ENTIRE database - ALL collections
+  /// This will delete EVERYTHING including:
+  /// - All users (owners AND caregivers)
+  /// - All pets
+  /// - All bookings
+  /// - All chats and messages
+  /// - All reviews
+  /// - All service packages
+  /// 
+  /// USE WITH EXTREME CAUTION!
+  Future<void> clearEntireDatabase() async {
+    debugPrint('🚨 WARNING: Clearing ENTIRE database...');
+    debugPrint('⏳ This may take a while...');
+    
+    try {
+      int totalDeleted = 0;
+
+      // 1. Delete all users (including caregivers and owners)
+      debugPrint('\n🗑️  Deleting users collection...');
+      totalDeleted += await _deleteCollection('users');
+
+      // 2. Delete all pets
+      debugPrint('🗑️  Deleting pets collection...');
+      totalDeleted += await _deleteCollection('pets');
+
+      // 3. Delete all bookings
+      debugPrint('🗑️  Deleting bookings collection...');
+      totalDeleted += await _deleteCollection('bookings');
+
+      // 4. Delete all service packages
+      debugPrint('🗑️  Deleting service_packages collection...');
+      totalDeleted += await _deleteCollection('service_packages');
+
+      // 5. Delete all reviews
+      debugPrint('🗑️  Deleting reviews collection...');
+      totalDeleted += await _deleteCollection('reviews');
+
+      // 6. Delete all chats (including subcollections)
+      debugPrint('🗑️  Deleting chats collection...');
+      totalDeleted += await _deleteChatsWithMessages();
+
+      debugPrint('\n✅ ENTIRE DATABASE CLEARED!');
+      debugPrint('📊 Total documents deleted: $totalDeleted');
+      debugPrint('🎉 Database is now completely empty!');
+    } catch (e) {
+      debugPrint('❌ Error clearing entire database: $e');
+      rethrow;
+    }
+  }
+
+  /// Helper: Delete a collection in batches
+  Future<int> _deleteCollection(String collectionName) async {
+    int deletedCount = 0;
+    const batchSize = 500; // Firestore batch limit
+
+    try {
+      QuerySnapshot snapshot;
+      do {
+        // Get documents in batches
+        snapshot = await _firestore
+            .collection(collectionName)
+            .limit(batchSize)
+            .get();
+
+        if (snapshot.docs.isEmpty) break;
+
+        // Delete in batches
+        final batch = _firestore.batch();
+        for (final doc in snapshot.docs) {
+          batch.delete(doc.reference);
+          deletedCount++;
+        }
+        await batch.commit();
+
+        debugPrint('   Deleted ${snapshot.docs.length} documents from $collectionName');
+      } while (snapshot.docs.length == batchSize);
+
+      debugPrint('   ✅ Total deleted from $collectionName: $deletedCount');
+      return deletedCount;
+    } catch (e) {
+      debugPrint('   ❌ Error deleting $collectionName: $e');
+      return deletedCount;
+    }
+  }
+
+  /// Helper: Delete chats collection including messages subcollection
+  Future<int> _deleteChatsWithMessages() async {
+    int deletedCount = 0;
+
+    try {
+      final chatsSnapshot = await _firestore.collection('chats').get();
+
+      for (final chatDoc in chatsSnapshot.docs) {
+        // Delete messages subcollection first
+        final messagesSnapshot = await chatDoc.reference
+            .collection('messages')
+            .get();
+
+        if (messagesSnapshot.docs.isNotEmpty) {
+          final batch = _firestore.batch();
+          for (final messageDoc in messagesSnapshot.docs) {
+            batch.delete(messageDoc.reference);
+            deletedCount++;
+          }
+          await batch.commit();
+          debugPrint('   Deleted ${messagesSnapshot.docs.length} messages from chat ${chatDoc.id}');
+        }
+
+        // Delete the chat document itself
+        await chatDoc.reference.delete();
+        deletedCount++;
+      }
+
+      debugPrint('   ✅ Total deleted from chats (including messages): $deletedCount');
+      return deletedCount;
+    } catch (e) {
+      debugPrint('   ❌ Error deleting chats: $e');
+      return deletedCount;
+    }
+  }
+
+  /// Quick status check - shows what's in the database
+  Future<void> checkDatabaseStatus() async {
+    debugPrint('\n📊 DATABASE STATUS CHECK\n');
+
+    try {
+      // Count users
+      final usersSnapshot = await _firestore.collection('users').get();
+      final owners = usersSnapshot.docs.where((d) => d.data()['userType'] == 'owner').length;
+      final caregivers = usersSnapshot.docs.where((d) => d.data()['userType'] == 'caregiver').length;
+      debugPrint('👥 Users: ${usersSnapshot.docs.length} (Owners: $owners, Caregivers: $caregivers)');
+
+      // Count pets
+      final petsSnapshot = await _firestore.collection('pets').get();
+      debugPrint('🐾 Pets: ${petsSnapshot.docs.length}');
+
+      // Count bookings
+      final bookingsSnapshot = await _firestore.collection('bookings').get();
+      debugPrint('📅 Bookings: ${bookingsSnapshot.docs.length}');
+
+      // Count service packages
+      final packagesSnapshot = await _firestore.collection('service_packages').get();
+      debugPrint('📦 Service Packages: ${packagesSnapshot.docs.length}');
+
+      // Count reviews
+      final reviewsSnapshot = await _firestore.collection('reviews').get();
+      debugPrint('⭐ Reviews: ${reviewsSnapshot.docs.length}');
+
+      // Count chats
+      final chatsSnapshot = await _firestore.collection('chats').get();
+      int totalMessages = 0;
+      for (final chat in chatsSnapshot.docs) {
+        final messages = await chat.reference.collection('messages').get();
+        totalMessages += messages.docs.length;
+      }
+      debugPrint('💬 Chats: ${chatsSnapshot.docs.length} (Messages: $totalMessages)');
+
+      final total = usersSnapshot.docs.length + 
+                    petsSnapshot.docs.length + 
+                    bookingsSnapshot.docs.length + 
+                    packagesSnapshot.docs.length + 
+                    reviewsSnapshot.docs.length + 
+                    chatsSnapshot.docs.length + 
+                    totalMessages;
+
+      debugPrint('\n📊 TOTAL DOCUMENTS: $total\n');
+    } catch (e) {
+      debugPrint('❌ Error checking database status: $e');
     }
   }
 }

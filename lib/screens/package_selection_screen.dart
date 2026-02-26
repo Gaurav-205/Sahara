@@ -75,6 +75,9 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
   
   /// Currently selected package (null if none selected)
   ServicePackageModel? _selectedPackage;
+  
+  /// Package service instance
+  final PackageService _packageService = PackageService();
 
   // ============================================================================
   // BUILD METHOD
@@ -82,9 +85,6 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Fetch packages for the selected service type
-    final packages = PackageService.getPackagesForService(widget.serviceType);
-
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
@@ -104,20 +104,61 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
         ),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Scrollable package list
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+        child: FutureBuilder<List<ServicePackageModel>>(
+          future: _packageService.getPackagesForService(widget.serviceType),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              );
+            }
+
+            final packages = snapshot.data ?? [];
+            
+            if (packages.isEmpty) {
+              return Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Header title
-                    const Text(
-                      'Choose Your Package',
+                    Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[400]),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No packages available',
                       style: TextStyle(
-                        fontSize: 22,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[700],
+                        fontFamily: 'Montserrat',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Please check back later',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[500],
+                        fontFamily: 'Montserrat',
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return Column(
+              children: [
+                // Scrollable package list
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header title
+                        const Text(
+                          'Choose Your Package',
+                          style: TextStyle(
+                            fontSize: 22,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                         fontFamily: 'Montserrat',
@@ -150,6 +191,8 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
             // Sticky bottom bar with continue button (only shown when package selected)
             if (_selectedPackage != null) _buildContinueButton(),
           ],
+        );
+          },
         ),
       ),
     );

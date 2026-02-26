@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/user_model.dart';
 import '../models/review_model.dart';
+import '../providers/auth_provider.dart';
 import '../services/firestore_service.dart';
+import '../services/chat_service.dart';
 import '../services/sound_service.dart';
 import '../widgets/custom_button.dart';
 import '../theme/app_colors.dart';
+import 'chat_screen.dart';
 
 /// Caregiver Detail Screen
 /// 
@@ -50,6 +54,7 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
 
   final FirestoreService _firestoreService = FirestoreService();
   final SoundService _soundService = SoundService();
+  final ChatService _chatService = ChatService();
   List<ReviewModel> _reviews = [];
   bool _isLoadingReviews = true;
 
@@ -115,15 +120,63 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
   }
 
   /// Handles message button press
-  void _handleMessage() {
+  Future<void> _handleMessage() async {
     _soundService.playClick();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Opening chat...'),
-        backgroundColor: AppColors.info,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentUser = authProvider.currentUser;
+
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please login to send messages'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    try {
+      // Show loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Opening chat...'),
+          backgroundColor: AppColors.info,
+          duration: Duration(seconds: 1),
+        ),
+      );
+
+      // Create or get existing chat
+      final chatId = await _chatService.createChat(
+        userId1: currentUser.uid,
+        userId2: widget.caregiver.uid,
+        user1Name: currentUser.name,
+        user2Name: widget.caregiver.name,
+      );
+
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChatScreen(
+              chatId: chatId,
+              currentUserId: currentUser.uid,
+              otherUserId: widget.caregiver.uid,
+              otherUserName: widget.caregiver.name,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to open chat: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   // ============================================================================

@@ -6,6 +6,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../theme/app_colors.dart';
 import '../services/sound_service.dart';
+import '../utils/validators.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 
@@ -327,18 +328,7 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
                       labelText: 'Full Name',
                       hintText: 'Enter your full name',
                       prefixIcon: Icons.person_outline_rounded,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
-                        }
-                        if (value.trim().length < 2) {
-                          return 'Name must be at least 2 characters';
-                        }
-                        if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
-                          return 'Name can only contain letters';
-                        }
-                        return null;
-                      },
+                      validator: Validators.validateName,
                     ),
                     const SizedBox(height: 20),
                     
@@ -349,16 +339,7 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
                       hintText: 'Enter your email',
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                        if (!emailRegex.hasMatch(value)) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
+                      validator: Validators.validateEmail,
                     ),
                     const SizedBox(height: 20),
                     
@@ -369,15 +350,7 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
                       hintText: 'Create a password',
                       prefixIcon: Icons.lock_outline_rounded,
                       obscureText: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a password';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
+                      validator: Validators.validateSignupPassword,
                     ),
                     const SizedBox(height: 20),
                     
@@ -388,15 +361,10 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
                       hintText: 'Re-enter your password',
                       prefixIcon: Icons.lock_outline_rounded,
                       obscureText: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please confirm your password';
-                        }
-                        if (value != _passwordController.text) {
-                          return 'Passwords do not match';
-                        }
-                        return null;
-                      },
+                      validator: (value) => Validators.validatePasswordConfirmation(
+                        value,
+                        _passwordController.text,
+                      ),
                     ),
                     SizedBox(height: isSmallScreen ? 24 : 32),
                     

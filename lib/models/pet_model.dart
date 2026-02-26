@@ -2,7 +2,7 @@ class PetModel {
   final String id;
   final String ownerId;
   final String name;
-  final String type; // Dog, Cat, Bird, etc.
+  final String type; // Always "Dog" for this app
   final String breed;
   final int age;
   final double weight;
@@ -33,9 +33,8 @@ class PetModel {
     this.updatedAt,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
+  Map<String, dynamic> toMap({bool includeId = true}) {
+    final map = {
       'ownerId': ownerId,
       'name': name,
       'type': type,
@@ -51,6 +50,12 @@ class PetModel {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
+    
+    if (includeId) {
+      map['id'] = id;
+    }
+    
+    return map;
   }
 
   factory PetModel.fromMap(Map<String, dynamic> map, String id) {

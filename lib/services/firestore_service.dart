@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../models/booking_model.dart';
 import '../models/review_model.dart';
@@ -21,6 +22,7 @@ class FirestoreService {
   // Get top rated caregivers
   Future<List<UserModel>> getTopCaregivers({int limit = 10}) async {
     try {
+      // Try with orderBy first
       final snapshot = await _firestore
           .collection('users')
           .where('userType', isEqualTo: 'caregiver')
@@ -32,7 +34,27 @@ class FirestoreService {
           .map((doc) => UserModel.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      return [];
+      debugPrint('Error with orderBy query, falling back to simple query: $e');
+      // Fallback: Get all caregivers and sort in memory
+      try {
+        final snapshot = await _firestore
+            .collection('users')
+            .where('userType', isEqualTo: 'caregiver')
+            .get();
+
+        final caregivers = snapshot.docs
+            .map((doc) => UserModel.fromMap(doc.data(), doc.id))
+            .toList();
+        
+        // Sort by rating in memory
+        caregivers.sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
+        
+        // Return limited results
+        return caregivers.take(limit).toList();
+      } catch (e2) {
+        debugPrint('Error getting caregivers: $e2');
+        return [];
+      }
     }
   }
 
@@ -89,32 +111,74 @@ class FirestoreService {
 
   // Create booking
   Future<String> createBooking(BookingModel booking) async {
-    final doc = await _firestore.collection('bookings').add(booking.toMap());
+    // Create a map without the id field for new bookings
+    final bookingData = booking.toMap();
+    bookingData.remove('id'); // Remove empty id field
+    
+    final doc = await _firestore.collection('bookings').add(bookingData);
     return doc.id;
   }
 
   // Get user bookings
   Stream<List<BookingModel>> getUserBookings(String userId) {
-    return _firestore
-        .collection('bookings')
-        .where('ownerId', isEqualTo: userId)
-        .orderBy('scheduledDate', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => BookingModel.fromMap(doc.data(), doc.id))
-            .toList());
+    try {
+      return _firestore
+          .collection('bookings')
+          .where('ownerId', isEqualTo: userId)
+          .orderBy('scheduledDate', descending: true)
+          .snapshots()
+          .handleError((error) {
+            debugPrint('Error with orderBy query: $error');
+            // Fallback to query without orderBy
+            return _firestore
+                .collection('bookings')
+                .where('ownerId', isEqualTo: userId)
+                .snapshots();
+          })
+          .map((snapshot) {
+            final bookings = snapshot.docs
+                .map((doc) => BookingModel.fromMap(doc.data(), doc.id))
+                .toList();
+            // Sort in memory if orderBy failed
+            bookings.sort((a, b) => b.scheduledDate.compareTo(a.scheduledDate));
+            return bookings;
+          });
+    } catch (e) {
+      debugPrint('Error getting user bookings: $e');
+      // Return empty stream on error
+      return Stream.value([]);
+    }
   }
 
   // Get caregiver bookings
   Stream<List<BookingModel>> getCaregiverBookings(String caregiverId) {
-    return _firestore
-        .collection('bookings')
-        .where('caregiverId', isEqualTo: caregiverId)
-        .orderBy('scheduledDate', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => BookingModel.fromMap(doc.data(), doc.id))
-            .toList());
+    try {
+      return _firestore
+          .collection('bookings')
+          .where('caregiverId', isEqualTo: caregiverId)
+          .orderBy('scheduledDate', descending: true)
+          .snapshots()
+          .handleError((error) {
+            debugPrint('Error with orderBy query: $error');
+            // Fallback to query without orderBy
+            return _firestore
+                .collection('bookings')
+                .where('caregiverId', isEqualTo: caregiverId)
+                .snapshots();
+          })
+          .map((snapshot) {
+            final bookings = snapshot.docs
+                .map((doc) => BookingModel.fromMap(doc.data(), doc.id))
+                .toList();
+            // Sort in memory if orderBy failed
+            bookings.sort((a, b) => b.scheduledDate.compareTo(a.scheduledDate));
+            return bookings;
+          });
+    } catch (e) {
+      debugPrint('Error getting caregiver bookings: $e');
+      // Return empty stream on error
+      return Stream.value([]);
+    }
   }
 
   // Update booking status
@@ -132,6 +196,7 @@ class FirestoreService {
   // Get caregiver reviews
   Future<List<ReviewModel>> getCaregiverReviews(String caregiverId) async {
     try {
+      // Try with orderBy first
       final snapshot = await _firestore
           .collection('reviews')
           .where('caregiverId', isEqualTo: caregiverId)
@@ -142,13 +207,65 @@ class FirestoreService {
           .map((doc) => ReviewModel.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      return [];
+      debugPrint('Error with orderBy query, falling back: $e');
+      // Fallback: Get without orderBy and sort in memory
+      try {
+        final snapshot = await _firestore
+            .collection('reviews')
+            .where('caregiverId', isEqualTo: caregiverId)
+            .get();
+
+        final reviews = snapshot.docs
+            .map((doc) => ReviewModel.fromMap(doc.data(), doc.id))
+            .toList();
+        
+        // Sort by createdAt in memory
+        reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        
+        return reviews;
+      } catch (e2) {
+        debugPrint('Error getting reviews: $e2');
+        return [];
+      }
     }
   }
 
   // Add review
   Future<void> addReview(ReviewModel review) async {
     await _firestore.collection('reviews').add(review.toMap());
+  }
+
+  // Create payment record
+  Future<String> createPayment(dynamic payment) async {
+    final doc = await _firestore.collection('payments').add(payment.toMap());
+    return doc.id;
+  }
+
+  // Get payment by booking ID
+  Future<dynamic> getPaymentByBookingId(String bookingId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('payments')
+          .where('bookingId', isEqualTo: bookingId)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs.first.data();
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting payment: $e');
+      return null;
+    }
+  }
+
+  // Update payment status
+  Future<void> updatePaymentStatus(String paymentId, String status) async {
+    await _firestore.collection('payments').doc(paymentId).update({
+      'status': status,
+      'updatedAt': DateTime.now().toIso8601String(),
+    });
   }
 }
 

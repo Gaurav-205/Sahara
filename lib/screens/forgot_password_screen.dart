@@ -6,6 +6,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../theme/app_colors.dart';
 import '../services/sound_service.dart';
+import '../utils/validators.dart';
 
 /// Forgot Password Screen - Password reset via email
 /// 
@@ -341,16 +342,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Single
                       hintText: 'Enter your email',
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                        if (!emailRegex.hasMatch(value)) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
+                      validator: Validators.validateEmail,
                     ),
                     SizedBox(height: isSmallScreen ? 28 : 32),
                     

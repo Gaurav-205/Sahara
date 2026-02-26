@@ -131,5 +131,41 @@ class AuthProvider with ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
   }
+
+  /// Refresh current user data from Firestore
+  Future<void> refreshUser() async {
+    if (_currentUser != null) {
+      try {
+        _currentUser = await _authService.getUserData(_currentUser!.uid);
+        notifyListeners();
+      } catch (e) {
+        debugPrint('Error refreshing user data: $e');
+      }
+    }
+  }
+
+  /// Update user profile in Firestore
+  Future<void> updateUserProfile(Map<String, dynamic> data) async {
+    if (_currentUser == null) {
+      throw Exception('No user logged in');
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await _authService.updateUserProfile(_currentUser!.uid, data);
+      
+      // Refresh user data from Firestore to get updated values
+      await refreshUser();
+      
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
 }
 

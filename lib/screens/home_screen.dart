@@ -839,35 +839,58 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  /// Build empty state with mock caregivers
+  /// Build empty state when no caregivers found
   Widget _buildEmptyCaregivers() {
-    return Column(
-      children: [
-        _buildCaregiverCard(null, name: 'Priya Sharma', rating: '4.9', walks: '120', price: '₹450'),
-        const SizedBox(height: 10),
-        _buildCaregiverCard(null, name: 'Rahul Verma', rating: '4.8', walks: '95', price: '₹350'),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        children: [
+          Icon(
+            Icons.people_outline,
+            size: 64,
+            color: Colors.grey[300],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No caregivers available',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[700],
+              fontFamily: 'Montserrat',
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Check back soon for available caregivers',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[500],
+              fontFamily: 'Montserrat',
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
   /// Build individual caregiver card
-  Widget _buildCaregiverCard(UserModel? caregiver, {String? name, String? rating, String? walks, String? price}) {
-    final displayName = caregiver?.name ?? name ?? 'Caregiver';
-    final displayRating = caregiver?.rating?.toStringAsFixed(1) ?? rating ?? '0.0';
-    final displayWalks = caregiver?.completedBookings?.toString() ?? walks ?? '0';
-    final displayPrice = price ?? (caregiver != null ? '₹${caregiver.hourlyRate?.toStringAsFixed(0)}' : '₹450');
+  Widget _buildCaregiverCard(UserModel caregiver) {
+    final displayName = caregiver.name;
+    final displayRating = caregiver.rating?.toStringAsFixed(1) ?? '0.0';
+    final displayWalks = caregiver.completedBookings?.toString() ?? '0';
+    final displayPrice = '₹${caregiver.hourlyRate?.toStringAsFixed(0) ?? '0'}';
 
     return InkWell(
-      onTap: caregiver != null
-          ? () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => CaregiverDetailScreen(caregiver: caregiver),
-                ),
-              );
-            }
-          : null,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CaregiverDetailScreen(caregiver: caregiver),
+          ),
+        );
+      },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(12),

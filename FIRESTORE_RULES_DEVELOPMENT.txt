@@ -1,0 +1,51 @@
+// DEVELOPMENT/TESTING FIRESTORE RULES
+// ⚠️ USE ONLY FOR DEVELOPMENT - NOT FOR PRODUCTION!
+// 
+// These rules allow authenticated users to delete any data
+// This is needed for the "Clear Entire Database" feature
+//
+// COPY THIS TO FIREBASE CONSOLE FOR DEVELOPMENT:
+// Firebase Console → Firestore Database → Rules → Paste → Publish
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection - ALLOWS FULL ACCESS FOR DEVELOPMENT
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+    
+    // Pets collection - ALLOWS FULL ACCESS FOR DEVELOPMENT
+    match /pets/{petId} {
+      allow read, create, update, delete: if request.auth != null;
+    }
+    
+    // Bookings collection - ALLOWS FULL ACCESS FOR DEVELOPMENT
+    match /bookings/{bookingId} {
+      allow read, create, update, delete: if request.auth != null;
+    }
+    
+    // Service packages - ALLOWS FULL ACCESS FOR DEVELOPMENT
+    match /service_packages/{packageId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+    
+    // Chats collection - ALLOWS FULL ACCESS FOR DEVELOPMENT
+    match /chats/{chatId} {
+      allow read, write, create, update, delete: if request.auth != null;
+      
+      match /messages/{messageId} {
+        allow read, create, update, delete: if request.auth != null;
+      }
+    }
+    
+    // Reviews collection - ALLOWS FULL ACCESS FOR DEVELOPMENT
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+  }
+}

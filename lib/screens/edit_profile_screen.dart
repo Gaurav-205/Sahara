@@ -94,25 +94,59 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _isLoading = true;
       });
 
-      // Simulate saving (replace with actual API call)
-      await Future.delayed(const Duration(seconds: 1));
+      try {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final currentUser = authProvider.currentUser;
+        
+        if (currentUser == null) {
+          throw Exception('No user logged in');
+        }
 
-      if (!mounted) return;
+        // Prepare update data
+        final updateData = {
+          'name': _nameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'updatedAt': DateTime.now().toIso8601String(),
+        };
 
-      setState(() {
-        _isLoading = false;
-      });
+        // Update in Firestore
+        await authProvider.updateUserProfile(updateData);
 
-      _soundService.playSuccess();
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile updated successfully!'),
-          backgroundColor: AppColors.success,
-        ),
-      );
+        if (!mounted) return;
 
-      Navigator.pop(context);
+        setState(() {
+          _isLoading = false;
+        });
+
+        _soundService.playSuccess();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile updated successfully!'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        Navigator.pop(context);
+      } catch (e) {
+        if (!mounted) return;
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        _soundService.playError();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update profile: $e'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } else {
       _soundService.playError();
     }
