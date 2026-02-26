@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../models/user_model.dart';
 import '../services/sound_service.dart';
 import 'login_screen.dart';
 import 'edit_profile_screen.dart';
@@ -56,6 +57,15 @@ class ProfileScreen extends StatelessWidget {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.currentUser;
 
+    if (user == null) {
+      return Scaffold(
+        backgroundColor: AppColors.surface,
+        body: const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
@@ -77,7 +87,7 @@ class ProfileScreen extends StatelessWidget {
   // ============================================================================
 
   /// Builds the profile header with avatar, name, email, and user type
-  Widget _buildHeader(user) {
+  Widget _buildHeader(UserModel user) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
       child: Column(
@@ -107,7 +117,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 16),
           // Name
           Text(
-            user?.name ?? 'User',
+            user.name,
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
@@ -119,7 +129,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 4),
           // Email
           Text(
-            user?.email ?? '',
+            user.email,
             style: const TextStyle(
               fontSize: 14,
               color: AppColors.textSecondary,
@@ -135,7 +145,7 @@ class ProfileScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
-              user?.userType == 'caregiver' ? 'Caregiver' : 'Pet Owner',
+              user.userType == 'caregiver' ? 'Caregiver' : 'Pet Owner',
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,

@@ -36,7 +36,7 @@ import '../theme/app_colors.dart';
 /// 
 /// Backend Integration:
 /// - PackageService.getPackagesForService() - Fetches packages for service type
-/// - Returns List<ServicePackageModel> with package data
+/// - Returns List with ServicePackageModel package data
 /// - Static data (no Firestore dependency)
 /// 
 /// Navigation Flow:

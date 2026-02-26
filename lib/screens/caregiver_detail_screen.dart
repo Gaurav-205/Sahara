@@ -931,7 +931,7 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: selectedService,
+                        initialValue: selectedService,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),

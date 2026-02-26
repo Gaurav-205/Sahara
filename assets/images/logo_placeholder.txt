@@ -1,9 +1,0 @@
-﻿PLACEHOLDER FOR LOGO
-
-To add your logo:
-1. Replace this file with your logo image
-2. Name it: logo.png
-3. Recommended size: 512x512 pixels
-4. Format: PNG with transparent background
-
-The app will automatically use your logo on the splash screen.

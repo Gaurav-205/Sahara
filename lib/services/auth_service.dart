@@ -2,24 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
-import 'dart:async';
-
-// Set to true to use mock authentication (no Firebase required)
-const bool useMockAuth = false;
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  // Mock state
-  UserModel? _mockCurrentUser;
-  final _mockAuthController = StreamController<UserModel?>.broadcast();
-
-  User? get currentUser => useMockAuth ? null : _auth.currentUser;
-  Stream<User?> get authStateChanges => useMockAuth 
-      ? _mockAuthController.stream.map((user) => null)
-      : _auth.authStateChanges();
+  User? get currentUser => _auth.currentUser;
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   Future<UserModel?> signUp({
     required String email,
@@ -27,25 +17,6 @@ class AuthService {
     required String name,
     required String userType,
   }) async {
-    if (useMockAuth) {
-      // Mock implementation
-      await Future.delayed(const Duration(seconds: 1));
-      
-      _mockCurrentUser = UserModel(
-        uid: 'mock_${DateTime.now().millisecondsSinceEpoch}',
-        email: email,
-        name: name,
-        userType: userType,
-        rating: userType == 'caregiver' ? 4.5 : null,
-        completedBookings: userType == 'caregiver' ? 0 : null,
-        createdAt: DateTime.now(),
-      );
-      
-      _mockAuthController.add(_mockCurrentUser);
-      return _mockCurrentUser;
-    }
-
-    // Real Firebase implementation
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -84,23 +55,6 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    if (useMockAuth) {
-      // Mock implementation
-      await Future.delayed(const Duration(seconds: 1));
-      
-      _mockCurrentUser = UserModel(
-        uid: 'mock_user_123',
-        email: email,
-        name: 'Demo User',
-        userType: 'owner',
-        createdAt: DateTime.now(),
-      );
-      
-      _mockAuthController.add(_mockCurrentUser);
-      return _mockCurrentUser;
-    }
-
-    // Real Firebase implementation
     try {
       final credential = await _auth.signInWithEmailAndPassword(
         email: email,
@@ -135,38 +89,11 @@ class AuthService {
   }
 
   Future<void> signOut() async {
-    if (useMockAuth) {
-      await Future.delayed(const Duration(milliseconds: 500));
-      _mockCurrentUser = null;
-      _mockAuthController.add(null);
-      return;
-    }
-
     await _googleSignIn.signOut();
     await _auth.signOut();
   }
 
   Future<UserModel?> signInWithGoogle({String userType = 'owner'}) async {
-    if (useMockAuth) {
-      // Mock implementation
-      await Future.delayed(const Duration(seconds: 1));
-      
-      _mockCurrentUser = UserModel(
-        uid: 'mock_google_${DateTime.now().millisecondsSinceEpoch}',
-        email: 'user@gmail.com',
-        name: 'Google User',
-        userType: userType,
-        photoUrl: 'https://via.placeholder.com/150',
-        rating: userType == 'caregiver' ? 4.5 : null,
-        completedBookings: userType == 'caregiver' ? 0 : null,
-        createdAt: DateTime.now(),
-      );
-      
-      _mockAuthController.add(_mockCurrentUser);
-      return _mockCurrentUser;
-    }
-
-    // Real Firebase implementation
     try {
       // Trigger the Google Sign-In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -230,11 +157,6 @@ class AuthService {
   }
 
   Future<UserModel?> getUserData(String uid) async {
-    if (useMockAuth) {
-      await Future.delayed(const Duration(milliseconds: 500));
-      return _mockCurrentUser;
-    }
-
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
       if (doc.exists) {
@@ -247,12 +169,6 @@ class AuthService {
   }
 
   Future<void> resetPassword(String email) async {
-    if (useMockAuth) {
-      // Simulate sending email
-      await Future.delayed(const Duration(seconds: 1));
-      return;
-    }
-
     try {
       await _auth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
@@ -267,10 +183,6 @@ class AuthService {
     } catch (e) {
       throw Exception('Password reset failed: $e');
     }
-  }
-
-  void dispose() {
-    _mockAuthController.close();
   }
 }
 

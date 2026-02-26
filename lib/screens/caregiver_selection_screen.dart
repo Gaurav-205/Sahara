@@ -35,8 +35,7 @@ import 'booking_confirmation_screen.dart';
 /// 
 /// Backend Integration:
 /// - FirestoreService.searchCaregiversByService() - Fetches caregivers by service
-/// - Returns List<UserModel> with caregiver data
-/// - Mock data available for testing
+/// - Returns List with UserModel caregiver data
 /// - Loading state with CircularProgressIndicator
 /// - Empty state handling
 /// 
