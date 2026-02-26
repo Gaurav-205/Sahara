@@ -2,10 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/firestore_service.dart';
+import '../services/sound_service.dart';
 import '../models/booking_model.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_colors.dart';
 
+/// Bookings Screen
+/// 
+/// Displays user's bookings organized by status in tabs:
+/// - Upcoming: pending and confirmed bookings
+/// - Completed: finished bookings
+/// - Cancelled: cancelled bookings
+/// 
+/// Features:
+/// - Tab-based navigation for different booking statuses
+/// - Real-time booking data with StreamBuilder
+/// - Pull-to-refresh functionality
+/// - Booking cards with all details
+/// - Empty states for each tab
+/// - Error handling with retry
+/// 
+/// Design Principles:
+/// - Solid colors only (Navy, Orange, Sky Blue, Light Blue)
+/// - 8px grid spacing system
+/// - Montserrat font family
+/// - Clean card-based layout
+/// - Professional status indicators
+/// - Responsive design
+/// 
+/// Theme Colors:
+/// - Background: AppColors.surface (white)
+/// - Tab indicator: AppColors.primary (navy)
+/// - Status colors: success (green), info (blue), error (red), warning (amber)
+/// - Cards: White with AppColors.border
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
 
@@ -14,8 +43,17 @@ class BookingsScreen extends StatefulWidget {
 }
 
 class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProviderStateMixin {
+  // ============================================================================
+  // STATE VARIABLES
+  // ============================================================================
+
   late TabController _tabController;
   final FirestoreService _firestoreService = FirestoreService();
+  final SoundService _soundService = SoundService();
+
+  // ============================================================================
+  // LIFECYCLE METHODS
+  // ============================================================================
 
   @override
   void initState() {
@@ -28,6 +66,10 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     _tabController.dispose();
     super.dispose();
   }
+
+  // ============================================================================
+  // BUILD METHOD
+  // ============================================================================
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +99,11 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     );
   }
 
+  // ============================================================================
+  // UI BUILDERS - HEADER
+  // ============================================================================
+
+  /// Builds the screen header
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
@@ -78,11 +125,11 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text(
+                const Text(
                   'Track your pet care appointments',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[600],
+                    color: AppColors.textSecondary,
                     fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w400,
                   ),
@@ -95,24 +142,29 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     );
   }
 
+  // ============================================================================
+  // UI BUILDERS - TAB BAR
+  // ============================================================================
+
+  /// Builds the tab bar for booking status filtering
   Widget _buildTabBar() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
       ),
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: AppColors.textPrimary,
+          color: AppColors.primary,
           borderRadius: BorderRadius.circular(10),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Colors.transparent,
         labelColor: Colors.white,
-        unselectedLabelColor: Colors.grey[600],
+        unselectedLabelColor: AppColors.textSecondary,
         labelStyle: const TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
@@ -123,6 +175,9 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
           fontWeight: FontWeight.w500,
           fontFamily: 'Montserrat',
         ),
+        onTap: (index) {
+          _soundService.playTap();
+        },
         tabs: const [
           Tab(text: 'Upcoming'),
           Tab(text: 'Completed'),
@@ -132,6 +187,11 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     );
   }
 
+  // ============================================================================
+  // UI BUILDERS - BOOKINGS LIST
+  // ============================================================================
+
+  /// Builds the bookings list for a specific status
   Widget _buildBookingsList(String userId, String status) {
     return StreamBuilder<List<BookingModel>>(
       stream: _firestoreService.getUserBookings(userId),
@@ -139,7 +199,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(
-              color: AppColors.textPrimary,
+              color: AppColors.primary,
               strokeWidth: 2,
             ),
           );
@@ -168,7 +228,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
           onRefresh: () async {
             setState(() {});
           },
-          color: AppColors.textPrimary,
+          color: AppColors.primary,
           child: ListView.builder(
             padding: const EdgeInsets.all(20),
             itemCount: filteredBookings.length,
@@ -184,6 +244,11 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     );
   }
 
+  // ============================================================================
+  // UI BUILDERS - BOOKING CARD
+  // ============================================================================
+
+  /// Builds a single booking card
   Widget _buildBookingCard(BookingModel booking) {
     final dateFormat = DateFormat('MMM dd, yyyy');
     final timeFormat = DateFormat('hh:mm a');
@@ -193,24 +258,25 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     
     switch (booking.status) {
       case 'confirmed':
-        statusColor = const Color(0xFF4CAF50);
+        statusColor = AppColors.success;
         statusIcon = Icons.check_circle_rounded;
         break;
       case 'completed':
-        statusColor = const Color(0xFF2196F3);
+        statusColor = AppColors.info;
         statusIcon = Icons.done_all_rounded;
         break;
       case 'cancelled':
-        statusColor = const Color(0xFFE53935);
+        statusColor = AppColors.error;
         statusIcon = Icons.cancel_rounded;
         break;
       default:
-        statusColor = const Color(0xFFFF9800);
+        statusColor = AppColors.warning;
         statusIcon = Icons.schedule_rounded;
     }
 
     return InkWell(
       onTap: () {
+        _soundService.playTap();
         // Navigate to booking details
       },
       borderRadius: BorderRadius.circular(12),
@@ -219,10 +285,10 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[200]!, width: 1),
+          border: Border.all(color: AppColors.border, width: 1),
           boxShadow: [
             BoxShadow(
-              color: AppColors.textPrimary.withValues(alpha: 0.03),
+              color: AppColors.primary.withValues(alpha: 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -238,9 +304,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.textPrimary, Color(0xFF2A2A2A)],
-                    ),
+                    color: AppColors.primary, // Solid color, no gradient
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
@@ -266,9 +330,9 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                       const SizedBox(height: 2),
                       Text(
                         booking.packageName,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                           fontFamily: 'Montserrat',
                         ),
                       ),
@@ -337,24 +401,24 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: AppColors.background,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.note_rounded,
                       size: 14,
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         booking.notes!,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                           fontFamily: 'Montserrat',
                         ),
                       ),
@@ -369,19 +433,20 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     );
   }
 
+  /// Builds an info row with icon, label, and value
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: Colors.grey[500]),
+        Icon(icon, size: 14, color: AppColors.textTertiary),
         const SizedBox(width: 6),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 10,
-                color: Colors.grey[500],
+                color: AppColors.textTertiary,
                 fontFamily: 'Montserrat',
               ),
             ),
@@ -401,6 +466,11 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     );
   }
 
+  // ============================================================================
+  // UI BUILDERS - EMPTY STATE
+  // ============================================================================
+
+  /// Builds the empty state for a specific status
   Widget _buildEmptyState(String status) {
     String message;
     IconData icon;
@@ -426,13 +496,13 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
           Container(
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
-              color: Colors.grey[100],
+              color: AppColors.background,
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
               size: 52,
-              color: Colors.grey[400],
+              color: AppColors.textTertiary,
             ),
           ),
           const SizedBox(height: 20),
@@ -446,11 +516,11 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
             ),
           ),
           const SizedBox(height: 6),
-          Text(
+          const Text(
             'Book a service to get started',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
               fontFamily: 'Montserrat',
             ),
           ),
@@ -459,6 +529,11 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     );
   }
 
+  // ============================================================================
+  // UI BUILDERS - ERROR STATE
+  // ============================================================================
+
+  /// Builds the error state with retry button
   Widget _buildErrorState() {
     return Center(
       child: Column(
@@ -467,7 +542,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
           const Icon(
             Icons.error_outline_rounded,
             size: 52,
-            color: Color(0xFFE53935),
+            color: AppColors.error,
           ),
           const SizedBox(height: 16),
           const Text(
@@ -482,13 +557,15 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
           const SizedBox(height: 12),
           TextButton(
             onPressed: () {
+              _soundService.playTap();
               setState(() {});
             },
             child: const Text(
               'Try Again',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: AppColors.primary,
                 fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

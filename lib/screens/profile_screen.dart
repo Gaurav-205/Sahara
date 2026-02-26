@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../services/sound_service.dart';
 import 'login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'my_pets_screen.dart';
@@ -10,8 +11,45 @@ import 'help_support_screen.dart';
 import 'privacy_policy_screen.dart';
 import '../theme/app_colors.dart';
 
+/// Profile Screen
+/// 
+/// Displays user profile information and navigation to various settings:
+/// - Profile header with avatar, name, email, and user type badge
+/// - Menu items for different sections:
+///   - Edit Profile
+///   - My Pets
+///   - Payment Methods
+///   - Notifications
+///   - Help & Support
+///   - Privacy Policy
+///   - Logout
+/// 
+/// Features:
+/// - User information display
+/// - Navigation to profile-related screens
+/// - Logout functionality with confirmation
+/// - Clean menu-based interface
+/// 
+/// Design Principles:
+/// - Solid colors only (Navy, Orange, Sky Blue, Light Blue)
+/// - 8px grid spacing system
+/// - Montserrat font family
+/// - Clean card-based menu layout
+/// - Professional profile interface
+/// - Clear visual hierarchy
+/// 
+/// Theme Colors:
+/// - Background: AppColors.surface (white)
+/// - Avatar: AppColors.primary (navy)
+/// - Menu cards: White with AppColors.border
+/// - Icons: AppColors.primary (navy)
+/// - User type badge: AppColors.background
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  // ============================================================================
+  // BUILD METHOD
+  // ============================================================================
 
   @override
   Widget build(BuildContext context) {
@@ -24,77 +62,7 @@ class ProfileScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 12),
-                    // Profile Avatar
-                    Container(
-                      width: 88,
-                      height: 88,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.15),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.person_rounded,
-                        size: 42,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Name
-                    Text(
-                      user?.name ?? 'User',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        fontFamily: 'Montserrat',
-                        letterSpacing: -0.4,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    // Email
-                    Text(
-                      user?.email ?? '',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                        fontFamily: 'Montserrat',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // User Type Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        user?.userType == 'caregiver' ? 'Caregiver' : 'Pet Owner',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                          fontFamily: 'Montserrat',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Menu Items
+              _buildHeader(user),
               _buildMenuSection(context),
               const SizedBox(height: 100),
             ],
@@ -104,13 +72,98 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  // ============================================================================
+  // UI BUILDERS - HEADER
+  // ============================================================================
+
+  /// Builds the profile header with avatar, name, email, and user type
+  Widget _buildHeader(user) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      child: Column(
+        children: [
+          const SizedBox(height: 12),
+          // Profile Avatar
+          Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.person_rounded,
+              size: 42,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Name
+          Text(
+            user?.name ?? 'User',
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+              fontFamily: 'Montserrat',
+              letterSpacing: -0.4,
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Email
+          Text(
+            user?.email ?? '',
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+              fontFamily: 'Montserrat',
+            ),
+          ),
+          const SizedBox(height: 12),
+          // User Type Badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              user?.userType == 'caregiver' ? 'Caregiver' : 'Pet Owner',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+                fontFamily: 'Montserrat',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================================
+  // UI BUILDERS - MENU SECTION
+  // ============================================================================
+
+  /// Builds the menu section with navigation items
   Widget _buildMenuSection(BuildContext context) {
+    final soundService = SoundService();
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: [
           _buildMenuItem(
             context: context,
+            soundService: soundService,
             icon: Icons.person_outline_rounded,
             title: 'Edit Profile',
             subtitle: 'Update your information',
@@ -124,6 +177,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 10),
           _buildMenuItem(
             context: context,
+            soundService: soundService,
             icon: Icons.pets_rounded,
             title: 'My Pets',
             subtitle: 'Manage your pets',
@@ -137,6 +191,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 10),
           _buildMenuItem(
             context: context,
+            soundService: soundService,
             icon: Icons.payment_rounded,
             title: 'Payment Methods',
             subtitle: 'Manage payment options',
@@ -150,6 +205,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 10),
           _buildMenuItem(
             context: context,
+            soundService: soundService,
             icon: Icons.notifications_outlined,
             title: 'Notifications',
             subtitle: 'Manage notifications',
@@ -163,6 +219,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 10),
           _buildMenuItem(
             context: context,
+            soundService: soundService,
             icon: Icons.help_outline_rounded,
             title: 'Help & Support',
             subtitle: 'Get help and support',
@@ -176,6 +233,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 10),
           _buildMenuItem(
             context: context,
+            soundService: soundService,
             icon: Icons.privacy_tip_outlined,
             title: 'Privacy Policy',
             subtitle: 'Read our privacy policy',
@@ -189,6 +247,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 10),
           _buildMenuItem(
             context: context,
+            soundService: soundService,
             icon: Icons.logout_rounded,
             title: 'Logout',
             subtitle: 'Sign out of your account',
@@ -209,25 +268,34 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  // ============================================================================
+  // UI BUILDERS - MENU ITEM
+  // ============================================================================
+
+  /// Builds a single menu item card
   Widget _buildMenuItem({
     required BuildContext context,
+    required SoundService soundService,
     required IconData icon,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
   }) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        soundService.playTap();
+        onTap();
+      },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[200]!, width: 1),
+          border: Border.all(color: AppColors.border, width: 1),
           boxShadow: [
             BoxShadow(
-              color: AppColors.textPrimary.withValues(alpha: 0.03),
+              color: AppColors.primary.withValues(alpha: 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -239,10 +307,10 @@ class ProfileScreen extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: AppColors.textPrimary, size: 20),
+              child: Icon(icon, color: AppColors.primary, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -261,18 +329,18 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                       fontFamily: 'Montserrat',
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(
+            const Icon(
               Icons.chevron_right_rounded,
-              color: Colors.grey[400],
+              color: AppColors.textTertiary,
               size: 20,
             ),
           ],
@@ -281,7 +349,3 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
-
-
-
-

@@ -1,6 +1,37 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../services/sound_service.dart';
 
+/// My Pets Screen
+/// 
+/// Allows users to manage their pets:
+/// - View list of all pets
+/// - Add new pets with form dialog
+/// - Edit pet information (placeholder)
+/// - Delete pets with confirmation
+/// - Empty state when no pets added
+/// 
+/// Features:
+/// - Pet cards with icon, name, breed, age, weight
+/// - Add pet button in AppBar and empty state
+/// - Add pet dialog with form validation
+/// - Delete confirmation dialog
+/// - Sound feedback on interactions
+/// 
+/// Design Principles:
+/// - Solid colors only (Navy, Orange, Sky Blue, Light Blue)
+/// - 8px grid spacing system
+/// - Montserrat font family
+/// - Clean card-based layout
+/// - Professional pet management interface
+/// - Clear visual hierarchy
+/// 
+/// Theme Colors:
+/// - Background: AppColors.surface (white)
+/// - Pet icons: AppColors.primary (dog), secondary (cat), accent (bird), tertiary (other)
+/// - Add button: AppColors.primary (navy)
+/// - Delete color: AppColors.error (red)
+/// - Success snackbar: AppColors.success (green)
 class MyPetsScreen extends StatefulWidget {
   const MyPetsScreen({super.key});
 
@@ -9,6 +40,11 @@ class MyPetsScreen extends StatefulWidget {
 }
 
 class _MyPetsScreenState extends State<MyPetsScreen> {
+  // ============================================================================
+  // STATE VARIABLES
+  // ============================================================================
+
+  final SoundService _soundService = SoundService();
   final List<Pet> _pets = [
     Pet(
       id: '1',
@@ -28,6 +64,10 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
     ),
   ];
 
+  // ============================================================================
+  // BUILD METHOD
+  // ============================================================================
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,10 +83,18 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            _soundService.playTap();
+            Navigator.pop(context);
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_rounded),
             onPressed: () {
+              _soundService.playTap();
               _showAddPetDialog();
             },
           ),
@@ -56,6 +104,11 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
     );
   }
 
+  // ============================================================================
+  // UI BUILDERS - EMPTY STATE
+  // ============================================================================
+
+  /// Builds the empty state when no pets are added
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -64,13 +117,13 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
           Container(
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
-              color: Colors.grey[100],
+              color: AppColors.background,
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.pets_rounded,
               size: 52,
-              color: Colors.grey[400],
+              color: AppColors.textTertiary,
             ),
           ),
           const SizedBox(height: 20),
@@ -84,21 +137,24 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
+          const Text(
             'Add your first pet to get started',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
               fontFamily: 'Montserrat',
             ),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: _showAddPetDialog,
+            onPressed: () {
+              _soundService.playClick();
+              _showAddPetDialog();
+            },
             icon: const Icon(Icons.add_rounded, size: 18),
             label: const Text('Add Pet'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.textPrimary,
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               shape: RoundedRectangleBorder(
@@ -116,6 +172,11 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
     );
   }
 
+  // ============================================================================
+  // UI BUILDERS - PETS LIST
+  // ============================================================================
+
+  /// Builds the list of pets
   Widget _buildPetsList() {
     return ListView.builder(
       padding: const EdgeInsets.all(20),
@@ -129,6 +190,11 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
     );
   }
 
+  // ============================================================================
+  // UI BUILDERS - PET CARD
+  // ============================================================================
+
+  /// Builds a single pet card
   Widget _buildPetCard(Pet pet) {
     IconData petIcon;
     Color petColor;
@@ -156,10 +222,10 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!, width: 1),
+        border: Border.all(color: AppColors.border, width: 1),
         boxShadow: [
           BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.03),
+            color: AppColors.primary.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -197,18 +263,18 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
                 const SizedBox(height: 3),
                 Text(
                   '${pet.breed} • ${pet.age} years old',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
-                    color: Colors.grey[600],
+                    color: AppColors.textSecondary,
                     fontFamily: 'Montserrat',
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '${pet.weight} kg',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[500],
+                    color: AppColors.textTertiary,
                     fontFamily: 'Montserrat',
                   ),
                 ),
@@ -216,7 +282,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
             ),
           ),
           PopupMenuButton(
-            icon: Icon(Icons.more_vert_rounded, color: Colors.grey[600]),
+            icon: const Icon(Icons.more_vert_rounded, color: AppColors.textSecondary),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -225,7 +291,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
                 value: 'edit',
                 child: Row(
                   children: [
-                    Icon(Icons.edit_rounded, size: 18),
+                    Icon(Icons.edit_rounded, size: 18, color: AppColors.textPrimary),
                     SizedBox(width: 10),
                     Text(
                       'Edit',
@@ -238,12 +304,12 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_rounded, size: 18, color: Color(0xFFE53935)),
+                    Icon(Icons.delete_rounded, size: 18, color: AppColors.error),
                     SizedBox(width: 10),
                     Text(
                       'Delete',
                       style: TextStyle(
-                        color: Color(0xFFE53935),
+                        color: AppColors.error,
                         fontFamily: 'Montserrat',
                       ),
                     ),
@@ -252,6 +318,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
               ),
             ],
             onSelected: (value) {
+              _soundService.playTap();
               if (value == 'delete') {
                 _showDeleteDialog(pet);
               }
@@ -262,6 +329,11 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
     );
   }
 
+  // ============================================================================
+  // DIALOGS - ADD PET
+  // ============================================================================
+
+  /// Shows the add pet dialog with form
   void _showAddPetDialog() {
     final formKey = GlobalKey<FormState>();
     final nameController = TextEditingController();
@@ -273,6 +345,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -281,6 +354,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
           style: TextStyle(
             fontFamily: 'Montserrat',
             fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
           ),
         ),
         content: SingleChildScrollView(
@@ -291,13 +365,25 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
               children: [
                 TextFormField(
                   controller: nameController,
-                  style: const TextStyle(fontFamily: 'Montserrat'),
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    color: AppColors.textPrimary,
+                  ),
                   decoration: InputDecoration(
                     labelText: 'Pet Name',
                     labelStyle: const TextStyle(fontFamily: 'Montserrat'),
-                    prefixIcon: const Icon(Icons.pets_rounded),
+                    prefixIcon: const Icon(Icons.pets_rounded, color: AppColors.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -309,7 +395,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  initialValue: selectedType,
+                  value: selectedType,
                   style: const TextStyle(
                     fontFamily: 'Montserrat',
                     color: AppColors.textPrimary,
@@ -317,9 +403,18 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
                   decoration: InputDecoration(
                     labelText: 'Pet Type',
                     labelStyle: const TextStyle(fontFamily: 'Montserrat'),
-                    prefixIcon: const Icon(Icons.category_rounded),
+                    prefixIcon: const Icon(Icons.category_rounded, color: AppColors.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
                     ),
                   ),
                   items: ['Dog', 'Cat', 'Bird', 'Other']
@@ -337,13 +432,25 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: breedController,
-                  style: const TextStyle(fontFamily: 'Montserrat'),
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    color: AppColors.textPrimary,
+                  ),
                   decoration: InputDecoration(
                     labelText: 'Breed',
                     labelStyle: const TextStyle(fontFamily: 'Montserrat'),
-                    prefixIcon: const Icon(Icons.info_outline_rounded),
+                    prefixIcon: const Icon(Icons.info_outline_rounded, color: AppColors.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -356,13 +463,25 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: ageController,
-                  style: const TextStyle(fontFamily: 'Montserrat'),
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    color: AppColors.textPrimary,
+                  ),
                   decoration: InputDecoration(
                     labelText: 'Age (years)',
                     labelStyle: const TextStyle(fontFamily: 'Montserrat'),
-                    prefixIcon: const Icon(Icons.cake_rounded),
+                    prefixIcon: const Icon(Icons.cake_rounded, color: AppColors.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
                     ),
                   ),
                   keyboardType: TextInputType.number,
@@ -379,13 +498,25 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: weightController,
-                  style: const TextStyle(fontFamily: 'Montserrat'),
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    color: AppColors.textPrimary,
+                  ),
                   decoration: InputDecoration(
                     labelText: 'Weight (kg)',
                     labelStyle: const TextStyle(fontFamily: 'Montserrat'),
-                    prefixIcon: const Icon(Icons.monitor_weight_rounded),
+                    prefixIcon: const Icon(Icons.monitor_weight_rounded, color: AppColors.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
                     ),
                   ),
                   keyboardType: TextInputType.number,
@@ -406,6 +537,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
         actions: [
           TextButton(
             onPressed: () {
+              _soundService.playTap();
               nameController.dispose();
               breedController.dispose();
               ageController.dispose();
@@ -423,6 +555,8 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
           ElevatedButton(
             onPressed: () {
               if (formKey.currentState!.validate()) {
+                _soundService.playSuccess();
+                
                 final newPet = Pet(
                   id: DateTime.now().millisecondsSinceEpoch.toString(),
                   name: nameController.text,
@@ -445,17 +579,19 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('${newPet.name} added successfully!'),
-                    backgroundColor: AppColors.textPrimary,
+                    backgroundColor: AppColors.success,
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                 );
+              } else {
+                _soundService.playError();
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.textPrimary,
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -471,10 +607,16 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
     );
   }
 
+  // ============================================================================
+  // DIALOGS - DELETE PET
+  // ============================================================================
+
+  /// Shows the delete confirmation dialog
   void _showDeleteDialog(Pet pet) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -483,15 +625,22 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
           style: TextStyle(
             fontFamily: 'Montserrat',
             fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
           ),
         ),
         content: Text(
           'Are you sure you want to remove ${pet.name}?',
-          style: const TextStyle(fontFamily: 'Montserrat'),
+          style: const TextStyle(
+            fontFamily: 'Montserrat',
+            color: AppColors.textSecondary,
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              _soundService.playTap();
+              Navigator.pop(context);
+            },
             child: const Text(
               'Cancel',
               style: TextStyle(
@@ -502,6 +651,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
           ),
           TextButton(
             onPressed: () {
+              _soundService.playSuccess();
               setState(() {
                 _pets.remove(pet);
               });
@@ -509,7 +659,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('${pet.name} removed'),
-                  backgroundColor: const Color(0xFFE53935),
+                  backgroundColor: AppColors.error,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -520,8 +670,9 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
             child: const Text(
               'Delete',
               style: TextStyle(
-                color: Color(0xFFE53935),
+                color: AppColors.error,
                 fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -531,6 +682,11 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
   }
 }
 
+// ============================================================================
+// PET MODEL
+// ============================================================================
+
+/// Model class for pet data
 class Pet {
   final String id;
   final String name;
