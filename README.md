@@ -2,7 +2,7 @@
 
 A Flutter-based pet care booking platform for pet owners to find and book professional pet care services.
 
-## Features
+## ✨ Features
 
 - **Pet Management**: Add, edit, and manage your pets with photos
 - **Service Booking**: Book services (Dog Walking, Pet Sitting, Grooming, Vet Visits)
@@ -10,79 +10,87 @@ A Flutter-based pet care booking platform for pet owners to find and book profes
 - **Real-time Messaging**: Chat with caregivers
 - **Booking Tracking**: View and manage your bookings
 - **Profile Management**: Update your profile and preferences
+- **Payment Integration**: Secure payments via Razorpay
+- **Push Notifications**: Stay updated with booking status
 
-## Tech Stack
+## 🚀 Tech Stack
 
 - **Framework**: Flutter 3.x
-- **Backend**: Firebase (Auth, Firestore)
+- **Backend**: Firebase (Auth, Firestore, Messaging)
 - **Image Storage**: Cloudinary
 - **State Management**: Provider
 - **Authentication**: Email/Password + Google Sign-In
+- **Payments**: Razorpay
+- **Maps**: Google Maps
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 lib/
-├── models/          # Data models (User, Pet, Booking, etc.)
-├── providers/       # State management (AuthProvider)
-├── screens/         # UI screens
-├── services/        # Business logic & API calls
+├── config/          # App configuration
+├── models/          # Data models (8 files)
+├── providers/       # State management (4 files)
+├── screens/         # UI screens (23 files)
+├── services/        # Business logic (10 files)
 ├── theme/           # App theme & colors
 ├── utils/           # Utilities & helpers
-└── widgets/         # Reusable UI components
+└── widgets/         # Reusable components (10 files)
 ```
 
-## Setup
+## ⚡ Quick Start
 
-See [SETUP_GUIDE.md](SETUP_GUIDE.md) for detailed setup instructions.
-
-### Quick Start
-
-1. Install dependencies:
+### 1. Install Dependencies
 ```bash
 flutter pub get
 ```
 
-2. Configure Firebase:
-   - Add `google-services.json` to `android/app/`
-   - Update Firestore rules (see FIRESTORE_RULES_FINAL.txt)
+### 2. Configure Credentials
+Edit `lib/config/app_config.dart` with your credentials:
+- Cloudinary (from https://console.cloudinary.com/)
+- Razorpay (from https://dashboard.razorpay.com/)
 
-3. Configure Cloudinary:
-   - Update credentials in `lib/services/cloudinary_service.dart`
+### 3. Setup Firebase
+- Add `google-services.json` to `android/app/`
+- Deploy Firestore rules from `FIRESTORE_RULES_FINAL.txt`
 
-4. Run the app:
+### 4. Run the App
 ```bash
 flutter run
 ```
 
-5. Seed initial data:
-   - Login → Profile → Seed Database
+### 5. Seed Database (First Time Only)
+- Login → Profile → Seed Database
 
-## Configuration Files
+## 📚 Documentation
 
-- `SETUP_GUIDE.md` - Complete setup instructions
-- `FIRESTORE_RULES_FINAL.txt` - Firestore security rules
-- `pubspec.yaml` - Dependencies
+- **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Complete setup instructions
+- **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Current project status
+- **[OPTIMIZATION_SUMMARY.md](OPTIMIZATION_SUMMARY.md)** - Recent optimizations
+- **[QUICK_START_CHECKLIST.md](QUICK_START_CHECKLIST.md)** - Setup checklist
+- **[docs/](docs/)** - Additional documentation
 
-## Key Services
+## 🎨 Design System
 
-- **AuthService**: User authentication
-- **FirestoreService**: Database operations
-- **CloudinaryService**: Image uploads
-- **ChatService**: Messaging
-- **PetService**: Pet management
-
-## Design System
-
-- **Primary Color**: Navy (#1A2332)
-- **Secondary Color**: Orange (#FF6B35)
-- **Accent Color**: Sky Blue (#4ECDC4)
+- **Primary**: Navy (#1A2332)
+- **Secondary**: Orange (#FF6B35)
+- **Accent**: Sky Blue (#4ECDC4)
 - **Font**: Montserrat
 
-## Owner-Only App
+## 🔧 Key Services
 
-This app is designed for pet owners only. Caregivers are service providers (seeded data) that owners can browse and book, not actual app users.
+- **AuthService** - User authentication
+- **FirestoreService** - Database operations
+- **CloudinaryService** - Image uploads
+- **PaymentService** - Razorpay integration
+- **ChatService** - Real-time messaging
+- **NotificationService** - Push notifications
 
-## License
+## ⚠️ Important Notes
+
+- This is an owner-only app (caregivers are seeded data)
+- Requires Firebase, Cloudinary, and Razorpay configuration
+- Payment backend integration recommended for production
+
+## 📄 License
 
 Proprietary - All rights reserved

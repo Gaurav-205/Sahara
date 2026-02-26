@@ -24,16 +24,14 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code
+.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
-.dart_tool/flutter_build/
+.flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
@@ -56,17 +54,41 @@ app.*.map.json
 /android/.kotlin/
 /android/app/build/
 /android/build/
+/android/local.properties
 
 # iOS build artifacts
 /ios/Pods/
 /ios/.symlinks/
 /ios/Flutter/Flutter.framework
 /ios/Flutter/Flutter.podspec
+/ios/Flutter/Generated.xcconfig
+/ios/Flutter/flutter_export_environment.sh
 
-# Sensitive files (move to secure location)
+# macOS build artifacts
+/macos/Flutter/GeneratedPluginRegistrant.swift
+/macos/Flutter/ephemeral/
+
+# Linux build artifacts
+/linux/flutter/generated_plugin_registrant.cc
+/linux/flutter/generated_plugin_registrant.h
+
+# Windows build artifacts
+/windows/flutter/generated_plugin_registrant.cc
+/windows/flutter/generated_plugin_registrant.h
+
+# Web build artifacts
+/web/flutter_service_worker.js
+/web/flutter_service_worker.js.map
+
+# Sensitive files
 SHA1_FINGERPRINT.txt
+google-services.json
+GoogleService-Info.plist
 
 # Environment variables
 .env
 .env.local
 .env.*.local
+
+# Documentation archive
+/docs/archive/

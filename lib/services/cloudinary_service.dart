@@ -3,12 +3,11 @@ import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
+import '../config/app_config.dart';
 
 class CloudinaryService {
-  // TODO: Replace with your Cloudinary credentials
-  // Get these from: https://console.cloudinary.com/
-  static const String _cloudName = 'dmbxyvrcc';
-  static const String _uploadPreset = 'sahara_uploads';
+  static final String _cloudName = AppConfig.cloudinaryCloudName;
+  static final String _uploadPreset = AppConfig.cloudinaryUploadPreset;
   
   late final CloudinaryPublic _cloudinary;
   final ImagePicker _picker = ImagePicker();

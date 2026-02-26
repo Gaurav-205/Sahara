@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../models/payment_model.dart';
+import '../config/app_config.dart';
 import 'firestore_service.dart';
 
 /// Payment Service - Handles Razorpay payment integration
@@ -15,9 +16,8 @@ class PaymentService {
   late Razorpay _razorpay;
   final FirestoreService _firestoreService = FirestoreService();
   
-  // Razorpay credentials - TODO: Move to environment variables
-  static const String _keyId = 'YOUR_RAZORPAY_KEY_ID';
-  static const String _keySecret = 'YOUR_RAZORPAY_KEY_SECRET';
+  static final String _keyId = AppConfig.razorpayKeyId;
+  static final String _keySecret = AppConfig.razorpayKeySecret;
   
   // Callbacks
   Function(PaymentSuccessResponse)? _onSuccess;
