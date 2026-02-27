@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/favorites_provider.dart';
 import '../services/firestore_service.dart';
 import '../models/user_model.dart';
 import '../widgets/filter_bottom_sheet.dart';
@@ -99,22 +100,31 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           // Main content
           screens[_selectedIndex],
           
-          // Quick actions overlay with animation
-          if (_showQuickActions) ...[
-            // Dark overlay background
-            AnimatedOpacity(
+          // Quick actions overlay - always in tree, controlled by visibility
+          IgnorePointer(
+            ignoring: !_showQuickActions,
+            child: AnimatedOpacity(
               opacity: _showQuickActions ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 180),
-              child: GestureDetector(
-                onTap: () => setState(() => _showQuickActions = false),
-                child: Container(
-                  color: AppColors.primary.withValues(alpha: 0.35),
-                ),
+              child: Stack(
+                children: [
+                  // Dark overlay background
+                  GestureDetector(
+                    onTap: () {
+                      if (mounted) {
+                        setState(() => _showQuickActions = false);
+                      }
+                    },
+                    child: Container(
+                      color: AppColors.primary.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  // Floating action buttons
+                  _buildQuickActionsOverlay(),
+                ],
               ),
             ),
-            // Floating action buttons
-            _buildQuickActionsOverlay(),
-          ],
+          ),
         ],
       ),
       bottomNavigationBar: _buildModernBottomNav(),
@@ -125,38 +135,58 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   // UI BUILDER METHODS
   // ============================================================================
 
-  /// Build modern bottom navigation bar
+  /// Build modern bottom navigation bar with elevated center FAB
   Widget _buildModernBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        border: Border(
-          top: BorderSide(
-            color: Colors.white.withValues(alpha: 0.05),
-            width: 0.33,
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.topCenter,
+      children: [
+        // Bottom navigation bar
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.2),
+                blurRadius: 16,
+                offset: const Offset(0, -4),
+              ),
+            ],
+            border: Border(
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.08),
+                width: 0.5,
+              ),
+            ),
           ),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 64,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _buildNavItem(Icons.home_rounded, 'Home', 0),
-                _buildNavItem(Icons.pets_rounded, 'Pets', 1),
-                _buildCenterButton(),
-                _buildNavItem(Icons.calendar_today_rounded, 'Bookings', 2),
-                _buildNavItem(Icons.person_rounded, 'Profile', 3),
-              ],
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: 68,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _buildNavItem(Icons.home_rounded, 'Home', 0),
+                    _buildNavItem(Icons.pets_rounded, 'Pets', 1),
+                    const SizedBox(width: 72), // Space for elevated FAB
+                    _buildNavItem(Icons.calendar_today_rounded, 'Bookings', 2),
+                    _buildNavItem(Icons.person_rounded, 'Profile', 3),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
-      ),
+        
+        // Elevated center FAB
+        Positioned(
+          top: -12,
+          child: _buildElevatedCenterButton(),
+        ),
+      ],
     );
   }
 
@@ -217,50 +247,59 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  /// Build center floating action button
-  Widget _buildCenterButton() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => setState(() => _showQuickActions = !_showQuickActions),
-          borderRadius: BorderRadius.circular(27),
-          splashColor: Colors.grey.withValues(alpha: 0.12),
-          highlightColor: Colors.transparent,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeInOutCubic,
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.secondary.withValues(alpha: 0.25),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                  spreadRadius: 0,
-                ),
-                BoxShadow(
-                  color: AppColors.secondary.withValues(alpha: 0.15),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                  spreadRadius: 0,
-                ),
-              ],
-            ),
-            child: AnimatedRotation(
-              turns: _showQuickActions ? 0.125 : 0,
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeInOutCubic,
-              child: const Icon(
-                Icons.add_rounded,
-                color: AppColors.secondary,
-                size: 26,
-                semanticLabel: 'Quick Actions',
+  /// Build elevated center floating action button
+  Widget _buildElevatedCenterButton() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          if (mounted) {
+            setState(() => _showQuickActions = !_showQuickActions);
+          }
+        },
+        borderRadius: BorderRadius.circular(32),
+        splashColor: AppColors.secondaryLight.withValues(alpha: 0.3),
+        highlightColor: Colors.transparent,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOutCubic,
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            gradient: _showQuickActions 
+                ? AppColors.secondaryGradient
+                : const LinearGradient(
+                    colors: [Colors.white, Colors.white],
+                  ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.secondary.withValues(alpha: 0.35),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+                spreadRadius: 0,
               ),
+              BoxShadow(
+                color: AppColors.secondary.withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+                spreadRadius: 0,
+              ),
+            ],
+            border: Border.all(
+              color: Colors.white,
+              width: 3,
+            ),
+          ),
+          child: AnimatedRotation(
+            turns: _showQuickActions ? 0.125 : 0,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOutCubic,
+            child: Icon(
+              Icons.add_rounded,
+              color: _showQuickActions ? Colors.white : AppColors.secondary,
+              size: 32,
+              semanticLabel: 'Quick Actions',
             ),
           ),
         ),
@@ -274,7 +313,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       child: Align(
         alignment: Alignment.bottomCenter,
         child: Padding(
-          padding: const EdgeInsets.only(bottom: 64, left: 18, right: 18),
+          padding: const EdgeInsets.only(bottom: 80, left: 18, right: 18),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -348,12 +387,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
+          if (!mounted) return;
+          
+          // Close overlay
           setState(() => _showQuickActions = false);
+          
+          // Perform action immediately (overlay stays in tree, just invisible)
           if (label.contains('Pet')) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MyPetsScreen()),
-            );
+            // Switch to Pets tab
+            setState(() => _selectedIndex = 1);
           } else if (label.contains('Service')) {
             Navigator.push(
               context,
@@ -466,6 +508,23 @@ class _HomeTabState extends State<HomeTab> {
   // ============================================================================
   // LIFECYCLE METHODS
   // ============================================================================
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavorites();
+  }
+
+  /// Load user's favorites
+  void _loadFavorites() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final favProvider = Provider.of<FavoritesProvider>(context, listen: false);
+    final userId = authProvider.currentUser?.uid;
+    
+    if (userId != null) {
+      favProvider.loadFavorites(userId);
+    }
+  }
 
   @override
   void dispose() {
@@ -880,7 +939,6 @@ class _HomeTabState extends State<HomeTab> {
     final displayName = caregiver.name;
     final displayRating = caregiver.rating?.toStringAsFixed(1) ?? '0.0';
     final displayWalks = caregiver.completedBookings?.toString() ?? '0';
-    final displayPrice = '₹${caregiver.hourlyRate?.toStringAsFixed(0) ?? '0'}';
 
     return InkWell(
       onTap: () {
@@ -897,10 +955,10 @@ class _HomeTabState extends State<HomeTab> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[200]!, width: 1),
+          border: Border.all(color: AppColors.border, width: 1),
           boxShadow: [
             BoxShadow(
-              color: AppColors.textPrimary.withValues(alpha: 0.03),
+              color: AppColors.primary.withValues(alpha: 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -936,14 +994,14 @@ class _HomeTabState extends State<HomeTab> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.star_rounded, size: 13, color: AppColors.textPrimary),
+                      const Icon(Icons.star_rounded, size: 13, color: AppColors.warning),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          '$displayRating • $displayWalks walks',
-                          style: TextStyle(
+                          '$displayRating • $displayWalks bookings',
+                          style: const TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: AppColors.textSecondary,
                             fontFamily: 'Montserrat',
                           ),
                           maxLines: 1,
@@ -955,28 +1013,39 @@ class _HomeTabState extends State<HomeTab> {
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  displayPrice,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                    fontFamily: 'Montserrat',
+            Consumer<FavoritesProvider>(
+              builder: (context, favProvider, _) {
+                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                final userId = authProvider.currentUser?.uid ?? '';
+                final isFav = favProvider.isFavorite(caregiver.uid);
+                
+                return IconButton(
+                  icon: Icon(
+                    isFav ? Icons.favorite : Icons.favorite_border,
+                    color: isFav ? AppColors.error : AppColors.textTertiary,
+                    size: 22,
                   ),
-                ),
-                Text(
-                  'per hour',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[500],
-                    fontFamily: 'Montserrat',
-                  ),
-                ),
-              ],
+                  onPressed: () async {
+                    if (userId.isEmpty) return;
+                    
+                    final success = await favProvider.toggleFavorite(userId, caregiver.uid);
+                    if (success && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isFav ? 'Removed from favorites' : 'Added to favorites',
+                            style: const TextStyle(fontFamily: 'Montserrat'),
+                          ),
+                          backgroundColor: isFav ? AppColors.textSecondary : AppColors.success,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                );
+              },
             ),
           ],
         ),
@@ -1095,19 +1164,29 @@ class _HomeTabState extends State<HomeTab> {
   Widget _buildTipsSection() {
     final tips = [
       {
-        'icon': Icons.favorite_rounded,
-        'title': 'Pet Health',
-        'description': 'Regular checkups keep your pet healthy',
+        'icon': Icons.wb_sunny_rounded,
+        'title': 'Summer Heat Protection',
+        'description': 'Walk early morning or late evening. Keep water bowls filled and avoid hot pavements.',
+      },
+      {
+        'icon': Icons.water_drop_rounded,
+        'title': 'Monsoon Care',
+        'description': 'Dry paws thoroughly after walks. Watch for skin infections and keep indoor play options ready.',
       },
       {
         'icon': Icons.restaurant_rounded,
-        'title': 'Nutrition',
-        'description': 'Balanced diet is key to happiness',
+        'title': 'Balanced Nutrition',
+        'description': 'Feed age-appropriate food. Avoid spicy human food and maintain consistent meal times.',
+      },
+      {
+        'icon': Icons.vaccines_rounded,
+        'title': 'Vaccination Schedule',
+        'description': 'Keep rabies and distemper vaccines current. Annual boosters are essential for immunity.',
       },
       {
         'icon': Icons.directions_run_rounded,
-        'title': 'Exercise',
-        'description': 'Daily walks improve pet wellbeing',
+        'title': 'Daily Exercise',
+        'description': 'High-energy breeds need 60+ minutes. Adapt exercise to breed, age, and weather conditions.',
       },
     ];
 
@@ -1218,15 +1297,31 @@ class _HomeTabState extends State<HomeTab> {
   Widget _buildTestimonials() {
     final testimonials = [
       {
-        'name': 'Sarah Johnson',
+        'name': 'Priya Malhotra',
+        'location': 'Koramangala, Bengaluru',
         'rating': '5.0',
-        'text': 'Amazing service! My dog loves the caregiver.',
+        'text': 'Absolutely wonderful! My Golden Retriever Bruno loves his daily walks with Rahul. Very punctual and sends photo updates every time.',
         'avatar': Icons.person_rounded,
       },
       {
-        'name': 'Mike Chen',
+        'name': 'Arjun Reddy',
+        'location': 'Bandra, Mumbai',
+        'rating': '5.0',
+        'text': 'Best dog sitting service! Anjali took amazing care of my Labrador during my vacation. She even sent videos of playtime. Highly recommended!',
+        'avatar': Icons.person_rounded,
+      },
+      {
+        'name': 'Sneha Kapoor',
+        'location': 'Indiranagar, Bengaluru',
         'rating': '4.9',
-        'text': 'Professional and caring. Highly recommend!',
+        'text': 'My Pug Momo was anxious at first, but the caregiver was so patient and gentle. Now Momo gets excited whenever she sees her!',
+        'avatar': Icons.person_rounded,
+      },
+      {
+        'name': 'Vikram Singh',
+        'location': 'Gurgaon, Delhi NCR',
+        'rating': '5.0',
+        'text': 'Professional grooming service for my Husky. They understood his thick coat needs perfectly. He looks and feels amazing!',
         'avatar': Icons.person_rounded,
       },
     ];
@@ -1310,26 +1405,50 @@ class _HomeTabState extends State<HomeTab> {
                                   fontFamily: 'Montserrat',
                                 ),
                               ),
+                              const SizedBox(height: 2),
                               Row(
                                 children: [
-                                  const Icon(
-                                    Icons.star_rounded,
-                                    size: 12,
-                                    color: AppColors.secondary,
+                                  Icon(
+                                    Icons.location_on_rounded,
+                                    size: 11,
+                                    color: Colors.grey[500],
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    testimonial['rating'] as String,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                      fontFamily: 'Montserrat',
+                                  const SizedBox(width: 3),
+                                  Flexible(
+                                    child: Text(
+                                      testimonial['location'] as String,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey[500],
+                                        fontFamily: 'Montserrat',
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
                               ),
                             ],
                           ),
+                        ),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 13,
+                              color: AppColors.secondary,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              testimonial['rating'] as String,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                                fontFamily: 'Montserrat',
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

@@ -1,117 +1,122 @@
 import 'dart:io';
-import 'package:cloudinary_public/cloudinary_public.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart' as path;
-import '../config/app_config.dart';
 
+/// Cloudinary Service
+/// Handles image uploads to Cloudinary
 class CloudinaryService {
-  static final String _cloudName = AppConfig.cloudinaryCloudName;
-  static final String _uploadPreset = AppConfig.cloudinaryUploadPreset;
+  // Get from .env file
+  static const String cloudName = String.fromEnvironment(
+    'CLOUDINARY_CLOUD_NAME',
+    defaultValue: 'your_cloud_name',
+  );
   
-  late final CloudinaryPublic _cloudinary;
-  final ImagePicker _picker = ImagePicker();
+  static const String uploadPreset = String.fromEnvironment(
+    'CLOUDINARY_UPLOAD_PRESET',
+    defaultValue: 'your_upload_preset',
+  );
 
-  CloudinaryService() {
-    _cloudinary = CloudinaryPublic(_cloudName, _uploadPreset, cache: false);
-  }
-
-  // Pick image from gallery
-  Future<XFile?> pickImageFromGallery() async {
+  /// Upload image to Cloudinary
+  /// Returns the secure URL of the uploaded image
+  Future<String?> uploadImage(File imageFile, {String folder = 'sahara'}) async {
     try {
-      return await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1920,
-        maxHeight: 1080,
-        imageQuality: 85,
+      final url = Uri.parse(
+        'https://api.cloudinary.com/v1_1/$cloudName/image/upload',
       );
+
+      final request = http.MultipartRequest('POST', url);
+      
+      // Add upload preset
+      request.fields['upload_preset'] = uploadPreset;
+      
+      // Add folder
+      request.fields['folder'] = folder;
+      
+      // Add timestamp for unique filenames
+      request.fields['timestamp'] = DateTime.now().millisecondsSinceEpoch.toString();
+
+      // Add image file
+      request.files.add(
+        await http.MultipartFile.fromPath('file', imageFile.path),
+      );
+
+      debugPrint('📤 Uploading image to Cloudinary...');
+      
+      final response = await request.send();
+      final responseData = await response.stream.toBytes();
+      final responseString = String.fromCharCodes(responseData);
+      
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(responseString);
+        final secureUrl = jsonResponse['secure_url'] as String;
+        
+        debugPrint('✅ Image uploaded successfully: $secureUrl');
+        return secureUrl;
+      } else {
+        debugPrint('❌ Upload failed: ${response.statusCode}');
+        debugPrint('Response: $responseString');
+        return null;
+      }
     } catch (e) {
-      debugPrint('Error picking image: $e');
+      debugPrint('❌ Error uploading image: $e');
       return null;
     }
   }
 
-  // Pick image from camera
-  Future<XFile?> pickImageFromCamera() async {
-    try {
-      return await _picker.pickImage(
-        source: ImageSource.camera,
-        maxWidth: 1920,
-        maxHeight: 1080,
-        imageQuality: 85,
-      );
-    } catch (e) {
-      debugPrint('Error taking photo: $e');
-      return null;
-    }
-  }
-
-  // Upload image to Cloudinary
-  Future<String?> uploadImage({
-    required File file,
-    required String folder,
-    String? fileName,
+  /// Upload multiple images
+  Future<List<String>> uploadMultipleImages(
+    List<File> imageFiles, {
+    String folder = 'sahara',
   }) async {
+    final urls = <String>[];
+    
+    for (final file in imageFiles) {
+      final url = await uploadImage(file, folder: folder);
+      if (url != null) {
+        urls.add(url);
+      }
+    }
+    
+    return urls;
+  }
+
+  /// Delete image from Cloudinary (requires public_id)
+  /// Note: This requires authentication, so it's better to handle deletions
+  /// from a backend server. For now, we'll just remove the URL from Firestore.
+  Future<bool> deleteImage(String publicId) async {
+    // This would require API key and secret, which should not be in client code
+    // Implement this on your backend server
+    debugPrint('⚠️  Image deletion should be handled by backend');
+    return false;
+  }
+
+  /// Extract public_id from Cloudinary URL
+  String? getPublicIdFromUrl(String url) {
     try {
-      final name = fileName ?? path.basenameWithoutExtension(file.path);
+      final uri = Uri.parse(url);
+      final pathSegments = uri.pathSegments;
       
-      CloudinaryResponse response = await _cloudinary.uploadFile(
-        CloudinaryFile.fromFile(
-          file.path,
-          folder: folder,
-          publicId: name,
-          resourceType: CloudinaryResourceType.Image,
-        ),
-      );
+      // Find the index of 'upload' in the path
+      final uploadIndex = pathSegments.indexOf('upload');
+      if (uploadIndex == -1) return null;
       
-      debugPrint('Image uploaded: ${response.secureUrl}');
-      return response.secureUrl;
+      // Get everything after 'upload' and version (v1234567890)
+      final relevantSegments = pathSegments.sublist(uploadIndex + 2);
+      
+      // Join and remove file extension
+      final publicId = relevantSegments.join('/').split('.').first;
+      
+      return publicId;
     } catch (e) {
-      debugPrint('Error uploading image: $e');
+      debugPrint('Error extracting public_id: $e');
       return null;
     }
   }
 
-  // Upload profile picture
-  Future<String?> uploadProfilePicture(File file, String userId) async {
-    return await uploadImage(
-      file: file,
-      folder: 'sahara/profile_pictures',
-      fileName: userId,
-    );
-  }
-
-  // Upload pet picture
-  Future<String?> uploadPetPicture(File file, String petId) async {
-    return await uploadImage(
-      file: file,
-      folder: 'sahara/pet_pictures',
-      fileName: petId,
-    );
-  }
-
-  // Upload chat image
-  Future<String?> uploadChatImage(File file) async {
-    final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-    return await uploadImage(
-      file: file,
-      folder: 'sahara/chat_images',
-      fileName: 'chat_$timestamp',
-    );
-  }
-
-  // Delete image from Cloudinary
-  // Note: The cloudinary_public package doesn't support deletion.
-  // To delete images, you need to use the Cloudinary Admin API from your backend.
-  // For now, we'll just return true (images will remain in Cloudinary but won't be referenced)
-  Future<bool> deleteImage(String imageUrl) async {
-    try {
-      debugPrint('Image deletion not supported in client. Image URL: $imageUrl');
-      debugPrint('To delete images, use Cloudinary Admin API from your backend.');
-      return true; // Return true to not break the app flow
-    } catch (e) {
-      debugPrint('Error in deleteImage: $e');
-      return false;
-    }
+  /// Validate Cloudinary configuration
+  static bool isConfigured() {
+    return cloudName != 'your_cloud_name' && 
+           uploadPreset != 'your_upload_preset';
   }
 }

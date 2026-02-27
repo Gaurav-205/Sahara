@@ -1,17 +1,50 @@
-# Sahara Pet Care - Owner App
+# Sahara Pet Care - Dog Owner App
 
-A Flutter-based pet care booking platform for pet owners to find and book professional pet care services.
+A Flutter-based dog care booking platform for dog owners to find and book professional dog care services.
 
 ## ✨ Features
 
-- **Pet Management**: Add, edit, and manage your pets with photos
-- **Service Booking**: Book services (Dog Walking, Pet Sitting, Grooming, Vet Visits)
-- **Caregiver Browsing**: Browse and select from professional caregivers
+- **Dog Management**: Add, edit, and manage your dogs with photos
+- **Service Booking**: Book services (Dog Walking, Dog Sitting, Dog Grooming, Dog Training, Vet Visits)
+- **Specialized Caregivers**: Browse 12 dog care specialists with breed expertise
 - **Real-time Messaging**: Chat with caregivers
 - **Booking Tracking**: View and manage your bookings
 - **Profile Management**: Update your profile and preferences
-- **Payment Integration**: Secure payments via Razorpay
 - **Push Notifications**: Stay updated with booking status
+- **Simple Booking Flow**: No payment required - book instantly!
+
+## 🐕 Dog-Specific Services
+
+### Dog Walking
+- Quick Potty Break (15 min)
+- Basic Walk (30 min)
+- Standard Adventure (1 hour)
+- Premium Trail Experience (2 hours)
+
+### Dog Sitting
+- Basic Home Care (4 hours)
+- Full Day Care (8 hours)
+- Overnight Care (24 hours)
+- Extended Stay (multi-day)
+
+### Dog Grooming
+- Bath & Brush
+- Full Grooming
+- Luxury Spa Package
+- De-Shedding Treatment
+
+### Dog Training
+- Basic Obedience
+- Puppy Foundation
+- Advanced Training
+- Behavior Modification
+- 5-Session Package
+
+### Vet Visit Companion
+- Transportation
+- Full Companion
+- Complete Care
+- Emergency Support
 
 ## 🚀 Tech Stack
 
@@ -20,7 +53,6 @@ A Flutter-based pet care booking platform for pet owners to find and book profes
 - **Image Storage**: Cloudinary
 - **State Management**: Provider
 - **Authentication**: Email/Password + Google Sign-In
-- **Payments**: Razorpay
 - **Maps**: Google Maps
 
 ## 📁 Project Structure
@@ -47,7 +79,6 @@ flutter pub get
 ### 2. Configure Credentials
 Edit `lib/config/app_config.dart` with your credentials:
 - Cloudinary (from https://console.cloudinary.com/)
-- Razorpay (from https://dashboard.razorpay.com/)
 
 ### 3. Setup Firebase
 - Add `google-services.json` to `android/app/`
@@ -87,9 +118,13 @@ flutter run
 
 ## ⚠️ Important Notes
 
-- This is an owner-only app (caregivers are seeded data)
-- Requires Firebase, Cloudinary, and Razorpay configuration
-- Payment backend integration recommended for production
+- This is a dog owner-only app (caregivers are seeded data)
+- 12 specialized dog caregivers with breed expertise
+- 24 comprehensive dog service packages
+- Requires Firebase and Cloudinary configuration
+- No payment integration - bookings complete instantly
+- See `docs/DOG_SEED_DATA_GUIDE.md` for seed data details
+- See `PAYMENT_REMOVAL_AND_FIXES.md` for recent changes
 
 ## 📄 License
 

@@ -235,37 +235,16 @@ class FirestoreService {
     await _firestore.collection('reviews').add(review.toMap());
   }
 
-  // Create payment record
-  Future<String> createPayment(dynamic payment) async {
-    final doc = await _firestore.collection('payments').add(payment.toMap());
-    return doc.id;
-  }
-
-  // Get payment by booking ID
+  // Get payment by booking ID (deprecated - payments removed)
+  // Kept for backward compatibility
   Future<dynamic> getPaymentByBookingId(String bookingId) async {
-    try {
-      final snapshot = await _firestore
-          .collection('payments')
-          .where('bookingId', isEqualTo: bookingId)
-          .limit(1)
-          .get();
-
-      if (snapshot.docs.isNotEmpty) {
-        return snapshot.docs.first.data();
-      }
-      return null;
-    } catch (e) {
-      debugPrint('Error getting payment: $e');
-      return null;
-    }
+    return null;
   }
 
-  // Update payment status
+  // Update payment status (deprecated - payments removed)
+  // Kept for backward compatibility
   Future<void> updatePaymentStatus(String paymentId, String status) async {
-    await _firestore.collection('payments').doc(paymentId).update({
-      'status': status,
-      'updatedAt': DateTime.now().toIso8601String(),
-    });
+    // No-op
   }
 }
 

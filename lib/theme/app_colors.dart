@@ -1,55 +1,54 @@
 import 'package:flutter/material.dart';
 
-/// ZestDrop Color Palette - Clean & Modern
-/// Inspired by the ZestDrop brand with smooth blue gradients
+/// Sahara Pet Care Color Palette - Modern & Vibrant
+/// Professional pet care brand with warm, trustworthy colors
 /// 
-/// Primary: Deep Navy Blue - Professional, trustworthy, bold
-/// Secondary: Medium Blue - Balanced, approachable
-/// Accent: Sky Blue - Fresh, calming, friendly
-/// Light: Pale Blue - Soft, clean background
+/// Primary: Navy - Professional, trustworthy, stable
+/// Secondary: Orange - Energetic, friendly, warm
+/// Accent: Sky Blue - Calm, fresh, caring
 /// 
 /// This palette follows Material Design 3 principles with proper contrast ratios
 /// for accessibility (WCAG AA compliance)
 
 class AppColors {
   // ============================================================================
-  // PRIMARY COLORS - Deep Navy Blue (Professional & Bold)
+  // PRIMARY COLORS - Navy (Professional & Trustworthy)
   // ============================================================================
   
-  /// Main brand color - Deep Navy Blue
-  static const Color primary = Color(0xFF0B3D6B);
-  static const Color primaryLight = Color(0xFF1A5A8F);
-  static const Color primaryDark = Color(0xFF062847);
-  static const Color primaryContainer = Color(0xFFE3EDF7);
+  /// Main brand color - Navy
+  static const Color primary = Color(0xFF1A2332);
+  static const Color primaryLight = Color(0xFF2D3A4D);
+  static const Color primaryDark = Color(0xFF0F1419);
+  static const Color primaryContainer = Color(0xFFE8EAED);
   
   // ============================================================================
-  // SECONDARY COLORS - Medium Blue (Balanced & Approachable)
+  // SECONDARY COLORS - Orange (Energetic & Friendly)
   // ============================================================================
   
-  /// Secondary brand color - Medium Blue
-  static const Color secondary = Color(0xFF4A8FD9);
-  static const Color secondaryLight = Color(0xFF6BA8E3);
-  static const Color secondaryDark = Color(0xFF3576BD);
-  static const Color secondaryContainer = Color(0xFFE8F3FC);
+  /// Secondary brand color - Orange
+  static const Color secondary = Color(0xFFFF6B35);
+  static const Color secondaryLight = Color(0xFFFF8A5C);
+  static const Color secondaryDark = Color(0xFFE55420);
+  static const Color secondaryContainer = Color(0xFFFFE8E0);
   
   // ============================================================================
-  // ACCENT COLORS - Sky Blue (Fresh & Calming)
+  // ACCENT COLORS - Sky Blue (Calm & Fresh)
   // ============================================================================
   
   /// Accent color - Sky Blue
-  static const Color accent = Color(0xFF7DB4E8);
-  static const Color accentLight = Color(0xFF9DC7EE);
-  static const Color accentDark = Color(0xFF5C9FDB);
-  static const Color accentContainer = Color(0xFFEFF7FD);
+  static const Color accent = Color(0xFF4ECDC4);
+  static const Color accentLight = Color(0xFF72D9D1);
+  static const Color accentDark = Color(0xFF3AB5AD);
+  static const Color accentContainer = Color(0xFFE0F7F6);
   
   // ============================================================================
-  // TERTIARY COLOR - Pale Blue (Soft & Clean)
+  // TERTIARY COLOR - Warm Peach (Soft & Welcoming)
   // ============================================================================
   
-  /// Tertiary color - Pale Blue
-  static const Color tertiary = Color(0xFFD4E7F5);
-  static const Color tertiaryLight = Color(0xFFE8F3FA);
-  static const Color tertiaryDark = Color(0xFFB8D5E8);
+  /// Tertiary color - Warm Peach
+  static const Color tertiary = Color(0xFFFFD4B8);
+  static const Color tertiaryLight = Color(0xFFFFE5D4);
+  static const Color tertiaryDark = Color(0xFFFFC299);
   
   // ============================================================================
   // NEUTRAL COLORS - Cool Grays
@@ -99,37 +98,37 @@ class AppColors {
   // GRADIENT COLORS
   // ============================================================================
   
-  /// Primary gradient - Deep Navy to Medium Blue
+  /// Primary gradient - Navy shades
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF0B3D6B), Color(0xFF1A5A8F)],
+    colors: [Color(0xFF1A2332), Color(0xFF2D3A4D)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   
-  /// Secondary gradient - Medium Blue to Sky Blue
+  /// Secondary gradient - Orange shades
   static const LinearGradient secondaryGradient = LinearGradient(
-    colors: [Color(0xFF4A8FD9), Color(0xFF6BA8E3)],
+    colors: [Color(0xFFFF6B35), Color(0xFFFF8A5C)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   
-  /// Accent gradient - Sky Blue to Pale Blue
+  /// Accent gradient - Sky Blue shades
   static const LinearGradient accentGradient = LinearGradient(
-    colors: [Color(0xFF7DB4E8), Color(0xFFD4E7F5)],
+    colors: [Color(0xFF4ECDC4), Color(0xFF72D9D1)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   
-  /// Vibrant gradient - Deep Navy through all blues
+  /// Vibrant gradient - Navy to Orange to Sky Blue
   static const LinearGradient vibrantGradient = LinearGradient(
-    colors: [Color(0xFF0B3D6B), Color(0xFF4A8FD9), Color(0xFF7DB4E8)],
+    colors: [Color(0xFF1A2332), Color(0xFFFF6B35), Color(0xFF4ECDC4)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   
-  /// Neutral gradient - Pale blue to white
+  /// Neutral gradient - White to light background
   static const LinearGradient neutralGradient = LinearGradient(
-    colors: [Color(0xFFFFFFFF), Color(0xFFEFF7FD)],
+    colors: [Color(0xFFFFFFFF), Color(0xFFF8F9FA)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
@@ -139,9 +138,9 @@ class AppColors {
   // ============================================================================
   
   /// Soft shadows for elevation
-  static Color shadow = const Color(0xFF0B3D6B).withValues(alpha: 0.12);
-  static Color shadowLight = const Color(0xFF0B3D6B).withValues(alpha: 0.06);
-  static Color shadowDark = const Color(0xFF0B3D6B).withValues(alpha: 0.18);
+  static Color shadow = const Color(0xFF1A2332).withValues(alpha: 0.12);
+  static Color shadowLight = const Color(0xFF1A2332).withValues(alpha: 0.06);
+  static Color shadowDark = const Color(0xFF1A2332).withValues(alpha: 0.18);
   
   // ============================================================================
   // OVERLAY COLORS
@@ -160,7 +159,7 @@ class AppColors {
   static const Color shimmerHighlight = Color(0xFFF1F5F9);
   
   /// Rating star color
-  static const Color star = Color(0xFF4A8FD9);
+  static const Color star = Color(0xFFFFB74D);
   
   /// Online status indicator
   static const Color online = Color(0xFF10B981);

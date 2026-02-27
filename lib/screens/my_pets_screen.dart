@@ -347,7 +347,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: selectedBreed,
+                  initialValue: selectedBreed,
                   style: const TextStyle(
                     fontFamily: 'Montserrat',
                     color: AppColors.textPrimary,

@@ -476,7 +476,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
 
   /// Builds the dog selection section
   Widget _buildDogSelectionSection() {
-    final petProvider = Provider.of<PetProvider>(context);
+    final petProvider = Provider.of<PetProvider>(context, listen: false);
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

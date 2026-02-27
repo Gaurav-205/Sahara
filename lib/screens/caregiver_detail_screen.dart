@@ -393,16 +393,6 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
                 color: AppColors.textSecondary,
               ),
             ),
-            const Spacer(),
-            Text(
-              '₹${widget.caregiver.hourlyRate?.toStringAsFixed(0) ?? '0'}/hour',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Montserrat',
-                color: AppColors.secondary,
-              ),
-            ),
           ],
         ),
       ],

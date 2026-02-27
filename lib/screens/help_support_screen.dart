@@ -30,9 +30,7 @@ class HelpSupportScreen extends StatelessWidget {
               icon: Icons.email_outlined,
               title: 'Email Us',
               subtitle: 'support@sahara.com',
-              gradient: const LinearGradient(
-                colors: [AppColors.textPrimary, Color(0xFF2A2A2A)],
-              ),
+              gradient: AppColors.primaryGradient,
               onTap: () => _launchEmail('support@sahara.com'),
             ),
             const SizedBox(height: 10),
@@ -40,9 +38,7 @@ class HelpSupportScreen extends StatelessWidget {
               icon: Icons.phone_outlined,
               title: 'Call Us',
               subtitle: '+91 98765 43210',
-              gradient: const LinearGradient(
-                colors: [Color(0xFF4A4A4A), Color(0xFF6A6A6A)],
-              ),
+              gradient: AppColors.secondaryGradient,
               onTap: () => _launchPhone('+919876543210'),
             ),
             const SizedBox(height: 10),
@@ -50,9 +46,7 @@ class HelpSupportScreen extends StatelessWidget {
               icon: Icons.chat_bubble_outline_rounded,
               title: 'Live Chat',
               subtitle: 'Chat with our support team',
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6A6A6A), Color(0xFF8A8A8A)],
-              ),
+              gradient: AppColors.accentGradient,
               onTap: () => _showLiveChat(context),
             ),
             const SizedBox(height: 28),
@@ -89,10 +83,10 @@ class HelpSupportScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[200]!, width: 1),
+          border: Border.all(color: AppColors.border, width: 1),
           boxShadow: [
             BoxShadow(
-              color: AppColors.textPrimary.withValues(alpha: 0.03),
+              color: AppColors.primary.withValues(alpha: 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -126,19 +120,19 @@ class HelpSupportScreen extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                       fontFamily: 'Montserrat',
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(
+            const Icon(
               Icons.arrow_forward_ios_rounded,
               size: 16,
-              color: Colors.grey[400],
+              color: AppColors.textTertiary,
             ),
           ],
         ),
@@ -158,7 +152,7 @@ class HelpSupportScreen extends StatelessWidget {
       ),
       FAQItem(
         question: 'How do payments work?',
-        answer: 'Add a payment method in your profile. Payments are processed after the service is completed. You\'ll receive a receipt via email.',
+        answer: 'Payment integration is coming soon! Currently, bookings are confirmed without payment. You can arrange payment directly with your caregiver.',
       ),
       FAQItem(
         question: 'Are caregivers verified?',
@@ -185,10 +179,10 @@ class HelpSupportScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!, width: 1),
+        border: Border.all(color: AppColors.border, width: 1),
         boxShadow: [
           BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.03),
+            color: AppColors.primary.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -211,9 +205,9 @@ class HelpSupportScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Text(
                 faq.answer,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 13,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                   fontFamily: 'Montserrat',
                   height: 1.4,
                 ),
@@ -264,11 +258,14 @@ class HelpSupportScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.secondary,
+            ),
             child: const Text(
               'OK',
               style: TextStyle(
                 fontFamily: 'Montserrat',
-                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

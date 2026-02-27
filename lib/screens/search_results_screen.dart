@@ -186,19 +186,11 @@ class SearchResultsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '₹${caregiver.hourlyRate ?? 350}',
+                  '${caregiver.yearsOfExperience ?? 0} yrs exp',
                   style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                    fontFamily: 'Montserrat',
-                  ),
-                ),
-                Text(
-                  'per hour',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[500],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.secondary,
                     fontFamily: 'Montserrat',
                   ),
                 ),

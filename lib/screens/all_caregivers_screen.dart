@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/user_model.dart';
 import '../services/firestore_service.dart';
 import '../widgets/filter_bottom_sheet.dart';
+import '../providers/auth_provider.dart';
+import '../providers/favorites_provider.dart';
 import 'caregiver_detail_screen.dart';
 import '../theme/app_colors.dart';
 
@@ -45,12 +48,6 @@ class _AllCaregiversScreenState extends State<AllCaregiversScreen> {
   void _applyFilters(Map<String, dynamic> filters) {
     setState(() {
       _filteredCaregivers = _allCaregivers.where((caregiver) {
-        // Price filter
-        final price = caregiver.hourlyRate ?? 350;
-        if (price < filters['priceRange'].start || price > filters['priceRange'].end) {
-          return false;
-        }
-
         // Rating filter
         final rating = caregiver.rating ?? 0.0;
         if (rating < filters['rating']) {
@@ -275,25 +272,42 @@ class _AllCaregiversScreenState extends State<AllCaregiversScreen> {
                     ],
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                Row(
                   children: [
-                    Text(
-                      '₹${caregiver.hourlyRate ?? 350}',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        fontFamily: 'Montserrat',
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${caregiver.yearsOfExperience ?? 0} yrs exp',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.secondary,
+                            fontFamily: 'Montserrat',
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      'per hour',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.grey[500],
-                        fontFamily: 'Montserrat',
-                      ),
+                    Consumer<FavoritesProvider>(
+                      builder: (context, favProvider, _) {
+                        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                        final userId = authProvider.currentUser?.uid ?? '';
+                        final isFav = favProvider.isFavorite(caregiver.uid);
+                        
+                        return IconButton(
+                          icon: Icon(
+                            isFav ? Icons.favorite : Icons.favorite_border,
+                            color: isFav ? AppColors.error : AppColors.textTertiary,
+                            size: 20,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () async {
+                            if (userId.isEmpty) return;
+                            await favProvider.toggleFavorite(userId, caregiver.uid);
+                          },
+                        );
+                      },
                     ),
                   ],
                 ),

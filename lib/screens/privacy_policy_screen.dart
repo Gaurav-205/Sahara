@@ -38,9 +38,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               'Last updated: February 24, 2026',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
-                color: Colors.grey[500],
+                color: AppColors.textTertiary,
                 fontFamily: 'Montserrat',
               ),
             ),
@@ -50,7 +50,6 @@ class PrivacyPolicyScreen extends StatelessWidget {
               content: 'We collect information you provide directly to us, including:\n\n'
                   '• Account information (name, email, phone number)\n'
                   '• Pet information (name, breed, age, medical details)\n'
-                  '• Payment information (processed securely through our payment partners)\n'
                   '• Location data (when you use location-based features)\n'
                   '• Messages and communications with caregivers',
             ),
@@ -58,7 +57,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               title: '2. How We Use Your Information',
               content: 'We use the information we collect to:\n\n'
                   '• Provide, maintain, and improve our services\n'
-                  '• Process bookings and payments\n'
+                  '• Process and manage bookings\n'
                   '• Send you notifications and updates\n'
                   '• Verify caregiver credentials\n'
                   '• Respond to your requests and support needs\n'
@@ -68,7 +67,6 @@ class PrivacyPolicyScreen extends StatelessWidget {
               title: '3. Information Sharing',
               content: 'We share your information only in these circumstances:\n\n'
                   '• With caregivers when you book their services\n'
-                  '• With payment processors to complete transactions\n'
                   '• With service providers who help us operate our platform\n'
                   '• When required by law or to protect rights and safety\n'
                   '• With your consent or at your direction',
@@ -111,19 +109,27 @@ class PrivacyPolicyScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: AppColors.accentContainer,
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.accent.withValues(alpha: 0.2),
+                  width: 1,
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline_rounded, color: AppColors.textPrimary, size: 20),
+                  const Icon(
+                    Icons.info_outline_rounded,
+                    color: AppColors.accent,
+                    size: 20,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
+                    child: const Text(
                       'By using Sahara, you agree to this privacy policy and our terms of service.',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey[700],
+                        color: AppColors.textSecondary,
                         fontFamily: 'Montserrat',
                       ),
                     ),
@@ -155,9 +161,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             content,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 13,
-              color: Colors.grey[700],
+              color: AppColors.textSecondary,
               fontFamily: 'Montserrat',
               height: 1.5,
             ),
