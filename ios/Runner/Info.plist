@@ -66,5 +66,20 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Privacy Permissions -->
+	<key>NSCameraUsageDescription</key>
+	<string>Sahara needs access to your camera to take photos of your pets and upload profile pictures.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Sahara needs access to your photo library to select photos of your pets and profile pictures.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Sahara needs permission to save photos to your library.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Sahara needs your location to find nearby pet caregivers and show them on the map.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Sahara needs your location to provide location-based services even when the app is in the background.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Sahara needs your location to find nearby pet caregivers and provide location-based services.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Sahara may need microphone access for video calls with caregivers.</string>
 </dict>
 </plist>

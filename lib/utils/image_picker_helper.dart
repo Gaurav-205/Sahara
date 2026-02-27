@@ -99,7 +99,7 @@ class ImagePickerHelper {
   /// Pick multiple images from gallery
   static Future<List<File>> pickMultipleImages({int maxImages = 5}) async {
     try {
-      final List<XFile> images = await _picker.pickMultipleImages(
+      final List<XFile> images = await _picker.pickMultiImage(
         maxWidth: 1024,
         maxHeight: 1024,
         imageQuality: 85,

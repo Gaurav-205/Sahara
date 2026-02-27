@@ -62,7 +62,7 @@ class FavoritesProvider with ChangeNotifier {
       for (final id in caregiverIds) {
         final doc = await _firestore.collection('users').doc(id).get();
         if (doc.exists) {
-          caregivers.add(UserModel.fromFirestore(doc));
+          caregivers.add(UserModel.fromMap(doc.data()!, doc.id));
         }
       }
 

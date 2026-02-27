@@ -2,20 +2,14 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import '../config/app_config.dart';
 
 /// Cloudinary Service
 /// Handles image uploads to Cloudinary
 class CloudinaryService {
-  // Get from .env file
-  static const String cloudName = String.fromEnvironment(
-    'CLOUDINARY_CLOUD_NAME',
-    defaultValue: 'your_cloud_name',
-  );
-  
-  static const String uploadPreset = String.fromEnvironment(
-    'CLOUDINARY_UPLOAD_PRESET',
-    defaultValue: 'your_upload_preset',
-  );
+  // Get from app_config.dart (which reads from .env or uses defaults)
+  static String get cloudName => AppConfig.cloudinaryCloudName;
+  static String get uploadPreset => AppConfig.cloudinaryUploadPreset;
 
   /// Upload image to Cloudinary
   /// Returns the secure URL of the uploaded image
@@ -116,7 +110,6 @@ class CloudinaryService {
 
   /// Validate Cloudinary configuration
   static bool isConfigured() {
-    return cloudName != 'your_cloud_name' && 
-           uploadPreset != 'your_upload_preset';
+    return AppConfig.isCloudinaryConfigured;
   }
 }

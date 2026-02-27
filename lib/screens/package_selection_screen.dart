@@ -78,6 +78,38 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
   
   /// Package service instance
   final PackageService _packageService = PackageService();
+  
+  /// Cached packages list to avoid refetching on setState
+  List<ServicePackageModel>? _cachedPackages;
+  
+  /// Loading state
+  bool _isLoading = true;
+
+  // ============================================================================
+  // LIFECYCLE METHODS
+  // ============================================================================
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadPackages();
+  }
+  
+  /// Load packages once and cache them
+  Future<void> _loadPackages() async {
+    try {
+      final packages = await _packageService.getPackagesForService(widget.serviceType);
+      setState(() {
+        _cachedPackages = packages;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _cachedPackages = [];
+        _isLoading = false;
+      });
+    }
+  }
 
   // ============================================================================
   // BUILD METHOD
@@ -104,97 +136,95 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
         ),
       ),
       body: SafeArea(
-        child: FutureBuilder<List<ServicePackageModel>>(
-          future: _packageService.getPackagesForService(widget.serviceType),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
+        child: _isLoading
+            ? const Center(
                 child: CircularProgressIndicator(color: AppColors.primary),
-              );
-            }
-
-            final packages = snapshot.data ?? [];
-            
-            if (packages.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No packages available',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[700],
-                        fontFamily: 'Montserrat',
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Please check back later',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[500],
-                        fontFamily: 'Montserrat',
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            return Column(
-              children: [
-                // Scrollable package list
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header title
-                        const Text(
-                          'Choose Your Package',
-                          style: TextStyle(
-                            fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        fontFamily: 'Montserrat',
-                        letterSpacing: -0.4,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    
-                    // Subtitle
-                    Text(
-                      'Select the package that best fits your needs',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                        fontFamily: 'Montserrat',
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // Package cards list
-                    ...packages.map((package) => Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: _buildPackageCard(package),
-                    )),
-                  ],
-                ),
+              )
+            : _buildContent(),
+      ),
+    );
+  }
+  
+  /// Build main content with cached packages
+  Widget _buildContent() {
+    final packages = _cachedPackages ?? [];
+    
+    if (packages.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'No packages available',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+                fontFamily: 'Montserrat',
               ),
             ),
-            
-            // Sticky bottom bar with continue button (only shown when package selected)
-            if (_selectedPackage != null) _buildContinueButton(),
+            const SizedBox(height: 8),
+            Text(
+              'Please check back later',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+                fontFamily: 'Montserrat',
+              ),
+            ),
           ],
-        );
-          },
         ),
-      ),
+      );
+    }
+
+    return Column(
+      children: [
+        // Scrollable package list
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header title
+                const Text(
+                  'Choose Your Package',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                    fontFamily: 'Montserrat',
+                    letterSpacing: -0.4,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                
+                // Subtitle
+                Text(
+                  'Select the package that best fits your needs',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                    fontFamily: 'Montserrat',
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                // Package cards list
+                ...packages.map((package) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _buildPackageCard(package),
+                )),
+              ],
+            ),
+          ),
+        ),
+        
+        // Sticky bottom bar with continue button (only shown when package selected)
+        if (_selectedPackage != null) _buildContinueButton(),
+      ],
     );
   }
 
