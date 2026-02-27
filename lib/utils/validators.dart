@@ -405,6 +405,314 @@ class Validators {
   }
   
   // ============================================================================
+  // PET-SPECIFIC VALIDATORS
+  // ============================================================================
+  
+  /// Validates pet name
+  static String? validatePetName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Pet name is required';
+    }
+    
+    value = value.trim();
+    
+    if (value.length < 2) {
+      return 'Pet name must be at least 2 characters';
+    }
+    
+    if (value.length > 30) {
+      return 'Pet name must be less than 30 characters';
+    }
+    
+    // Allow letters, spaces, hyphens, apostrophes
+    final nameRegex = RegExp(r"^[\p{L}\s\-']+$", unicode: true);
+    
+    if (!nameRegex.hasMatch(value)) {
+      return 'Pet name can only contain letters, spaces, hyphens, and apostrophes';
+    }
+    
+    return null;
+  }
+  
+  /// Validates pet breed
+  static String? validateBreed(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Breed is required';
+    }
+    
+    value = value.trim();
+    
+    if (value.length < 2) {
+      return 'Breed must be at least 2 characters';
+    }
+    
+    if (value.length > 50) {
+      return 'Breed must be less than 50 characters';
+    }
+    
+    return null;
+  }
+  
+  /// Validates pet age
+  static String? validateAge(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Age is required';
+    }
+    
+    final age = int.tryParse(value);
+    
+    if (age == null) {
+      return 'Age must be a number';
+    }
+    
+    if (age < 0) {
+      return 'Age cannot be negative';
+    }
+    
+    if (age > 30) {
+      return 'Please enter a valid age (0-30 years)';
+    }
+    
+    return null;
+  }
+  
+  /// Validates pet weight
+  static String? validateWeight(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Weight is required';
+    }
+    
+    final weight = double.tryParse(value);
+    
+    if (weight == null) {
+      return 'Weight must be a number';
+    }
+    
+    if (weight <= 0) {
+      return 'Weight must be greater than 0';
+    }
+    
+    if (weight > 200) {
+      return 'Please enter a valid weight (0-200 kg)';
+    }
+    
+    return null;
+  }
+  
+  /// Validates pet description
+  static String? validateDescription(String? value, {bool required = false}) {
+    if (required && (value == null || value.trim().isEmpty)) {
+      return 'Description is required';
+    }
+    
+    if (value != null && value.trim().isNotEmpty) {
+      if (value.length < 10) {
+        return 'Description must be at least 10 characters';
+      }
+      
+      if (value.length > 500) {
+        return 'Description must be less than 500 characters';
+      }
+    }
+    
+    return null;
+  }
+  
+  // ============================================================================
+  // BOOKING-SPECIFIC VALIDATORS
+  // ============================================================================
+  
+  /// Validates service price
+  static String? validatePrice(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Price is required';
+    }
+    
+    final price = double.tryParse(value);
+    
+    if (price == null) {
+      return 'Price must be a number';
+    }
+    
+    if (price < 0) {
+      return 'Price cannot be negative';
+    }
+    
+    if (price > 10000) {
+      return 'Please enter a valid price';
+    }
+    
+    return null;
+  }
+  
+  /// Validates date (not in the past)
+  static String? validateFutureDate(DateTime? value) {
+    if (value == null) {
+      return 'Date is required';
+    }
+    
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final selectedDate = DateTime(value.year, value.month, value.day);
+    
+    if (selectedDate.isBefore(today)) {
+      return 'Date cannot be in the past';
+    }
+    
+    // Check if date is too far in the future (1 year)
+    final oneYearFromNow = today.add(const Duration(days: 365));
+    if (selectedDate.isAfter(oneYearFromNow)) {
+      return 'Date cannot be more than 1 year in the future';
+    }
+    
+    return null;
+  }
+  
+  /// Validates time slot
+  static String? validateTimeSlot(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Time slot is required';
+    }
+    
+    return null;
+  }
+  
+  /// Validates address
+  static String? validateAddress(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Address is required';
+    }
+    
+    value = value.trim();
+    
+    if (value.length < 10) {
+      return 'Address must be at least 10 characters';
+    }
+    
+    if (value.length > 200) {
+      return 'Address must be less than 200 characters';
+    }
+    
+    return null;
+  }
+  
+  /// Validates special instructions
+  static String? validateSpecialInstructions(String? value) {
+    if (value != null && value.trim().isNotEmpty) {
+      if (value.length > 500) {
+        return 'Special instructions must be less than 500 characters';
+      }
+    }
+    
+    return null;
+  }
+  
+  // ============================================================================
+  // CAREGIVER-SPECIFIC VALIDATORS
+  // ============================================================================
+  
+  /// Validates experience years
+  static String? validateExperience(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Experience is required';
+    }
+    
+    final years = int.tryParse(value);
+    
+    if (years == null) {
+      return 'Experience must be a number';
+    }
+    
+    if (years < 0) {
+      return 'Experience cannot be negative';
+    }
+    
+    if (years > 50) {
+      return 'Please enter valid years of experience';
+    }
+    
+    return null;
+  }
+  
+  /// Validates hourly rate
+  static String? validateHourlyRate(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Hourly rate is required';
+    }
+    
+    final rate = double.tryParse(value);
+    
+    if (rate == null) {
+      return 'Hourly rate must be a number';
+    }
+    
+    if (rate < 0) {
+      return 'Hourly rate cannot be negative';
+    }
+    
+    if (rate > 1000) {
+      return 'Please enter a valid hourly rate';
+    }
+    
+    return null;
+  }
+  
+  /// Validates bio/about section
+  static String? validateBio(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Bio is required';
+    }
+    
+    value = value.trim();
+    
+    if (value.length < 50) {
+      return 'Bio must be at least 50 characters';
+    }
+    
+    if (value.length > 1000) {
+      return 'Bio must be less than 1000 characters';
+    }
+    
+    return null;
+  }
+  
+  // ============================================================================
+  // RATING & REVIEW VALIDATORS
+  // ============================================================================
+  
+  /// Validates rating value
+  static String? validateRating(double? value) {
+    if (value == null) {
+      return 'Rating is required';
+    }
+    
+    if (value < 1 || value > 5) {
+      return 'Rating must be between 1 and 5';
+    }
+    
+    return null;
+  }
+  
+  /// Validates review text
+  static String? validateReview(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Review is required';
+    }
+    
+    value = value.trim();
+    
+    if (value.length < 10) {
+      return 'Review must be at least 10 characters';
+    }
+    
+    if (value.length > 500) {
+      return 'Review must be less than 500 characters';
+    }
+    
+    return null;
+  }
+  
+  // ============================================================================
   // CUSTOM VALIDATORS
   // ============================================================================
   

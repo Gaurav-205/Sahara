@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 
 class AuthService {
@@ -100,11 +101,16 @@ class AuthService {
       
       if (googleUser == null) {
         // User canceled the sign-in
+        print('Google Sign-In: User canceled');
         return null;
       }
 
+      print('Google Sign-In: User selected - ${googleUser.email}');
+
       // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      
+      print('Google Sign-In: Got authentication tokens');
 
       // Create a new credential
       final credential = GoogleAuthProvider.credential(
@@ -112,18 +118,24 @@ class AuthService {
         idToken: googleAuth.idToken,
       );
 
+      print('Google Sign-In: Created Firebase credential');
+
       // Sign in to Firebase with the Google credential
       final userCredential = await _auth.signInWithCredential(credential);
       final user = userCredential.user!;
+
+      print('Google Sign-In: Firebase authentication successful - ${user.uid}');
 
       // Check if user already exists in Firestore
       final doc = await _firestore.collection('users').doc(user.uid).get();
 
       if (doc.exists) {
         // User exists, return existing data
+        print('Google Sign-In: Existing user found');
         return UserModel.fromMap(doc.data()!, doc.id);
       } else {
         // New user, create profile
+        print('Google Sign-In: Creating new user profile');
         final newUser = UserModel(
           uid: user.uid,
           email: user.email!,
@@ -136,34 +148,42 @@ class AuthService {
         );
 
         await _firestore.collection('users').doc(newUser.uid).set(newUser.toMap());
+        print('Google Sign-In: New user profile created');
         return newUser;
       }
     } on FirebaseAuthException catch (e) {
+      print('Google Sign-In FirebaseAuthException: ${e.code} - ${e.message}');
       switch (e.code) {
         case 'account-exists-with-different-credential':
           throw Exception('An account already exists with a different sign-in method');
         case 'invalid-credential':
           throw Exception('Invalid credentials. Please try again');
         case 'operation-not-allowed':
-          throw Exception('Google Sign-In is not enabled');
+          throw Exception('Google Sign-In is not enabled in Firebase Console');
         case 'user-disabled':
           throw Exception('This account has been disabled');
         default:
           throw Exception('Google Sign-In failed: ${e.message}');
       }
     } catch (e) {
+      print('Google Sign-In Error: $e');
       throw Exception('Google Sign-In failed: $e');
     }
   }
 
   Future<UserModel?> getUserData(String uid) async {
     try {
+      debugPrint('📥 Fetching user data from Firestore for UID: $uid');
       final doc = await _firestore.collection('users').doc(uid).get();
       if (doc.exists) {
-        return UserModel.fromMap(doc.data()!, doc.id);
+        final data = doc.data()!;
+        debugPrint('📥 User data fetched - photoUrl: ${data['photoUrl']}');
+        return UserModel.fromMap(data, doc.id);
       }
+      debugPrint('⚠️  User document does not exist');
       return null;
     } catch (e) {
+      debugPrint('❌ Failed to get user data: $e');
       throw Exception('Failed to get user data: $e');
     }
   }
@@ -187,8 +207,12 @@ class AuthService {
 
   Future<void> updateUserProfile(String uid, Map<String, dynamic> data) async {
     try {
+      debugPrint('💾 Updating user profile in Firestore for UID: $uid');
+      debugPrint('💾 Update data: $data');
       await _firestore.collection('users').doc(uid).update(data);
+      debugPrint('✅ User profile updated successfully in Firestore');
     } catch (e) {
+      debugPrint('❌ Failed to update profile: $e');
       throw Exception('Failed to update profile: $e');
     }
   }

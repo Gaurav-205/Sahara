@@ -136,11 +136,15 @@ class AuthProvider with ChangeNotifier {
   Future<void> refreshUser() async {
     if (_currentUser != null) {
       try {
+        debugPrint('🔄 Refreshing user data for UID: ${_currentUser!.uid}');
         _currentUser = await _authService.getUserData(_currentUser!.uid);
+        debugPrint('✅ User data refreshed - photoUrl: ${_currentUser?.photoUrl}');
         notifyListeners();
       } catch (e) {
-        debugPrint('Error refreshing user data: $e');
+        debugPrint('❌ Error refreshing user data: $e');
       }
+    } else {
+      debugPrint('⚠️  Cannot refresh user - no current user');
     }
   }
 

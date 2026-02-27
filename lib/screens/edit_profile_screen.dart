@@ -4,9 +4,12 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../providers/auth_provider.dart';
 import '../services/sound_service.dart';
+import '../services/storage_service.dart';
+import '../services/permission_service.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../theme/app_colors.dart';
+import '../utils/validators.dart';
 
 /// Edit Profile Screen
 /// 
@@ -57,8 +60,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _phoneController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
   final SoundService _soundService = SoundService();
+  final StorageService _storageService = StorageService();
+  final PermissionService _permissionService = PermissionService();
   bool _isLoading = false;
+  bool _isUploadingImage = false;
   String? _selectedImagePath;
+  String? _uploadedImageUrl;
 
   // ============================================================================
   // LIFECYCLE METHODS
@@ -102,16 +109,43 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           throw Exception('No user logged in');
         }
 
+        // Upload image if selected
+        String? photoUrl = _uploadedImageUrl ?? currentUser.photoUrl;
+        if (_selectedImagePath != null && _uploadedImageUrl == null) {
+          setState(() {
+            _isUploadingImage = true;
+          });
+          
+          final file = File(_selectedImagePath!);
+          photoUrl = await _storageService.uploadProfilePicture(file, currentUser.uid);
+          
+          setState(() {
+            _isUploadingImage = false;
+            _uploadedImageUrl = photoUrl;
+          });
+          
+          if (photoUrl == null) {
+            throw Exception('Failed to upload profile picture');
+          }
+        }
+
         // Prepare update data
         final updateData = {
           'name': _nameController.text.trim(),
           'email': _emailController.text.trim(),
           'phone': _phoneController.text.trim(),
+          if (photoUrl != null) 'photoUrl': photoUrl,
           'updatedAt': DateTime.now().toIso8601String(),
         };
 
+        debugPrint('💾 Saving profile with data: $updateData');
+        debugPrint('💾 PhotoUrl being saved: $photoUrl');
+
         // Update in Firestore
         await authProvider.updateUserProfile(updateData);
+
+        debugPrint('✅ Profile updated in Firestore');
+        debugPrint('🔄 Refreshing user data...');
 
         if (!mounted) return;
 
@@ -135,6 +169,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
         setState(() {
           _isLoading = false;
+          _isUploadingImage = false;
         });
 
         _soundService.playError();
@@ -152,21 +187,90 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  /// Picks an image from the gallery
-  Future<void> _pickImage() async {
+  /// Shows image source selection dialog
+  Future<void> _showImageSourceDialog() async {
     _soundService.playTap();
     
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Choose Image Source',
+          style: TextStyle(
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: AppColors.primary),
+              title: const Text(
+                'Camera',
+                style: TextStyle(fontFamily: 'Montserrat'),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: AppColors.primary),
+              title: const Text(
+                'Gallery',
+                style: TextStyle(fontFamily: 'Montserrat'),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Picks an image from camera or gallery
+  Future<void> _pickImage(ImageSource source) async {
     try {
+      // Request appropriate permission
+      bool hasPermission = false;
+      if (source == ImageSource.camera) {
+        hasPermission = await _permissionService.requestCameraPermission(context);
+      } else {
+        hasPermission = await _permissionService.requestPhotosPermission(context);
+      }
+      
+      if (!hasPermission) {
+        if (!mounted) return;
+        _soundService.playError();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              source == ImageSource.camera
+                  ? 'Camera permission is required to take photos'
+                  : 'Photo library permission is required to select images',
+            ),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+
       final XFile? image = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 75,
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
       );
 
       if (image != null) {
         setState(() {
           _selectedImagePath = image.path;
+          _uploadedImageUrl = null; // Reset uploaded URL
         });
 
         if (!mounted) return;
@@ -175,8 +279,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Image selected! Save to update profile.'),
+            content: Text('Image selected! Tap Save to update profile.'),
             backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -189,6 +294,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         SnackBar(
           content: Text('Error picking image: $e'),
           backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -249,33 +355,69 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   /// Builds the profile photo with camera button
   Widget _buildProfilePhoto() {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final currentUser = authProvider.currentUser;
+    
     return Stack(
       children: [
-        CircleAvatar(
-          radius: 60,
-          backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-          backgroundImage: _selectedImagePath != null 
-              ? FileImage(File(_selectedImagePath!)) as ImageProvider
-              : null,
-          child: _selectedImagePath == null
-              ? const Icon(
-                  Icons.person,
-                  size: 60,
-                  color: AppColors.primary,
-                )
-              : null,
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.2),
+              width: 3,
+            ),
+          ),
+          child: CircleAvatar(
+            radius: 60,
+            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+            backgroundImage: _selectedImagePath != null 
+                ? FileImage(File(_selectedImagePath!)) as ImageProvider
+                : (currentUser?.photoUrl != null && currentUser!.photoUrl!.isNotEmpty)
+                    ? NetworkImage(currentUser.photoUrl!)
+                    : null,
+            child: (_selectedImagePath == null && 
+                   (currentUser?.photoUrl == null || currentUser!.photoUrl!.isEmpty))
+                ? const Icon(
+                    Icons.person,
+                    size: 60,
+                    color: AppColors.primary,
+                  )
+                : null,
+          ),
         ),
+        if (_isUploadingImage)
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.black.withValues(alpha: 0.5),
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+            ),
+          ),
         Positioned(
           bottom: 0,
           right: 0,
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.primary,
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: IconButton(
               icon: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
-              onPressed: _pickImage,
+              onPressed: _isUploadingImage ? null : _showImageSourceDialog,
             ),
           ),
         ),
@@ -293,12 +435,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       controller: _nameController,
       labelText: 'Full Name',
       prefixIcon: Icons.person_outline,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter your name';
-        }
-        return null;
-      },
+      validator: Validators.validateName,
     );
   }
 
@@ -309,17 +446,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       labelText: 'Email',
       prefixIcon: Icons.email_outlined,
       keyboardType: TextInputType.emailAddress,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter your email';
-        }
-        // Email regex pattern
-        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-        if (!emailRegex.hasMatch(value)) {
-          return 'Please enter a valid email';
-        }
-        return null;
-      },
+      validator: Validators.validateEmail,
     );
   }
 
@@ -331,14 +458,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       prefixIcon: Icons.phone_outlined,
       keyboardType: TextInputType.phone,
       validator: (value) {
-        if (value != null && value.isNotEmpty) {
-          // Phone number regex (10-15 digits, optional + prefix)
-          final phoneRegex = RegExp(r'^\+?[\d\s\-\(\)]{10,15}$');
-          if (!phoneRegex.hasMatch(value)) {
-            return 'Please enter a valid phone number';
-          }
+        // Phone is optional
+        if (value == null || value.trim().isEmpty) {
+          return null;
         }
-        return null;
+        return Validators.validatePhone(value);
       },
     );
   }

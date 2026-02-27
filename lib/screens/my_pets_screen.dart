@@ -343,7 +343,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
                       borderSide: const BorderSide(color: AppColors.primary, width: 2),
                     ),
                   ),
-                  validator: (value) => Validators.validateRequired(value, 'Dog name'),
+                  validator: Validators.validatePetName,
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
@@ -438,16 +438,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
                     ),
                   ),
                   keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter age';
-                    }
-                    final age = int.tryParse(value);
-                    if (age == null || age < 0 || age > 50) {
-                      return 'Please enter a valid age (0-50)';
-                    }
-                    return null;
-                  },
+                  validator: Validators.validateAge,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -474,16 +465,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
                     ),
                   ),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter weight';
-                    }
-                    final weight = double.tryParse(value);
-                    if (weight == null || weight <= 0 || weight > 200) {
-                      return 'Please enter a valid weight (0-200 kg)';
-                    }
-                    return null;
-                  },
+                  validator: Validators.validateWeight,
                 ),
               ],
             ),
@@ -493,10 +475,11 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
           TextButton(
             onPressed: () {
               _soundService.playTap();
+              Navigator.pop(context);
+              // Dispose controllers after navigation
               nameController.dispose();
               ageController.dispose();
               weightController.dispose();
-              Navigator.pop(context);
             },
             child: const Text(
               'Cancel',
@@ -508,87 +491,119 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                _soundService.playTap();
-                
-                final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                final petProvider = Provider.of<PetProvider>(context, listen: false);
-                final navigator = Navigator.of(context);
-                final messenger = ScaffoldMessenger.of(context);
-                
-                if (authProvider.currentUser == null) {
-                  debugPrint('ERROR: No authenticated user');
-                  navigator.pop();
-                  return;
+              if (!formKey.currentState!.validate()) {
+                _soundService.playError();
+                return;
+              }
+              
+              _soundService.playTap();
+              
+              // Get values before any async operations
+              final name = nameController.text.trim();
+              final age = int.tryParse(ageController.text);
+              final weight = double.tryParse(weightController.text);
+              
+              if (age == null || weight == null) {
+                _soundService.playError();
+                return;
+              }
+              
+              // Get providers and context references before async
+              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+              final petProvider = Provider.of<PetProvider>(context, listen: false);
+              
+              if (authProvider.currentUser == null) {
+                debugPrint('ERROR: No authenticated user');
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please log in to add pets'),
+                      backgroundColor: AppColors.error,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
                 }
-                
-                debugPrint('Creating dog object - isEditing: $isEditing');
-                
-                final petData = PetModel(
-                  id: isEditing ? existingPet.id : '', // Empty ID for new dogs, Firebase will generate
-                  ownerId: authProvider.currentUser!.uid,
-                  name: nameController.text.trim(),
-                  type: 'Dog', // Always Dog now
-                  breed: selectedBreed,
-                  age: int.parse(ageController.text),
-                  weight: double.parse(weightController.text),
-                  createdAt: isEditing ? existingPet.createdAt : DateTime.now(),
-                  updatedAt: DateTime.now(),
-                  isNeutered: false,
-                );
-                
-                debugPrint('Dog data created - ID: "${petData.id}", Name: ${petData.name}, Breed: ${petData.breed}, isEditing: $isEditing');
-
-                bool success;
-                if (isEditing) {
-                  debugPrint('Calling updatePet with ID: ${petData.id}');
-                  success = await petProvider.updatePet(petData);
-                } else {
-                  debugPrint('Calling addPet (ID should be empty): "${petData.id}"');
-                  success = await petProvider.addPet(petData);
-                }
-
                 nameController.dispose();
                 ageController.dispose();
                 weightController.dispose();
-                
-                if (!mounted) return;
-                
-                navigator.pop();
+                return;
+              }
+              
+              debugPrint('Creating dog object - isEditing: $isEditing');
+              
+              final petData = PetModel(
+                id: isEditing ? existingPet.id : '',
+                ownerId: authProvider.currentUser!.uid,
+                name: name,
+                type: 'Dog',
+                breed: selectedBreed,
+                age: age,
+                weight: weight,
+                createdAt: isEditing ? existingPet.createdAt : DateTime.now(),
+                updatedAt: DateTime.now(),
+                isNeutered: false,
+              );
+              
+              debugPrint('Dog data: ID="${petData.id}", Name=${petData.name}, Breed=${petData.breed}');
 
-                if (success) {
-                  _soundService.playSuccess();
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        isEditing 
-                            ? '${petData.name} updated successfully!' 
-                            : '${petData.name} added successfully!',
-                      ),
-                      backgroundColor: AppColors.success,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  );
+              // Close dialog and dispose controllers
+              if (mounted) {
+                Navigator.of(context).pop();
+              }
+              
+              nameController.dispose();
+              ageController.dispose();
+              weightController.dispose();
+
+              // Perform async operation
+              bool success;
+              try {
+                if (isEditing) {
+                  debugPrint('Updating pet with ID: ${petData.id}');
+                  success = await petProvider.updatePet(petData);
                 } else {
-                  _soundService.playError();
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        petProvider.errorMessage ?? 'Failed to save pet',
-                      ),
-                      backgroundColor: AppColors.error,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  );
+                  debugPrint('Adding new pet');
+                  success = await petProvider.addPet(petData);
                 }
+              } catch (e) {
+                debugPrint('Error saving pet: $e');
+                success = false;
+              }
+              
+              // Show feedback
+              if (!mounted) return;
+
+              if (success) {
+                _soundService.playSuccess();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      isEditing 
+                          ? '$name updated successfully!' 
+                          : '$name added successfully!',
+                    ),
+                    backgroundColor: AppColors.success,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                );
               } else {
                 _soundService.playError();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      petProvider.errorMessage ?? 'Failed to save pet',
+                    ),
+                    backgroundColor: AppColors.error,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                );
               }
             },
             style: ElevatedButton.styleFrom(

@@ -6,7 +6,7 @@ import '../services/firestore_service.dart';
 import '../models/user_model.dart';
 import '../widgets/filter_bottom_sheet.dart';
 import 'caregiver_detail_screen.dart';
-import 'profile_screen.dart';
+import 'profile_screen_enhanced.dart';
 import 'bookings_screen.dart';
 import 'all_caregivers_screen.dart';
 import 'search_results_screen.dart';
@@ -1029,7 +1029,8 @@ class _HomeTabState extends State<HomeTab> {
                     if (userId.isEmpty) return;
                     
                     final success = await favProvider.toggleFavorite(userId, caregiver.uid);
-                    if (success && mounted) {
+                    if (success) {
+                      if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(

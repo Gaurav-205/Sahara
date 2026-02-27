@@ -1171,7 +1171,7 @@ class _ServicePackageSelectionScreenState extends State<_ServicePackageSelection
                     const Icon(Icons.star, size: 14, color: AppColors.star),
                     const SizedBox(width: 4),
                     Text(
-                      '${widget.caregiver.rating?.toStringAsFixed(1) ?? 'N/A'}',
+                      widget.caregiver.rating?.toStringAsFixed(1) ?? 'N/A',
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,

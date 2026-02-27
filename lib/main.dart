@@ -10,7 +10,7 @@ import 'providers/booking_provider.dart';
 import 'providers/pet_provider.dart';
 import 'providers/caregiver_provider.dart';
 import 'providers/favorites_provider.dart';
-import 'screens/splash_screen.dart';
+import 'screens/splash_screen_enhanced.dart';
 import 'services/notification_service.dart';
 
 void main() async {
