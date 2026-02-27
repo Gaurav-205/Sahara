@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/auth_provider.dart';
 import '../providers/favorites_provider.dart';
 import '../services/firestore_service.dart';
@@ -10,7 +11,6 @@ import 'profile_screen_enhanced.dart';
 import 'bookings_screen.dart';
 import 'all_caregivers_screen.dart';
 import 'search_results_screen.dart';
-import 'notifications_screen.dart';
 import 'service_selection_screen.dart';
 import 'package_selection_screen.dart';
 import 'my_pets_screen.dart';
@@ -162,9 +162,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           child: SafeArea(
             top: false,
             child: SizedBox(
-              height: 68,
+              height: 75,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -570,73 +570,46 @@ class _HomeTabState extends State<HomeTab> {
   // UI BUILDER METHODS
   // ============================================================================
 
-  /// Build header with greeting and notification button
+  /// Build header with greeting
   Widget _buildHeader(String userName) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        'Hello, $userName!',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                          letterSpacing: -0.5,
-                          fontFamily: 'Montserrat',
-                          height: 1.2,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    const Icon(
-                      Icons.waving_hand_rounded,
-                      size: 22,
-                      color: Color(0xFFFFB74D),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Find perfect care for your pet',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  'Hello, $userName!',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.5,
                     fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w400,
+                    height: 1.2,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 6),
+              const Icon(
+                Icons.waving_hand_rounded,
+                size: 22,
+                color: Color(0xFFFFB74D),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: AppColors.accent,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.notifications_outlined),
-              color: Colors.white,
-              iconSize: 20,
-              padding: EdgeInsets.zero,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-                );
-              },
+          const SizedBox(height: 6),
+          Text(
+            'Find perfect care for your pet',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w400,
             ),
           ),
         ],
@@ -647,9 +620,9 @@ class _HomeTabState extends State<HomeTab> {
   /// Build search bar with filter button
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
       child: Container(
-        height: 48,
+        height: 52,
         decoration: BoxDecoration(
           color: Colors.grey[100],
           borderRadius: BorderRadius.circular(12),
@@ -743,9 +716,9 @@ class _HomeTabState extends State<HomeTab> {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 2.0,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.9,
             ),
             itemCount: services.length,
             itemBuilder: (context, index) {
@@ -773,7 +746,7 @@ class _HomeTabState extends State<HomeTab> {
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -789,19 +762,19 @@ class _HomeTabState extends State<HomeTab> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(9),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: service.color,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(service.icon, size: 18, color: Colors.white),
+              child: Icon(service.icon, size: 20, color: Colors.white),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 service.title,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                   fontFamily: 'Montserrat',
@@ -952,7 +925,7 @@ class _HomeTabState extends State<HomeTab> {
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -968,15 +941,38 @@ class _HomeTabState extends State<HomeTab> {
         child: Row(
           children: [
             Container(
-              width: 52,
-              height: 52,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 color: AppColors.primary,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.person_rounded, size: 26, color: Colors.white),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: caregiver.photoUrl != null && caregiver.photoUrl!.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: caregiver.photoUrl!,
+                        fit: BoxFit.cover,
+                        width: 56,
+                        height: 56,
+                        placeholder: (context, url) => Container(
+                          color: AppColors.primary,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) {
+                          debugPrint('Error loading caregiver image: $error');
+                          return const Icon(Icons.person_rounded, size: 28, color: Colors.white);
+                        },
+                      )
+                    : const Icon(Icons.person_rounded, size: 28, color: Colors.white),
+              ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -984,7 +980,7 @@ class _HomeTabState extends State<HomeTab> {
                   Text(
                     displayName,
                     style: const TextStyle(
-                      fontSize: 15,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                       fontFamily: 'Montserrat',
@@ -995,13 +991,13 @@ class _HomeTabState extends State<HomeTab> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.star_rounded, size: 13, color: AppColors.warning),
+                      const Icon(Icons.star_rounded, size: 14, color: AppColors.warning),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
                           '$displayRating • $displayWalks bookings',
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 13,
                             color: AppColors.textSecondary,
                             fontFamily: 'Montserrat',
                           ),
@@ -1226,7 +1222,7 @@ class _HomeTabState extends State<HomeTab> {
               },
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -1242,19 +1238,19 @@ class _HomeTabState extends State<HomeTab> {
                 child: Row(
                   children: [
                     Container(
-                      width: 42,
-                      height: 42,
+                      width: 46,
+                      height: 46,
                       decoration: BoxDecoration(
                         color: AppColors.accent,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(11),
                       ),
                       child: Icon(
                         tip['icon'] as IconData,
-                        size: 20,
+                        size: 22,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1262,17 +1258,17 @@ class _HomeTabState extends State<HomeTab> {
                           Text(
                             tip['title'] as String,
                             style: const TextStyle(
-                              fontSize: 14,
+                              fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary,
                               fontFamily: 'Montserrat',
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 3),
                           Text(
                             tip['description'] as String,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 13,
                               color: Colors.grey[600],
                               fontFamily: 'Montserrat',
                             ),
@@ -1282,7 +1278,7 @@ class _HomeTabState extends State<HomeTab> {
                     ),
                     Icon(
                       Icons.arrow_forward_ios_rounded,
-                      size: 14,
+                      size: 16,
                       color: Colors.grey[400],
                     ),
                   ],
@@ -1300,31 +1296,24 @@ class _HomeTabState extends State<HomeTab> {
     final testimonials = [
       {
         'name': 'Priya Malhotra',
-        'location': 'Koramangala, Bengaluru',
+        'location': 'Koregaon Park, Pune',
         'rating': '5.0',
         'text': 'Absolutely wonderful! My Golden Retriever Bruno loves his daily walks with Rahul. Very punctual and sends photo updates every time.',
-        'avatar': Icons.person_rounded,
+        'photoUrl': 'https://xsgames.co/randomusers/assets/avatars/female/32.jpg',
       },
       {
         'name': 'Arjun Reddy',
-        'location': 'Bandra, Mumbai',
+        'location': 'Baner, Pune',
         'rating': '5.0',
         'text': 'Best dog sitting service! Anjali took amazing care of my Labrador during my vacation. She even sent videos of playtime. Highly recommended!',
-        'avatar': Icons.person_rounded,
+        'photoUrl': 'https://xsgames.co/randomusers/assets/avatars/male/45.jpg',
       },
       {
         'name': 'Sneha Kapoor',
-        'location': 'Indiranagar, Bengaluru',
+        'location': 'Viman Nagar, Pune',
         'rating': '4.9',
         'text': 'My Pug Momo was anxious at first, but the caregiver was so patient and gentle. Now Momo gets excited whenever she sees her!',
-        'avatar': Icons.person_rounded,
-      },
-      {
-        'name': 'Vikram Singh',
-        'location': 'Gurgaon, Delhi NCR',
-        'rating': '5.0',
-        'text': 'Professional grooming service for my Husky. They understood his thick coat needs perfectly. He looks and feels amazing!',
-        'avatar': Icons.person_rounded,
+        'photoUrl': 'https://xsgames.co/randomusers/assets/avatars/female/58.jpg',
       },
     ];
 
@@ -1362,7 +1351,7 @@ class _HomeTabState extends State<HomeTab> {
               },
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -1381,19 +1370,40 @@ class _HomeTabState extends State<HomeTab> {
                     Row(
                       children: [
                         Container(
-                          width: 40,
-                          height: 40,
+                          width: 44,
+                          height: 44,
                           decoration: BoxDecoration(
                             color: AppColors.secondary,
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(11),
                           ),
-                          child: Icon(
-                            testimonial['avatar'] as IconData,
-                            size: 20,
-                            color: Colors.white,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(11),
+                            child: CachedNetworkImage(
+                              imageUrl: testimonial['photoUrl'] as String,
+                              fit: BoxFit.cover,
+                              width: 44,
+                              height: 44,
+                              placeholder: (context, url) => Container(
+                                color: AppColors.secondary,
+                                child: const Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) {
+                                debugPrint('Error loading testimonial image: $error');
+                                return const Icon(
+                                  Icons.person_rounded,
+                                  size: 22,
+                                  color: Colors.white,
+                                );
+                              },
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1401,26 +1411,26 @@ class _HomeTabState extends State<HomeTab> {
                               Text(
                                 testimonial['name'] as String,
                                 style: const TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.textPrimary,
                                   fontFamily: 'Montserrat',
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 3),
                               Row(
                                 children: [
                                   Icon(
                                     Icons.location_on_rounded,
-                                    size: 11,
+                                    size: 12,
                                     color: Colors.grey[500],
                                   ),
-                                  const SizedBox(width: 3),
+                                  const SizedBox(width: 4),
                                   Flexible(
                                     child: Text(
                                       testimonial['location'] as String,
                                       style: TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 12,
                                         color: Colors.grey[500],
                                         fontFamily: 'Montserrat',
                                       ),
@@ -1437,14 +1447,14 @@ class _HomeTabState extends State<HomeTab> {
                           children: [
                             const Icon(
                               Icons.star_rounded,
-                              size: 13,
+                              size: 14,
                               color: AppColors.secondary,
                             ),
-                            const SizedBox(width: 3),
+                            const SizedBox(width: 4),
                             Text(
                               testimonial['rating'] as String,
                               style: const TextStyle(
-                                fontSize: 12,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textPrimary,
                                 fontFamily: 'Montserrat',
@@ -1454,11 +1464,11 @@ class _HomeTabState extends State<HomeTab> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     Text(
                       testimonial['text'] as String,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 14,
                         color: Colors.grey[700],
                         fontFamily: 'Montserrat',
                         height: 1.4,

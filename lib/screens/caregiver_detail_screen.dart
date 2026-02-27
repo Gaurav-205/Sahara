@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../models/user_model.dart';
 import '../models/review_model.dart';
 import '../models/service_package_model.dart';
@@ -259,15 +260,44 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
           child: Center(
             child: Stack(
               children: [
-                CircleAvatar(
-                  radius: 60,
-                  backgroundColor: AppColors.surface,
-                  child: const Icon(
-                    Icons.person,
-                    size: 60,
-                    color: AppColors.primary,
-                  ),
-                ),
+                widget.caregiver.photoUrl != null && widget.caregiver.photoUrl!.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: widget.caregiver.photoUrl!,
+                        imageBuilder: (context, imageProvider) => CircleAvatar(
+                          radius: 60,
+                          backgroundColor: AppColors.surface,
+                          backgroundImage: imageProvider,
+                        ),
+                        placeholder: (context, url) => CircleAvatar(
+                          radius: 60,
+                          backgroundColor: AppColors.surface,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) {
+                          debugPrint('Error loading profile image: $error');
+                          return CircleAvatar(
+                            radius: 60,
+                            backgroundColor: AppColors.surface,
+                            child: const Icon(
+                              Icons.person,
+                              size: 60,
+                              color: AppColors.primary,
+                            ),
+                          );
+                        },
+                      )
+                    : CircleAvatar(
+                        radius: 60,
+                        backgroundColor: AppColors.surface,
+                        child: const Icon(
+                          Icons.person,
+                          size: 60,
+                          color: AppColors.primary,
+                        ),
+                      ),
                 if (widget.caregiver.isVerified == true)
                   Positioned(
                     bottom: 0,

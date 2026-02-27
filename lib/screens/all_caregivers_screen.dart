@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../models/user_model.dart';
 import '../services/firestore_service.dart';
 import '../widgets/filter_bottom_sheet.dart';
@@ -226,7 +227,30 @@ class _AllCaregiversScreenState extends State<AllCaregiversScreen> {
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.person_rounded, size: 24, color: Colors.white),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: caregiver.photoUrl != null && caregiver.photoUrl!.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: caregiver.photoUrl!,
+                            fit: BoxFit.cover,
+                            width: 52,
+                            height: 52,
+                            placeholder: (context, url) => Container(
+                              color: AppColors.textPrimary,
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) {
+                              debugPrint('Error loading caregiver image: $error');
+                              return const Icon(Icons.person_rounded, size: 24, color: Colors.white);
+                            },
+                          )
+                        : const Icon(Icons.person_rounded, size: 24, color: Colors.white),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

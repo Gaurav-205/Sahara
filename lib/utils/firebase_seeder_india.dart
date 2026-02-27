@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../models/service_package_model.dart';
 
-/// 🇮🇳 PREMIUM Firebase Data Seeder - India Edition
+/// 🇮🇳 PREMIUM Firebase Data Seeder - Pune & Loni Kalbour Edition
 /// 
 /// Industry-leading mock data for Indian pet care marketplace
 /// 
@@ -14,15 +14,16 @@ import '../models/service_package_model.dart';
 /// - Dog Training: ₹600-2500/session (Basic to Behavior Modification)
 /// - Vet Companion: ₹300-1000/visit (Transport to Emergency)
 /// 
-/// 🏙️ CITIES COVERED (7 Major Metro Areas):
-/// Mumbai, Delhi NCR, Bangalore, Pune, Hyderabad, Chennai, Kolkata
+/// 🏙️ LOCATIONS COVERED:
+/// Pune: Koregaon Park, Baner, Kalyani Nagar, Viman Nagar, Aundh, Hinjewadi, Kothrud
+/// Loni Kalbour, Maharashtra
 /// 
 /// 🐕 BREEDS EXPERTISE:
 /// - International: Labrador, Golden Retriever, German Shepherd, Beagle, Pug, Shih Tzu, Husky
 /// - Indian Native: Indian Pariah, Rajapalayam, Mudhol Hound, Kombai, Chippiparai, Kanni
 /// - Specialty: Brachycephalic breeds, Senior dogs, Rescue rehabilitation
 /// 
-/// 👥 CAREGIVER PROFILES (16 Verified Professionals):
+/// 👥 CAREGIVER PROFILES (8 Verified Professionals):
 /// - Certified trainers (CPDT-KA, Karen Pryor Academy)
 /// - Professional groomers (NDGAI, International Professional Groomers)
 /// - Veterinary assistants & behaviorists
@@ -43,7 +44,7 @@ import '../models/service_package_model.dart';
 /// Usage:
 /// ```dart
 /// final seeder = FirebaseSeederIndia();
-/// await seeder.seedAll(); // Seeds 16 caregivers + 24 packages
+/// await seeder.seedAll(); // Seeds 8 caregivers + 24 packages
 /// await seeder.checkDatabaseStatus(); // View current data
 /// await seeder.clearAllData(); // Remove seeded data only
 /// ```
@@ -65,19 +66,15 @@ class FirebaseSeederIndia {
     }
   }
 
-  /// Seed caregiver profiles - Pan-India Coverage
+  /// Seed caregiver profiles - Loni Kalbour & Pune Coverage
   /// 
-  /// 16 Elite Professional Caregivers:
-  /// - 5 Pune (Koregaon Park, Baner, Kalyani Nagar, Viman Nagar, Aundh, Hinjewadi, Kothrud)
-  /// - 3 Bangalore (Jayanagar, Koramangala, HSR Layout)
-  /// - 3 Hyderabad (Jubilee Hills, Banjara Hills)
-  /// - 2 Mumbai (Malad West, Juhu)
-  /// - 2 Delhi NCR (Gurgaon, Hauz Khas)
-  /// - 1 Chennai
+  /// 8 Elite Professional Caregivers:
+  /// - 7 Pune (Koregaon Park, Baner, Kalyani Nagar, Viman Nagar, Aundh, Hinjewadi, Kothrud)
+  /// - 1 Loni Kalbour, Maharashtra
   /// 
   /// Specializations: Training, Walking, Grooming, Behavior, Vet Care, Native Breeds
   Future<void> seedCaregivers() async {
-    debugPrint('📝 Seeding 16 elite professional dog caregivers across India...');
+    debugPrint('📝 Seeding 8 elite professional dog caregivers in Pune & Loni Kalbour...');
 
     final caregivers = [
       // Premium Tier - Top Rated Professionals
@@ -86,7 +83,7 @@ class FirebaseSeederIndia {
         email: 'priya.sharma@sahara.app',
         name: 'Priya Sharma',
         userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=5',
+        photoUrl: 'https://xsgames.co/randomusers/assets/avatars/female/1.jpg',
         rating: 4.9,
         completedBookings: 287,
         createdAt: DateTime.now().subtract(const Duration(days: 820)),
@@ -104,7 +101,7 @@ class FirebaseSeederIndia {
         email: 'rahul.verma@sahara.app',
         name: 'Rahul Verma',
         userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=12',
+        photoUrl: 'https://xsgames.co/randomusers/assets/avatars/male/71.jpg',
         rating: 4.8,
         completedBookings: 156,
         createdAt: DateTime.now().subtract(const Duration(days: 380)),
@@ -122,7 +119,7 @@ class FirebaseSeederIndia {
         email: 'anjali.patel@sahara.app',
         name: 'Anjali Patel',
         userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=9',
+        photoUrl: 'https://xsgames.co/randomusers/assets/avatars/female/11.jpg',
         rating: 4.9,
         completedBookings: 234,
         createdAt: DateTime.now().subtract(const Duration(days: 680)),
@@ -140,7 +137,7 @@ class FirebaseSeederIndia {
         email: 'vikram.singh@sahara.app',
         name: 'Vikram Singh',
         userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=13',
+        photoUrl: 'https://xsgames.co/randomusers/assets/avatars/male/46.jpg',
         rating: 4.7,
         completedBookings: 118,
         createdAt: DateTime.now().subtract(const Duration(days: 340)),
@@ -158,7 +155,7 @@ class FirebaseSeederIndia {
         email: 'meera.reddy@sahara.app',
         name: 'Meera Reddy',
         userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=10',
+        photoUrl: 'https://xsgames.co/randomusers/assets/avatars/female/25.jpg',
         rating: 4.9,
         completedBookings: 221,
         createdAt: DateTime.now().subtract(const Duration(days: 590)),
@@ -176,7 +173,7 @@ class FirebaseSeederIndia {
         email: 'arjun.kumar@sahara.app',
         name: 'Arjun Kumar',
         userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=14',
+        photoUrl: 'https://xsgames.co/randomusers/assets/avatars/male/60.jpg',
         rating: 4.7,
         completedBookings: 94,
         createdAt: DateTime.now().subtract(const Duration(days: 260)),
@@ -194,7 +191,7 @@ class FirebaseSeederIndia {
         email: 'sneha.desai@sahara.app',
         name: 'Sneha Desai',
         userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=16',
+        photoUrl: 'https://xsgames.co/randomusers/assets/avatars/female/67.jpg',
         rating: 4.8,
         completedBookings: 167,
         createdAt: DateTime.now().subtract(const Duration(days: 450)),
@@ -208,166 +205,22 @@ class FirebaseSeederIndia {
         phone: '+91 98765 43216',
       ),
       UserModel(
-        uid: 'caregiver_karthik_nair',
-        email: 'karthik.nair@sahara.app',
-        name: 'Karthik Nair',
-        userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=15',
-        rating: 4.8,
-        completedBookings: 112,
-        createdAt: DateTime.now().subtract(const Duration(days: 320)),
-        bio: 'Professional dog agility trainer and advanced obedience specialist with 8+ years experience. Expert with working breeds like Belgian Malinois, Australian Shepherds, Border Collies, and German Shepherds. Competition-level training available. Certified in canine sports and agility. Member of Kennel Club of India.',
-        services: ['Dog Training', 'Dog Walking', 'Pet Sitting'],
-        hourlyRate: null,
-        location: 'Jayanagar, Bengaluru, Karnataka',
-        yearsOfExperience: 8,
-        isVerified: true,
-        isAvailable: true,
-        phone: '+91 98765 43217',
-      ),
-      UserModel(
-        uid: 'caregiver_divya_iyer',
-        email: 'divya.iyer@sahara.app',
-        name: 'Divya Iyer',
-        userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=20',
-        rating: 4.9,
-        completedBookings: 203,
-        createdAt: DateTime.now().subtract(const Duration(days: 600)),
-        bio: 'Certified canine behaviorist with Master\'s degree in Animal Behavior from University of Mumbai. 11+ years experience in behavior modification, separation anxiety treatment, fear aggression, and reactivity training. Work with all breeds including challenging cases and rescue dogs. Science-based, force-free training methods. Published researcher in canine behavior.',
-        services: ['Dog Training', 'Pet Sitting', 'Grooming'],
-        hourlyRate: null,
-        location: 'Jubilee Hills, Hyderabad, Telangana',
-        yearsOfExperience: 11,
-        isVerified: true,
-        isAvailable: true,
-        phone: '+91 98765 43218',
-      ),
-      UserModel(
-        uid: 'caregiver_amit_gupta',
-        email: 'amit.gupta@sahara.app',
-        name: 'Amit Gupta',
-        userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=17',
-        rating: 4.7,
-        completedBookings: 98,
-        createdAt: DateTime.now().subtract(const Duration(days: 240)),
-        bio: 'Reliable and experienced dog walker and sitter with 6+ years in multi-dog household management. Comfortable with mixed breeds, rescues, and dogs with special needs. Expert in pack dynamics and socialization. Available for overnight stays, extended care, and holiday boarding. Background verified and insured.',
-        services: ['Dog Walking', 'Pet Sitting'],
-        hourlyRate: null,
-        location: 'Malad West, Mumbai, Maharashtra',
-        yearsOfExperience: 6,
-        isVerified: true,
-        isAvailable: true,
-        phone: '+91 98765 43219',
-      ),
-      UserModel(
         uid: 'caregiver_rohan_kapoor',
         email: 'rohan.kapoor@sahara.app',
         name: 'Rohan Kapoor',
         userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=18',
+        photoUrl: 'https://xsgames.co/randomusers/assets/avatars/male/74.jpg',
         rating: 4.8,
         completedBookings: 156,
         createdAt: DateTime.now().subtract(const Duration(days: 420)),
-        bio: '🐾 Passionate advocate for Indian native breeds with 8+ years experience. Specialized in Indian Pariah Dogs, Rajapalayam, Mudhol Hounds, Kombai, Chippiparai, and Kanni. Also experienced with Indie street dogs and rescue rehabilitation. Active member of Indian National Kennel Club and native breed preservation initiatives. Provide breed-specific training, socialization, and care. Help owners understand the unique needs and incredible qualities of Indian native breeds. Rescue advocate.',
+        bio: '🐾 Passionate advocate for Indian native breeds with 8+ years experience serving Loni Kalbour. Specialized in Indian Pariah Dogs, Rajapalayam, Mudhol Hounds, Kombai, Chippiparai, and Kanni. Also experienced with Indie street dogs and rescue rehabilitation. Active member of Indian National Kennel Club and native breed preservation initiatives. Provide breed-specific training, socialization, and care. Help owners understand the unique needs and incredible qualities of Indian native breeds. Rescue advocate.',
         services: ['Dog Walking', 'Dog Training', 'Pet Sitting'],
         hourlyRate: null,
-        location: 'Koramangala, Bengaluru, Karnataka',
+        location: 'Loni Kalbour, Maharashtra',
         yearsOfExperience: 8,
         isVerified: true,
         isAvailable: true,
         phone: '+91 98765 43220',
-      ),
-      UserModel(
-        uid: 'caregiver_neha_joshi',
-        email: 'neha.joshi@sahara.app',
-        name: 'Neha Joshi',
-        userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=24',
-        rating: 4.9,
-        completedBookings: 178,
-        createdAt: DateTime.now().subtract(const Duration(days: 480)),
-        bio: '👶 Puppy specialist with 9+ years experience in early development and socialization. Expert in house training, crate training, bite inhibition, and basic obedience for puppies 8 weeks to 1 year. Gentle, patient approach perfect for first-time dog owners. Certified puppy trainer by Puppy Start Right program. Provide comprehensive puppy starter kits, training materials, and ongoing support. Help build strong foundations for lifelong good behavior. Virtual consultations available.',
-        services: ['Dog Training', 'Pet Sitting', 'Dog Walking'],
-        hourlyRate: null,
-        location: 'Gurgaon, Delhi NCR',
-        yearsOfExperience: 9,
-        isVerified: true,
-        isAvailable: true,
-        phone: '+91 98765 43221',
-      ),
-      UserModel(
-        uid: 'caregiver_sanjay_mehta',
-        email: 'sanjay.mehta@sahara.app',
-        name: 'Sanjay Mehta',
-        userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=33',
-        rating: 4.7,
-        completedBookings: 145,
-        createdAt: DateTime.now().subtract(const Duration(days: 365)),
-        bio: 'Experienced dog walker and pet sitter serving South Delhi for 7+ years. Specialized in senior dog care and dogs with mobility issues. Gentle handling and patient approach. Available for medication administration and special dietary needs. Background verified and fully insured.',
-        services: ['Dog Walking', 'Pet Sitting', 'Vet Visit Companion'],
-        hourlyRate: null,
-        location: 'Hauz Khas, New Delhi',
-        yearsOfExperience: 7,
-        isVerified: true,
-        isAvailable: true,
-        phone: '+91 98765 43222',
-      ),
-      UserModel(
-        uid: 'caregiver_kavita_rao',
-        email: 'kavita.rao@sahara.app',
-        name: 'Kavita Rao',
-        userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=26',
-        rating: 4.9,
-        completedBookings: 212,
-        createdAt: DateTime.now().subtract(const Duration(days: 650)),
-        bio: 'Professional dog groomer and stylist with 10+ years experience. Specialized in show grooming for Poodles, Cocker Spaniels, and Shih Tzus. Certified by International Professional Groomers Inc. Gentle with nervous dogs. Mobile grooming van available for home service. Award-winning groomer at Bangalore Dog Show 2023.',
-        services: ['Grooming', 'Pet Sitting'],
-        hourlyRate: null,
-        location: 'HSR Layout, Bengaluru, Karnataka',
-        yearsOfExperience: 10,
-        isVerified: true,
-        isAvailable: true,
-        phone: '+91 98765 43223',
-      ),
-      UserModel(
-        uid: 'caregiver_aditya_singh',
-        email: 'aditya.singh@sahara.app',
-        name: 'Aditya Singh',
-        userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=51',
-        rating: 4.6,
-        completedBookings: 87,
-        createdAt: DateTime.now().subtract(const Duration(days: 220)),
-        bio: 'Young and energetic dog walker perfect for active breeds. 5+ years experience with high-energy dogs. Provide running sessions, hiking trips, and beach outings. Certified in pet first aid. GPS tracking and live photo updates. Available for early morning (5 AM) and late evening walks.',
-        services: ['Dog Walking', 'Pet Transportation'],
-        hourlyRate: null,
-        location: 'Juhu, Mumbai, Maharashtra',
-        yearsOfExperience: 5,
-        isVerified: true,
-        isAvailable: true,
-        phone: '+91 98765 43224',
-      ),
-      UserModel(
-        uid: 'caregiver_pooja_nambiar',
-        email: 'pooja.nambiar@sahara.app',
-        name: 'Pooja Nambiar',
-        userType: 'caregiver',
-        photoUrl: 'https://i.pravatar.cc/300?img=47',
-        rating: 4.8,
-        completedBookings: 167,
-        createdAt: DateTime.now().subtract(const Duration(days: 450)),
-        bio: 'Certified dog trainer specializing in positive reinforcement methods. 8+ years experience with all breeds. Expert in puppy training, basic obedience, and trick training. Certified by Karen Pryor Academy. Provide in-home training sessions and group classes. Member of Pet Dog Trainers of India.',
-        services: ['Dog Training', 'Dog Walking', 'Pet Sitting'],
-        hourlyRate: null,
-        location: 'Banjara Hills, Hyderabad, Telangana',
-        yearsOfExperience: 8,
-        isVerified: true,
-        isAvailable: true,
-        phone: '+91 98765 43225',
       ),
     ];
 
