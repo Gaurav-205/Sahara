@@ -688,11 +688,36 @@ class _HomeTabState extends State<HomeTab> {
   /// Build services grid section
   Widget _buildServices() {
     final services = [
-      ServiceData('Dog Walking', Icons.directions_walk_rounded, AppColors.primary),
-      ServiceData('Pet Sitting', Icons.home_rounded, AppColors.secondary),
-      ServiceData('Grooming', Icons.content_cut_rounded, AppColors.accent),
-      ServiceData('Training', Icons.school_rounded, AppColors.tertiary),
-      ServiceData('Vet Visit', Icons.local_hospital_rounded, AppColors.primary),
+      ServiceData(
+        'Dog Walking',
+        Icons.directions_walk_rounded,
+        AppColors.primary,
+        imageUrl: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=400&fit=crop',
+      ),
+      ServiceData(
+        'Pet Sitting',
+        Icons.home_rounded,
+        AppColors.secondary,
+        imageUrl: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=400&h=400&fit=crop',
+      ),
+      ServiceData(
+        'Grooming',
+        Icons.content_cut_rounded,
+        AppColors.accent,
+        imageUrl: 'https://images.unsplash.com/photo-1616013355115-3c7d36da5f94?w=400&h=400&fit=crop',
+      ),
+      ServiceData(
+        'Training',
+        Icons.school_rounded,
+        AppColors.tertiary,
+        imageUrl: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=400&fit=crop',
+      ),
+      ServiceData(
+        'Vet Visit',
+        Icons.local_hospital_rounded,
+        AppColors.primary,
+        imageUrl: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=400&h=400&fit=crop',
+      ),
     ];
 
     return Padding(
@@ -762,12 +787,31 @@ class _HomeTabState extends State<HomeTab> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: service.color,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(service.icon, size: 20, color: Colors.white),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: service.imageUrl != null
+                    ? CachedNetworkImage(
+                        imageUrl: service.imageUrl!,
+                        fit: BoxFit.cover,
+                        width: 48,
+                        height: 48,
+                        placeholder: (context, url) => Container(
+                          color: service.color,
+                          child: Icon(service.icon, size: 20, color: Colors.white),
+                        ),
+                        errorWidget: (context, url, error) {
+                          debugPrint('Error loading service image: $error');
+                          return Icon(service.icon, size: 20, color: Colors.white);
+                        },
+                      )
+                    : Icon(service.icon, size: 20, color: Colors.white),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1161,6 +1205,7 @@ class _HomeTabState extends State<HomeTab> {
   /// Build pet care tips section
   Widget _buildTipsSection() {
     final tips = [
+      // Seasonal Tips
       {
         'icon': Icons.wb_sunny_rounded,
         'title': 'Summer Heat Protection',
@@ -1171,6 +1216,7 @@ class _HomeTabState extends State<HomeTab> {
         'title': 'Monsoon Care',
         'description': 'Dry paws thoroughly after walks. Watch for skin infections and keep indoor play options ready.',
       },
+      // Common Tips
       {
         'icon': Icons.restaurant_rounded,
         'title': 'Balanced Nutrition',
@@ -1180,11 +1226,6 @@ class _HomeTabState extends State<HomeTab> {
         'icon': Icons.vaccines_rounded,
         'title': 'Vaccination Schedule',
         'description': 'Keep rabies and distemper vaccines current. Annual boosters are essential for immunity.',
-      },
-      {
-        'icon': Icons.directions_run_rounded,
-        'title': 'Daily Exercise',
-        'description': 'High-energy breeds need 60+ minutes. Adapt exercise to breed, age, and weather conditions.',
       },
     ];
 
@@ -1299,21 +1340,21 @@ class _HomeTabState extends State<HomeTab> {
         'location': 'Koregaon Park, Pune',
         'rating': '5.0',
         'text': 'Absolutely wonderful! My Golden Retriever Bruno loves his daily walks with Rahul. Very punctual and sends photo updates every time.',
-        'photoUrl': 'https://xsgames.co/randomusers/assets/avatars/female/32.jpg',
+        'photoUrl': 'https://xsgames.co/randomusers/assets/avatars/female/20.jpg',
       },
       {
         'name': 'Arjun Reddy',
         'location': 'Baner, Pune',
         'rating': '5.0',
         'text': 'Best dog sitting service! Anjali took amazing care of my Labrador during my vacation. She even sent videos of playtime. Highly recommended!',
-        'photoUrl': 'https://xsgames.co/randomusers/assets/avatars/male/45.jpg',
+        'photoUrl': 'https://xsgames.co/randomusers/assets/avatars/male/78.jpg',
       },
       {
         'name': 'Sneha Kapoor',
         'location': 'Viman Nagar, Pune',
         'rating': '4.9',
         'text': 'My Pug Momo was anxious at first, but the caregiver was so patient and gentle. Now Momo gets excited whenever she sees her!',
-        'photoUrl': 'https://xsgames.co/randomusers/assets/avatars/female/58.jpg',
+        'photoUrl': 'https://xsgames.co/randomusers/assets/avatars/female/40.jpg',
       },
     ];
 
@@ -1494,8 +1535,9 @@ class ServiceData {
   final String title;
   final IconData icon;
   final Color color;
+  final String? imageUrl;
 
-  ServiceData(this.title, this.icon, this.color);
+  ServiceData(this.title, this.icon, this.color, {this.imageUrl});
 }
 
 
