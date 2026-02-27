@@ -155,7 +155,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -209,7 +209,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
@@ -268,9 +268,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   if (_otherUser?.location != null)
                     Text(
                       _otherUser!.location!,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 11,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                         fontFamily: 'Montserrat',
                       ),
                       maxLines: 1,
@@ -333,14 +333,14 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: AppColors.borderLight,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
             dateText,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12,
-              color: Colors.grey[700],
+              color: AppColors.textSecondary,
               fontWeight: FontWeight.w500,
               fontFamily: 'Montserrat',
             ),
@@ -364,7 +364,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: isMe ? AppColors.primary : Colors.white,
+                color: isMe ? AppColors.primary : AppColors.surface,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
@@ -373,7 +373,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: AppColors.shadow,
                     blurRadius: 4,
                     offset: const Offset(0, 1),
                   ),
@@ -392,7 +392,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         placeholder: (context, url) => Container(
                           width: 200,
                           height: 200,
-                          color: Colors.grey[200],
+                          color: AppColors.borderLight,
                           child: const Center(
                             child: CircularProgressIndicator(
                               color: AppColors.primary,
@@ -403,8 +403,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         errorWidget: (context, url, error) => Container(
                           width: 200,
                           height: 200,
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.error_outline, color: Colors.grey),
+                          color: AppColors.borderLight,
+                          child: const Icon(Icons.error_outline, color: AppColors.textTertiary),
                         ),
                       ),
                     ),
@@ -429,8 +429,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         style: TextStyle(
                           fontSize: 11,
                           color: isMe 
-                              ? Colors.white.withValues(alpha: 0.7) 
-                              : Colors.grey[500],
+                              ? AppColors.surface.withValues(alpha: 0.7) 
+                              : AppColors.textTertiary,
                           fontFamily: 'Montserrat',
                         ),
                       ),
@@ -439,7 +439,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         Icon(
                           Icons.done_all_rounded,
                           size: 14,
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: AppColors.surface.withValues(alpha: 0.7),
                         ),
                       ],
                     ],
@@ -458,10 +458,10 @@ class _ChatScreenState extends State<ChatScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppColors.shadow,
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -561,13 +561,13 @@ class _ChatScreenState extends State<ChatScreen> {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                            color: Colors.white,
+                            color: AppColors.surface,
                             strokeWidth: 2,
                           ),
                         ),
                       )
                     : IconButton(
-                        icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                        icon: const Icon(Icons.send_rounded, color: AppColors.surface, size: 20),
                         onPressed: _sendMessage,
                         padding: EdgeInsets.zero,
                       ),
@@ -598,19 +598,19 @@ class _ChatScreenState extends State<ChatScreen> {
           const SizedBox(height: 20),
           Text(
             'No messages yet',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
+              color: AppColors.textSecondary,
               fontFamily: 'Montserrat',
             ),
           ),
           const SizedBox(height: 8),
-          Text(
+          const Text(
             'Send a message to start the conversation',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[500],
+              color: AppColors.textTertiary,
               fontFamily: 'Montserrat',
             ),
           ),
@@ -624,14 +624,14 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 48, color: Colors.grey[400]),
+          const Icon(Icons.error_outline, size: 48, color: AppColors.textTertiary),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             'Unable to load messages',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
+              color: AppColors.textSecondary,
               fontFamily: 'Montserrat',
             ),
           ),

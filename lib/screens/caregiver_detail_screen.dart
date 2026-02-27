@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/user_model.dart';
 import '../models/review_model.dart';
 import '../models/service_package_model.dart';
-import '../providers/auth_provider.dart';
 import '../services/firestore_service.dart';
-import '../services/chat_service.dart';
 import '../services/sound_service.dart';
 import '../services/package_service.dart';
 import '../widgets/custom_button.dart';
 import '../theme/app_colors.dart';
-import 'chat_screen.dart';
+import 'messages_coming_soon_screen.dart';
 import 'booking_confirmation_screen.dart';
 
 /// Caregiver Detail Screen
@@ -58,7 +55,6 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
 
   final FirestoreService _firestoreService = FirestoreService();
   final SoundService _soundService = SoundService();
-  final ChatService _chatService = ChatService();
   List<ReviewModel> _reviews = [];
   bool _isLoadingReviews = true;
 
@@ -127,60 +123,13 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
   Future<void> _handleMessage() async {
     _soundService.playClick();
     
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final currentUser = authProvider.currentUser;
-
-    if (currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please login to send messages'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    try {
-      // Show loading
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Opening chat...'),
-          backgroundColor: AppColors.info,
-          duration: Duration(seconds: 1),
-        ),
-      );
-
-      // Create or get existing chat
-      final chatId = await _chatService.createChat(
-        userId1: currentUser.uid,
-        userId2: widget.caregiver.uid,
-        user1Name: currentUser.name,
-        user2Name: widget.caregiver.name,
-      );
-
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ChatScreen(
-              chatId: chatId,
-              currentUserId: currentUser.uid,
-              otherUserId: widget.caregiver.uid,
-              otherUserName: widget.caregiver.name,
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to open chat: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
+    // Navigate to Coming Soon screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const MessagesComingSoonScreen(),
+      ),
+    );
   }
 
   // ============================================================================
@@ -387,7 +336,7 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
                 color: widget.caregiver.isAvailable == true
                     ? AppColors.success.withValues(alpha: 0.1)
                     : AppColors.error.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 widget.caregiver.isAvailable == true ? 'Available' : 'Busy',
@@ -568,7 +517,7 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: AppColors.primary.withValues(alpha: 0.3),
                 ),

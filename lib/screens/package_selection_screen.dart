@@ -156,23 +156,23 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[400]),
+            const Icon(Icons.inventory_2_outlined, size: 64, color: AppColors.textTertiary),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'No packages available',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
+                color: AppColors.textSecondary,
                 fontFamily: 'Montserrat',
               ),
             ),
             const SizedBox(height: 8),
-            Text(
+            const Text(
               'Please check back later',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[500],
+                color: AppColors.textTertiary,
                 fontFamily: 'Montserrat',
               ),
             ),
@@ -208,7 +208,7 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
                   'Select the package that best fits your needs',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[600],
+                    color: AppColors.textSecondary,
                     fontFamily: 'Montserrat',
                   ),
                 ),
@@ -248,10 +248,10 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.textPrimary : Colors.grey[200]!,
+            color: isSelected ? AppColors.textPrimary : AppColors.border,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
@@ -299,7 +299,7 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
                                 style: TextStyle(
                                   fontSize: 9,
                                   fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                                  color: AppColors.surface,
                                   letterSpacing: 0.5,
                                   fontFamily: 'Montserrat',
                                 ),
@@ -313,7 +313,7 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
                         package.duration,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                           fontWeight: FontWeight.w500,
                           fontFamily: 'Montserrat',
                         ),
@@ -364,12 +364,12 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
               package.description,
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
                 fontFamily: 'Montserrat',
               ),
             ),
             const SizedBox(height: 12),
-            Divider(height: 1, color: Colors.grey[200]),
+            Divider(height: 1, color: AppColors.border),
             const SizedBox(height: 12),
             
             // Features header
@@ -395,13 +395,13 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
                     decoration: BoxDecoration(
                       color: isSelected 
                           ? AppColors.textPrimary 
-                          : Colors.grey[200],
+                          : AppColors.border,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.check_rounded,
                       size: 12,
-                      color: isSelected ? Colors.white : Colors.grey[500],
+                      color: isSelected ? AppColors.surface : AppColors.textTertiary,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -410,7 +410,7 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
                       feature,
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey[700],
+                        color: AppColors.textSecondary,
                         fontFamily: 'Montserrat',
                       ),
                     ),
@@ -429,8 +429,8 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey[200]!)),
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.border)),
         boxShadow: [
           BoxShadow(
             color: AppColors.textPrimary.withValues(alpha: 0.03),
@@ -455,7 +455,7 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
                       'Selected Package',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                         fontFamily: 'Montserrat',
                       ),
                     ),
@@ -501,7 +501,7 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.textPrimary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.surface,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -531,3 +531,5 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
     );
   }
 }
+
+
