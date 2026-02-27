@@ -692,31 +692,26 @@ class _HomeTabState extends State<HomeTab> {
         'Dog Walking',
         Icons.directions_walk_rounded,
         AppColors.primary,
-        imageUrl: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=400&fit=crop',
       ),
       ServiceData(
         'Pet Sitting',
         Icons.home_rounded,
-        AppColors.secondary,
-        imageUrl: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=400&h=400&fit=crop',
+        AppColors.primary,
       ),
       ServiceData(
         'Grooming',
         Icons.content_cut_rounded,
-        AppColors.accent,
-        imageUrl: 'https://images.unsplash.com/photo-1616013355115-3c7d36da5f94?w=400&h=400&fit=crop',
+        AppColors.primary,
       ),
       ServiceData(
         'Training',
         Icons.school_rounded,
-        AppColors.tertiary,
-        imageUrl: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=400&fit=crop',
+        AppColors.primary,
       ),
       ServiceData(
         'Vet Visit',
         Icons.local_hospital_rounded,
         AppColors.primary,
-        imageUrl: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=400&h=400&fit=crop',
       ),
     ];
 
@@ -771,7 +766,7 @@ class _HomeTabState extends State<HomeTab> {
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(13),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -791,34 +786,16 @@ class _HomeTabState extends State<HomeTab> {
               height: 48,
               decoration: BoxDecoration(
                 color: service.color,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(11),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: service.imageUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: service.imageUrl!,
-                        fit: BoxFit.cover,
-                        width: 48,
-                        height: 48,
-                        placeholder: (context, url) => Container(
-                          color: service.color,
-                          child: Icon(service.icon, size: 20, color: Colors.white),
-                        ),
-                        errorWidget: (context, url, error) {
-                          debugPrint('Error loading service image: $error');
-                          return Icon(service.icon, size: 20, color: Colors.white);
-                        },
-                      )
-                    : Icon(service.icon, size: 20, color: Colors.white),
-              ),
+              child: Icon(service.icon, size: 22, color: Colors.white),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 11),
             Expanded(
               child: Text(
                 service.title,
                 style: const TextStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                   fontFamily: 'Montserrat',

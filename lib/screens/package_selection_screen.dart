@@ -95,10 +95,12 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
     _loadPackages();
   }
   
-  /// Load packages once and cache them
+  /// Load packages once and cache them, sorted by price
   Future<void> _loadPackages() async {
     try {
       final packages = await _packageService.getPackagesForService(widget.serviceType);
+      // Sort packages by price in ascending order (lowest to highest)
+      packages.sort((a, b) => a.price.compareTo(b.price));
       setState(() {
         _cachedPackages = packages;
         _isLoading = false;
