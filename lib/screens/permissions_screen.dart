@@ -313,10 +313,13 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
 
     _soundService.playClick();
 
+    // Capture context before async operations
+    final permissionService = _permissionService;
+
     try {
       // Request MANDATORY permissions first (Location and Notifications)
-      final locationGranted = await _permissionService.requestLocationPermission(context);
-      final notificationGranted = await _permissionService.requestNotificationPermission(context);
+      final locationGranted = await permissionService.requestLocationPermission(context);
+      final notificationGranted = await permissionService.requestNotificationPermission(context);
 
       if (!mounted) return;
 
@@ -375,18 +378,24 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
       }
 
       // Request optional permissions (Camera and Photos)
-      await _permissionService.requestCameraPermission(context);
-      await _permissionService.requestPhotosPermission(context);
+      await permissionService.requestCameraPermission(context);
+      await permissionService.requestPhotosPermission(context);
 
       if (!mounted) return;
 
+      // Capture navigator before async operations
+      final navigator = Navigator.of(context);
+
       _soundService.playSuccess();
-      Navigator.pop(context, true);
+      navigator.pop(true);
     } catch (e) {
       if (!mounted) return;
 
+      // Capture messenger before showing snackbar
+      final messenger = ScaffoldMessenger.of(context);
+
       _soundService.playError();
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text('Error requesting permissions: $e'),
           backgroundColor: AppColors.error,

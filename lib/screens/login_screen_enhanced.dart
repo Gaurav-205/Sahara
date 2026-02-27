@@ -129,12 +129,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
         if (!mounted) return;
 
+        // Capture navigator before async operations
+        final navigator = Navigator.of(context);
+
         if (success) {
           await _soundService.playSuccess();
-          if (!context.mounted) return;
+          if (!mounted) return;
           
-          Navigator.pushReplacement(
-            context,
+          navigator.pushReplacement(
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) => 
                   const HomeScreen(),
@@ -146,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           );
         } else {
           _soundService.playError();
-          if (!context.mounted) return;
+          if (!mounted) return;
           _showErrorSnackBar(authProvider.errorMessage ?? 'Login failed. Please try again.');
         }
       } catch (e) {
@@ -163,6 +165,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Future<void> _handleGoogleSignIn() async {
     _soundService.playClick();
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final navigator = Navigator.of(context);
     
     try {
       final success = await authProvider.signInWithGoogle();
@@ -170,10 +173,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
       if (success) {
         await _soundService.playSuccess();
-        if (!context.mounted) return;
+        if (!mounted) return;
         
-        Navigator.pushReplacement(
-          context,
+        navigator.pushReplacement(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => 
                 const HomeScreen(),

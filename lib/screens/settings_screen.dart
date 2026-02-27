@@ -71,9 +71,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
     
     if (value) {
+      // Capture permission service before async operation
+      final permissionService = _permissionService;
+      
       // Request notification permission if enabling
-      final granted = await _permissionService.requestNotificationPermission(context);
+      final granted = await permissionService.requestNotificationPermission(context);
       if (!granted && mounted) {
+        // Update state after async operation
         setState(() {
           _notificationsEnabled = false;
         });

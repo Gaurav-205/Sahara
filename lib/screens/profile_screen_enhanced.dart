@@ -244,13 +244,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: 'Edit Profile',
             subtitle: 'Update your information',
             onTap: () async {
+              // Capture auth provider before navigation
+              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+              
               await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const EditProfileScreen()),
               );
               // Refresh user data when returning from edit profile
               if (mounted) {
-                final authProvider = Provider.of<AuthProvider>(context, listen: false);
                 await authProvider.refreshUser();
               }
             },

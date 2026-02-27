@@ -112,12 +112,14 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
 
         if (!mounted) return;
 
+        // Capture navigator before async operations
+        final navigator = Navigator.of(context);
+
         if (success) {
           await _soundService.playSuccess();
-          if (!context.mounted) return;
+          if (!mounted) return;
           
-          Navigator.pushReplacement(
-            context,
+          navigator.pushReplacement(
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) => 
                   const HomeScreen(),
