@@ -84,6 +84,45 @@ class _CaregiverSelectionScreenState extends State<CaregiverSelectionScreen> {
   
   /// Currently selected caregiver (null if none selected)
   UserModel? _selectedCaregiver;
+  
+  /// List of caregivers
+  List<UserModel> _caregivers = [];
+  
+  /// Loading state
+  bool _isLoading = true;
+  
+  /// Error message
+  String? _errorMessage;
+
+  // ============================================================================
+  // LIFECYCLE METHODS
+  // ============================================================================
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadCaregivers();
+  }
+  
+  /// Load caregivers once on screen init
+  Future<void> _loadCaregivers() async {
+    try {
+      final caregivers = await _firestoreService.searchCaregiversByService(widget.serviceType);
+      if (mounted) {
+        setState(() {
+          _caregivers = caregivers;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to load caregivers: $e';
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   // ============================================================================
   // BUILD METHOD
@@ -117,35 +156,7 @@ class _CaregiverSelectionScreenState extends State<CaregiverSelectionScreen> {
             
             // Caregiver list with loading/empty states
             Expanded(
-              child: FutureBuilder<List<UserModel>>(
-                future: _firestoreService.searchCaregiversByService(widget.serviceType),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                        strokeWidth: 2,
-                      ),
-                    );
-                  }
-
-                  final caregivers = snapshot.data ?? [];
-                  if (caregivers.isEmpty) {
-                    return _buildEmptyState();
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(24),
-                    itemCount: caregivers.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: _buildCaregiverCard(caregivers[index]),
-                      );
-                    },
-                  );
-                },
-              ),
+              child: _buildCaregiverList(),
             ),
             
             // Sticky bottom bar with continue button (only shown when caregiver selected)
@@ -153,6 +164,73 @@ class _CaregiverSelectionScreenState extends State<CaregiverSelectionScreen> {
           ],
         ),
       ),
+    );
+  }
+  
+  /// Build caregiver list based on loading state
+  Widget _buildCaregiverList() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primary,
+          strokeWidth: 2,
+        ),
+      );
+    }
+    
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: AppColors.error,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppColors.textSecondary,
+                fontFamily: 'Montserrat',
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _isLoading = true;
+                  _errorMessage = null;
+                });
+                _loadCaregivers();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    if (_caregivers.isEmpty) {
+      return _buildEmptyState();
+    }
+    
+    return ListView.builder(
+      padding: const EdgeInsets.all(24),
+      itemCount: _caregivers.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: _buildCaregiverCard(_caregivers[index]),
+        );
+      },
     );
   }
 

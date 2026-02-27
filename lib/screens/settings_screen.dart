@@ -512,7 +512,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged(newValue);
             },
             activeTrackColor: color.withValues(alpha: 0.5),
-            activeColor: color,
+            activeThumbColor: color,
           ),
         ],
       ),

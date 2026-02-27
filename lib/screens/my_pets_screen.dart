@@ -512,7 +512,7 @@ class _AddPetDialogState extends State<AddPetDialog> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _selectedBreed,
+                initialValue: _selectedBreed,
                 onChanged: _isSubmitting
                     ? null
                     : (value) {

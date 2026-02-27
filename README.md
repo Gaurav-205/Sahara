@@ -1,131 +1,111 @@
-# Sahara Pet Care - Dog Owner App
+# Sahara - Dog Care Booking App
 
-A Flutter-based dog care booking platform for dog owners to find and book professional dog care services.
+A Flutter mobile application for booking professional dog care services.
 
-## ✨ Features
+## Features
 
-- **Dog Management**: Add, edit, and manage your dogs with photos
-- **Service Booking**: Book services (Dog Walking, Dog Sitting, Dog Grooming, Dog Training, Vet Visits)
-- **Specialized Caregivers**: Browse 12 dog care specialists with breed expertise
-- **Real-time Messaging**: Chat with caregivers
-- **Booking Tracking**: View and manage your bookings
-- **Profile Management**: Update your profile and preferences
-- **Push Notifications**: Stay updated with booking status
-- **Simple Booking Flow**: No payment required - book instantly!
+- User authentication (Email/Password & Google Sign-In)
+- Browse and search dog caregivers
+- Book dog care services with package selection
+- Manage multiple dogs
+- Real-time messaging with caregivers
+- Booking management and history
+- User profile with photo upload
+- Push notifications
+- Location-based caregiver search
 
-## 🐕 Dog-Specific Services
+## Tech Stack
 
-### Dog Walking
-- Quick Potty Break (15 min)
-- Basic Walk (30 min)
-- Standard Adventure (1 hour)
-- Premium Trail Experience (2 hours)
-
-### Dog Sitting
-- Basic Home Care (4 hours)
-- Full Day Care (8 hours)
-- Overnight Care (24 hours)
-- Extended Stay (multi-day)
-
-### Dog Grooming
-- Bath & Brush
-- Full Grooming
-- Luxury Spa Package
-- De-Shedding Treatment
-
-### Dog Training
-- Basic Obedience
-- Puppy Foundation
-- Advanced Training
-- Behavior Modification
-- 5-Session Package
-
-### Vet Visit Companion
-- Transportation
-- Full Companion
-- Complete Care
-- Emergency Support
-
-## 🚀 Tech Stack
-
-- **Framework**: Flutter 3.x
-- **Backend**: Firebase (Auth, Firestore, Messaging)
+- **Frontend**: Flutter 3.41.2
+- **Backend**: Firebase (Auth, Firestore, Cloud Messaging, Storage)
 - **Image Storage**: Cloudinary
 - **State Management**: Provider
-- **Authentication**: Email/Password + Google Sign-In
-- **Maps**: Google Maps
+- **Platform**: Android, iOS, Web, Windows, macOS
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 lib/
 ├── config/          # App configuration
-├── models/          # Data models (8 files)
-├── providers/       # State management (4 files)
-├── screens/         # UI screens (23 files)
-├── services/        # Business logic (10 files)
-├── theme/           # App theme & colors
-├── utils/           # Utilities & helpers
-└── widgets/         # Reusable components (10 files)
+├── models/          # Data models
+├── providers/       # State management
+├── screens/         # UI screens
+├── services/        # Business logic & API calls
+├── theme/           # App theming
+├── utils/           # Helper utilities
+└── widgets/         # Reusable widgets
 ```
 
-## ⚡ Quick Start
+## Setup
 
-### 1. Install Dependencies
-```bash
-flutter pub get
-```
+1. Install Flutter SDK (3.41.2 or higher)
+2. Clone the repository
+3. Copy `.env.example` to `.env` and configure:
+   ```
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+   ```
+4. Install dependencies:
+   ```bash
+   flutter pub get
+   ```
+5. Configure Firebase:
+   - Add `google-services.json` (Android)
+   - Add `GoogleService-Info.plist` (iOS)
+6. Deploy Firestore rules and indexes:
+   ```bash
+   firebase deploy --only firestore:rules
+   firebase deploy --only firestore:indexes
+   ```
 
-### 2. Configure Credentials
-Edit `lib/config/app_config.dart` with your credentials:
-- Cloudinary (from https://console.cloudinary.com/)
+## Run
 
-### 3. Setup Firebase
-- Add `google-services.json` to `android/app/`
-- Deploy Firestore rules from `FIRESTORE_RULES_FINAL.txt`
-
-### 4. Run the App
 ```bash
 flutter run
 ```
 
-### 5. Seed Database (First Time Only)
-- Login → Profile → Seed Database
+## Build
 
-## 📚 Documentation
+```bash
+# Android
+flutter build apk --release
 
-- **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Complete setup instructions
-- **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Current project status
-- **[OPTIMIZATION_SUMMARY.md](OPTIMIZATION_SUMMARY.md)** - Recent optimizations
-- **[QUICK_START_CHECKLIST.md](QUICK_START_CHECKLIST.md)** - Setup checklist
-- **[docs/](docs/)** - Additional documentation
+# iOS
+flutter build ios --release
 
-## 🎨 Design System
+# Web
+flutter build web --release
+```
 
-- **Primary**: Navy (#1A2332)
-- **Secondary**: Orange (#FF6B35)
-- **Accent**: Sky Blue (#4ECDC4)
-- **Font**: Montserrat
+## Firebase Collections
 
-## 🔧 Key Services
+- `users` - User profiles (owners & caregivers)
+- `pets` - Dog profiles
+- `bookings` - Service bookings
+- `messages` - Chat messages
+- `reviews` - Caregiver reviews
+- `favorites` - Saved caregivers
 
-- **AuthService** - User authentication
-- **FirestoreService** - Database operations
-- **CloudinaryService** - Image uploads
-- **PaymentService** - Razorpay integration
-- **ChatService** - Real-time messaging
-- **NotificationService** - Push notifications
+## Key Screens
 
-## ⚠️ Important Notes
+- Splash & Onboarding
+- Login & Signup
+- Home (Browse caregivers)
+- Caregiver Details
+- Package Selection
+- Booking Confirmation
+- My Dogs
+- Bookings
+- Messages
+- Profile & Settings
 
-- This is a dog owner-only app (caregivers are seeded data)
-- 12 specialized dog caregivers with breed expertise
-- 24 comprehensive dog service packages
-- Requires Firebase and Cloudinary configuration
-- No payment integration - bookings complete instantly
-- See `docs/DOG_SEED_DATA_GUIDE.md` for seed data details
-- See `PAYMENT_REMOVAL_AND_FIXES.md` for recent changes
+## Status
 
-## 📄 License
+✅ All core features implemented and tested
+✅ No compilation errors or warnings
+✅ Clean codebase with proper architecture
+✅ Ready for production deployment
+
+## License
 
 Proprietary - All rights reserved

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'login_screen.dart';
+import 'login_screen_enhanced.dart';
 import '../theme/app_colors.dart';
 
 /// Onboarding Screen - Industry Standard Implementation

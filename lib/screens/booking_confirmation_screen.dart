@@ -74,12 +74,12 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     _loadDogs();
   }
 
-  /// Load user's dogs
+  /// Load user's dogs (only if not already loaded)
   void _loadDogs() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final petProvider = Provider.of<PetProvider>(context, listen: false);
     
-    if (authProvider.currentUser != null) {
+    if (authProvider.currentUser != null && petProvider.pets.isEmpty && !petProvider.isLoading) {
       petProvider.loadUserPets(authProvider.currentUser!.uid);
     }
   }
@@ -476,7 +476,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
 
   /// Builds the dog selection section
   Widget _buildDogSelectionSection() {
-    final petProvider = Provider.of<PetProvider>(context, listen: false);
+    final petProvider = Provider.of<PetProvider>(context);
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -500,7 +500,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               border: Border.all(color: AppColors.border),
             ),
             child: const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
+                strokeWidth: 2,
+              ),
             ),
           )
         else if (petProvider.pets.isEmpty)
@@ -596,7 +599,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                             color: isSelected ? AppColors.primary : AppColors.tertiary,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.pets_rounded,
                             color: Colors.white,
                             size: 24,

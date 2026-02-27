@@ -101,16 +101,16 @@ class AuthService {
       
       if (googleUser == null) {
         // User canceled the sign-in
-        print('Google Sign-In: User canceled');
+        debugPrint('Google Sign-In: User canceled');
         return null;
       }
 
-      print('Google Sign-In: User selected - ${googleUser.email}');
+      debugPrint('Google Sign-In: User selected - ${googleUser.email}');
 
       // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       
-      print('Google Sign-In: Got authentication tokens');
+      debugPrint('Google Sign-In: Got authentication tokens');
 
       // Create a new credential
       final credential = GoogleAuthProvider.credential(
@@ -118,24 +118,24 @@ class AuthService {
         idToken: googleAuth.idToken,
       );
 
-      print('Google Sign-In: Created Firebase credential');
+      debugPrint('Google Sign-In: Created Firebase credential');
 
       // Sign in to Firebase with the Google credential
       final userCredential = await _auth.signInWithCredential(credential);
       final user = userCredential.user!;
 
-      print('Google Sign-In: Firebase authentication successful - ${user.uid}');
+      debugPrint('Google Sign-In: Firebase authentication successful - ${user.uid}');
 
       // Check if user already exists in Firestore
       final doc = await _firestore.collection('users').doc(user.uid).get();
 
       if (doc.exists) {
         // User exists, return existing data
-        print('Google Sign-In: Existing user found');
+        debugPrint('Google Sign-In: Existing user found');
         return UserModel.fromMap(doc.data()!, doc.id);
       } else {
         // New user, create profile
-        print('Google Sign-In: Creating new user profile');
+        debugPrint('Google Sign-In: Creating new user profile');
         final newUser = UserModel(
           uid: user.uid,
           email: user.email!,
@@ -148,11 +148,11 @@ class AuthService {
         );
 
         await _firestore.collection('users').doc(newUser.uid).set(newUser.toMap());
-        print('Google Sign-In: New user profile created');
+        debugPrint('Google Sign-In: New user profile created');
         return newUser;
       }
     } on FirebaseAuthException catch (e) {
-      print('Google Sign-In FirebaseAuthException: ${e.code} - ${e.message}');
+      debugPrint('Google Sign-In FirebaseAuthException: ${e.code} - ${e.message}');
       switch (e.code) {
         case 'account-exists-with-different-credential':
           throw Exception('An account already exists with a different sign-in method');
@@ -166,7 +166,7 @@ class AuthService {
           throw Exception('Google Sign-In failed: ${e.message}');
       }
     } catch (e) {
-      print('Google Sign-In Error: $e');
+      debugPrint('Google Sign-In Error: $e');
       throw Exception('Google Sign-In failed: $e');
     }
   }
