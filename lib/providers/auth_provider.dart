@@ -171,5 +171,39 @@ class AuthProvider with ChangeNotifier {
       rethrow;
     }
   }
+
+  /// Send password reset email
+  Future<void> sendPasswordResetEmail() async {
+    if (_currentUser == null || _currentUser!.email.isEmpty) {
+      throw Exception('No user logged in');
+    }
+    
+    try {
+      await _authService.resetPassword(_currentUser!.email);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Delete user account
+  Future<void> deleteAccount() async {
+    if (_currentUser == null) {
+      throw Exception('No user logged in');
+    }
+    
+    _isLoading = true;
+    notifyListeners();
+    
+    try {
+      await _authService.deleteAccount(_currentUser!.uid);
+      _currentUser = null;
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
 }
 

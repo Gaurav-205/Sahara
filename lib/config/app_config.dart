@@ -1,13 +1,17 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 /// Application Configuration
 /// 
 /// This file contains all configuration constants for the app.
-/// For production, these should be loaded from environment variables.
+/// Configuration is loaded from environment variables (.env file).
 class AppConfig {
   // Cloudinary Configuration
-  // TODO: Replace with your actual credentials or load from environment
-  // Get these from: https://console.cloudinary.com/
-  static const String cloudinaryCloudName = 'dmbxyvrcc';
-  static const String cloudinaryUploadPreset = 'sahara_uploads';
+  // Loaded from .env file
+  static String get cloudinaryCloudName => 
+      dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? '';
+  
+  static String get cloudinaryUploadPreset => 
+      dotenv.env['CLOUDINARY_UPLOAD_PRESET'] ?? '';
   
   // App Configuration
   static const String appName = 'Sahara Pet Care';

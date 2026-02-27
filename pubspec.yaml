@@ -67,6 +67,7 @@ dependencies:
   shared_preferences: ^2.3.2
   uuid: ^4.5.3
   url_launcher: ^6.3.1
+  flutter_dotenv: ^5.2.1
   
   # Notifications
   flutter_local_notifications: ^18.0.1
@@ -95,6 +96,7 @@ flutter:
 
   # Assets
   assets:
+    - .env
     - assets/images/
     - assets/icons/
     - assets/sounds/

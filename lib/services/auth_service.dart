@@ -216,5 +216,35 @@ class AuthService {
       throw Exception('Failed to update profile: $e');
     }
   }
+
+  /// Delete user account
+  /// Deletes user data from Firestore and Firebase Auth
+  Future<void> deleteAccount(String uid) async {
+    try {
+      debugPrint('🗑️ Deleting user account: $uid');
+      
+      // Delete user data from Firestore
+      await _firestore.collection('users').doc(uid).delete();
+      debugPrint('✅ User data deleted from Firestore');
+      
+      // Delete user from Firebase Auth
+      final user = _auth.currentUser;
+      if (user != null && user.uid == uid) {
+        await user.delete();
+        debugPrint('✅ User deleted from Firebase Auth');
+      }
+    } on FirebaseAuthException catch (e) {
+      debugPrint('❌ Firebase Auth error deleting account: ${e.code}');
+      switch (e.code) {
+        case 'requires-recent-login':
+          throw Exception('Please log in again before deleting your account');
+        default:
+          throw Exception('Failed to delete account: ${e.message}');
+      }
+    } catch (e) {
+      debugPrint('❌ Failed to delete account: $e');
+      throw Exception('Failed to delete account: $e');
+    }
+  }
 }
 

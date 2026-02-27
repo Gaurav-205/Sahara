@@ -202,16 +202,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Implement password reset
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Password reset email sent!'),
-                  backgroundColor: AppColors.success,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+            onPressed: () async {
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
+              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+              
+              navigator.pop();
+              
+              try {
+                // Send password reset email
+                await authProvider.sendPasswordResetEmail();
+                
+                if (!mounted) return;
+                
+                messenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Password reset email sent! Check your inbox.'),
+                    backgroundColor: AppColors.success,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              } catch (e) {
+                if (!mounted) return;
+                
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to send reset email: $e'),
+                    backgroundColor: AppColors.error,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
             },
             style: TextButton.styleFrom(
               backgroundColor: AppColors.primary.withValues(alpha: 0.1),
@@ -268,15 +289,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
-              // TODO: Implement account deletion
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
               final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              await authProvider.signOut();
-              if (context.mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
+              
+              navigator.pop();
+              
+              try {
+                // Delete account
+                await authProvider.deleteAccount();
+                
+                if (!mounted) return;
+                
+                // Navigate to login screen
+                navigator.pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
                   (route) => false,
+                );
+                
+                messenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Account deleted successfully'),
+                    backgroundColor: AppColors.success,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              } catch (e) {
+                if (!mounted) return;
+                
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to delete account: $e'),
+                    backgroundColor: AppColors.error,
+                    behavior: SnackBarBehavior.floating,
+                  ),
                 );
               }
             },
