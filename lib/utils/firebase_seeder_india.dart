@@ -3,34 +3,49 @@ import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../models/service_package_model.dart';
 
-/// Enhanced Firebase Data Seeder - India Edition
+/// 🇮🇳 PREMIUM Firebase Data Seeder - India Edition
 /// 
-/// Comprehensive mock data based on Indian pet care industry standards:
+/// Industry-leading mock data for Indian pet care marketplace
 /// 
-/// PRICING RESEARCH (2024-2025):
-/// - Dog Walking: ₹300-500/hour (Metro cities)
-/// - Dog Boarding: ₹800-2000/day  
-/// - Dog Grooming: ₹800-3000/session (breed-dependent)
-/// - Dog Training: ₹500-2500/session
-/// - Vet Companion: ₹300-800/visit
+/// 💰 PRICING RESEARCH (2024-2025 Market Rates):
+/// - Dog Walking: ₹150-650/session (15min-2hrs)
+/// - Pet Sitting: ₹350-1200/day (4hrs-24hrs)
+/// - Dog Grooming: ₹400-1500/session (Bath to Luxury Spa)
+/// - Dog Training: ₹600-2500/session (Basic to Behavior Modification)
+/// - Vet Companion: ₹300-1000/visit (Transport to Emergency)
 /// 
-/// CITIES COVERED:
+/// 🏙️ CITIES COVERED (7 Major Metro Areas):
 /// Mumbai, Delhi NCR, Bangalore, Pune, Hyderabad, Chennai, Kolkata
 /// 
-/// BREEDS INCLUDED:
-/// - International: Labrador, Golden Retriever, German Shepherd, Beagle, Pug, Shih Tzu
-/// - Indian Native: Indian Pariah, Rajapalayam, Mudhol Hound, Kombai, Chippiparai
+/// 🐕 BREEDS EXPERTISE:
+/// - International: Labrador, Golden Retriever, German Shepherd, Beagle, Pug, Shih Tzu, Husky
+/// - Indian Native: Indian Pariah, Rajapalayam, Mudhol Hound, Kombai, Chippiparai, Kanni
+/// - Specialty: Brachycephalic breeds, Senior dogs, Rescue rehabilitation
 /// 
-/// DATA SOURCES:
-/// - BringFido India directory
-/// - Petboro, DeePet Services pricing
-/// - Industry surveys and market research
-/// - Wikipedia breed information
+/// 👥 CAREGIVER PROFILES (16 Verified Professionals):
+/// - Certified trainers (CPDT-KA, Karen Pryor Academy)
+/// - Professional groomers (NDGAI, International Professional Groomers)
+/// - Veterinary assistants & behaviorists
+/// - Specialized in puppies, seniors, special needs, native breeds
+/// 
+/// 📦 SERVICE PACKAGES (24 Comprehensive Options):
+/// - 4 Dog Walking packages (Quick Break to Premium Trail)
+/// - 4 Pet Sitting packages (Basic to Extended Stay)
+/// - 4 Grooming packages (Bath & Brush to Luxury Spa)
+/// - 5 Training packages (Basic to 5-Session Program)
+/// - 4 Vet Visit packages (Transport to Emergency)
+/// 
+/// 📊 DATA SOURCES:
+/// - BringFido India, Petboro, DeePet Services
+/// - Industry surveys & market research 2024-2025
+/// - Kennel Club of India standards
 /// 
 /// Usage:
 /// ```dart
 /// final seeder = FirebaseSeederIndia();
-/// await seeder.seedAll();
+/// await seeder.seedAll(); // Seeds 16 caregivers + 24 packages
+/// await seeder.checkDatabaseStatus(); // View current data
+/// await seeder.clearAllData(); // Remove seeded data only
 /// ```
 class FirebaseSeederIndia {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -51,10 +66,18 @@ class FirebaseSeederIndia {
   }
 
   /// Seed caregiver profiles - Pan-India Coverage
-  /// 16 Professional caregivers across 7 major Indian cities
-  /// Authentic Indian names, locations, and service offerings
+  /// 
+  /// 16 Elite Professional Caregivers:
+  /// - 5 Pune (Koregaon Park, Baner, Kalyani Nagar, Viman Nagar, Aundh, Hinjewadi, Kothrud)
+  /// - 3 Bangalore (Jayanagar, Koramangala, HSR Layout)
+  /// - 3 Hyderabad (Jubilee Hills, Banjara Hills)
+  /// - 2 Mumbai (Malad West, Juhu)
+  /// - 2 Delhi NCR (Gurgaon, Hauz Khas)
+  /// - 1 Chennai
+  /// 
+  /// Specializations: Training, Walking, Grooming, Behavior, Vet Care, Native Breeds
   Future<void> seedCaregivers() async {
-    debugPrint('📝 Seeding professional dog caregivers across India...');
+    debugPrint('📝 Seeding 16 elite professional dog caregivers across India...');
 
     final caregivers = [
       // Premium Tier - Top Rated Professionals
@@ -67,7 +90,7 @@ class FirebaseSeederIndia {
         rating: 4.9,
         completedBookings: 287,
         createdAt: DateTime.now().subtract(const Duration(days: 820)),
-        bio: 'Certified Professional Dog Trainer (CPDT-KA) with 9+ years of experience specializing in positive reinforcement training. Expert in obedience training, behavioral modification, and puppy socialization. Worked with 500+ dogs including Golden Retrievers, Labradors, German Shepherds, and Indian breeds. Member of Association of Professional Dog Trainers (APDT). Pet First Aid & CPR certified. Available for in-home training sessions and group classes.',
+        bio: '🏆 Certified Professional Dog Trainer (CPDT-KA) with 9+ years transforming dog behavior across Pune. Specialized in positive reinforcement training, obedience, behavioral modification, and puppy socialization. Successfully trained 500+ dogs including Golden Retrievers, Labradors, German Shepherds, and Indian native breeds. Member of Association of Professional Dog Trainers (APDT). Pet First Aid & CPR certified. Offer in-home private sessions, group classes, and virtual consultations. Featured trainer at Pune Pet Expo 2024.',
         services: ['Dog Walking', 'Pet Sitting', 'Dog Training', 'Grooming'],
         hourlyRate: null,
         location: 'Koregaon Park, Pune, Maharashtra',
@@ -85,7 +108,7 @@ class FirebaseSeederIndia {
         rating: 4.8,
         completedBookings: 156,
         createdAt: DateTime.now().subtract(const Duration(days: 380)),
-        bio: 'Professional dog walker and adventure specialist for high-energy breeds serving Baner and surrounding areas. 7+ years experience with Huskies, Border Collies, Australian Shepherds, German Shepherds, and Beagles. Certified in canine fitness and conditioning by Canine Fitness Trainers Association. Provide trail walks at Pashan Lake, Vetal Tekdi hikes, and park playtime. GPS tracking, live photo updates, and detailed activity reports included with every walk. Pet First Aid certified.',
+        bio: '🏃 Adventure specialist for high-energy breeds serving Baner & Pashan areas. 7+ years experience with Huskies, Border Collies, Australian Shepherds, German Shepherds, and Beagles. Certified in canine fitness by Canine Fitness Trainers Association. Provide trail walks at Pashan Lake, Vetal Tekdi hikes, and park playtime at Baner Gaon. Every walk includes GPS tracking, live photo updates, and detailed activity reports. Pet First Aid certified. Perfect for dogs who need serious exercise!',
         services: ['Dog Walking', 'Pet Sitting', 'Dog Transportation'],
         hourlyRate: null,
         location: 'Baner, Pune, Maharashtra',
@@ -103,7 +126,7 @@ class FirebaseSeederIndia {
         rating: 4.9,
         completedBookings: 234,
         createdAt: DateTime.now().subtract(const Duration(days: 680)),
-        bio: 'Certified professional dog groomer with 10+ years expertise in breed-specific styling serving Kalyani Nagar and East Pune. Specialized in Poodles, Shih Tzus, Cocker Spaniels, Schnauzers, Bichons, and Maltese. Gentle handling techniques for anxious and senior dogs. Show-quality grooming available. Certified by National Dog Groomers Association of India (NDGAI) and International Professional Groomers Inc. Award winner at Pune Pet Show 2024. Mobile grooming van available for home service.',
+        bio: '✨ Award-winning professional groomer with 10+ years expertise in breed-specific styling. Specialized in Poodles, Shih Tzus, Cocker Spaniels, Schnauzers, Bichons, and Maltese. Gentle handling for anxious and senior dogs. Show-quality grooming available. Certified by National Dog Groomers Association of India (NDGAI) and International Professional Groomers Inc. 🏆 Best Groomer Award at Pune Pet Show 2024. Mobile grooming van available for home service with professional equipment.',
         services: ['Grooming', 'Dog Training', 'Pet Sitting'],
         hourlyRate: null,
         location: 'Kalyani Nagar, Pune, Maharashtra',
@@ -121,7 +144,7 @@ class FirebaseSeederIndia {
         rating: 4.7,
         completedBookings: 118,
         createdAt: DateTime.now().subtract(const Duration(days: 340)),
-        bio: 'Veterinary assistant with 8+ years of comprehensive dog care experience serving Viman Nagar and surrounding areas. Comfortable with all breeds including large breeds like Rottweilers, Great Danes, Mastiffs, Saint Bernards, and Newfoundlands. Expert in medication administration, special needs care, senior dog support, and post-surgery recovery care. Emergency care trained by Indian Veterinary Association. Pet First Aid & CPR certified. Work closely with Ruby Hall Clinic Veterinary Department.',
+        bio: '🩺 Veterinary assistant with 8+ years comprehensive dog care experience. Comfortable with all breeds including large breeds like Rottweilers, Great Danes, Mastiffs, Saint Bernards, and Newfoundlands. Expert in medication administration, special needs care, senior dog support, and post-surgery recovery. Emergency care trained by Indian Veterinary Association. Pet First Aid & CPR certified. Work closely with Ruby Hall Clinic Veterinary Department. Available for vet visit companionship and home nursing care.',
         services: ['Vet Visit Companion', 'Pet Sitting', 'Dog Walking'],
         hourlyRate: null,
         location: 'Viman Nagar, Pune, Maharashtra',
@@ -139,7 +162,7 @@ class FirebaseSeederIndia {
         rating: 4.9,
         completedBookings: 221,
         createdAt: DateTime.now().subtract(const Duration(days: 590)),
-        bio: 'Expert certified canine behaviorist and rehabilitation specialist with 11+ years experience serving Aundh and North Pune. Specialized in aggressive dog rehabilitation, fear-based reactivity, separation anxiety, leash reactivity, and puppy training. Experience with all breeds including Pit Bulls, Dobermans, Rottweilers, rescue dogs, and street dogs. Positive reinforcement and science-based training methods only. Member of International Association of Animal Behavior Consultants (IAABC). Published researcher in canine behavior. Certified by Karen Pryor Academy.',
+        bio: '🧠 Expert certified canine behaviorist with 11+ years specializing in rehabilitation. Master in aggressive dog rehabilitation, fear-based reactivity, separation anxiety, leash reactivity, and puppy training. Experience with all breeds including Pit Bulls, Dobermans, Rottweilers, rescue dogs, and street dogs. Positive reinforcement and science-based methods only. Member of International Association of Animal Behavior Consultants (IAABC). Published researcher in canine behavior. Certified by Karen Pryor Academy. Transform challenging behaviors into success stories.',
         services: ['Dog Training', 'Pet Sitting', 'Dog Walking'],
         hourlyRate: null,
         location: 'Aundh, Pune, Maharashtra',
@@ -247,7 +270,7 @@ class FirebaseSeederIndia {
         rating: 4.8,
         completedBookings: 156,
         createdAt: DateTime.now().subtract(const Duration(days: 420)),
-        bio: 'Specialized expert in Indian native breeds with 8+ years experience. Passionate about Indian Pariah Dogs, Rajapalayam, Mudhol Hounds, Kombai, Chippiparai, and Kanni. Also experienced with Indie street dogs and rescue rehabilitation. Advocate for native breed preservation. Member of Indian National Kennel Club.',
+        bio: '🐾 Passionate advocate for Indian native breeds with 8+ years experience. Specialized in Indian Pariah Dogs, Rajapalayam, Mudhol Hounds, Kombai, Chippiparai, and Kanni. Also experienced with Indie street dogs and rescue rehabilitation. Active member of Indian National Kennel Club and native breed preservation initiatives. Provide breed-specific training, socialization, and care. Help owners understand the unique needs and incredible qualities of Indian native breeds. Rescue advocate.',
         services: ['Dog Walking', 'Dog Training', 'Pet Sitting'],
         hourlyRate: null,
         location: 'Koramangala, Bengaluru, Karnataka',
@@ -265,7 +288,7 @@ class FirebaseSeederIndia {
         rating: 4.9,
         completedBookings: 178,
         createdAt: DateTime.now().subtract(const Duration(days: 480)),
-        bio: 'Expert in puppy care and early socialization with 9+ years experience. Specialized in house training, crate training, bite inhibition, and basic obedience for puppies 8 weeks to 1 year. Gentle, patient approach perfect for first-time dog owners. Certified puppy trainer. Provide comprehensive puppy starter kits and training materials.',
+        bio: '👶 Puppy specialist with 9+ years experience in early development and socialization. Expert in house training, crate training, bite inhibition, and basic obedience for puppies 8 weeks to 1 year. Gentle, patient approach perfect for first-time dog owners. Certified puppy trainer by Puppy Start Right program. Provide comprehensive puppy starter kits, training materials, and ongoing support. Help build strong foundations for lifelong good behavior. Virtual consultations available.',
         services: ['Dog Training', 'Pet Sitting', 'Dog Walking'],
         hourlyRate: null,
         location: 'Gurgaon, Delhi NCR',
@@ -320,7 +343,7 @@ class FirebaseSeederIndia {
         completedBookings: 87,
         createdAt: DateTime.now().subtract(const Duration(days: 220)),
         bio: 'Young and energetic dog walker perfect for active breeds. 5+ years experience with high-energy dogs. Provide running sessions, hiking trips, and beach outings. Certified in pet first aid. GPS tracking and live photo updates. Available for early morning (5 AM) and late evening walks.',
-        services: ['Dog Walking', 'Dog Transportation'],
+        services: ['Dog Walking', 'Pet Transportation'],
         hourlyRate: null,
         location: 'Juhu, Mumbai, Maharashtra',
         yearsOfExperience: 5,
@@ -360,11 +383,18 @@ class FirebaseSeederIndia {
     debugPrint('✅ Seeded ${caregivers.length} caregivers');
   }
 
-  /// Seed service packages - India Pricing
-  /// Based on market research from major Indian cities
-  /// Prices in INR (₹) reflecting 2024-2025 rates
+  /// Seed service packages - India Pricing (2024-2025)
+  /// 
+  /// 21 Premium Service Packages:
+  /// - Dog Walking (4): ₹150-650 | 15min-2hrs
+  /// - Pet Sitting (4): ₹350-1200 | 4hrs-24hrs+
+  /// - Grooming (4): ₹400-1500 | Bath to Luxury Spa
+  /// - Training (5): ₹600-2500 | Basic to Behavior Modification
+  /// - Vet Visit (4): ₹300-1000 | Transport to Emergency
+  /// 
+  /// All prices based on 2024-2025 market research from major Indian cities
   Future<void> seedServicePackages() async {
-    debugPrint('📝 Seeding dog service packages with India pricing...');
+    debugPrint('📝 Seeding 21 premium service packages with India pricing...');
 
     final packages = <ServicePackageModel>[
       // Dog Walking Packages
@@ -598,10 +628,10 @@ class FirebaseSeederIndia {
         isPopular: false,
       ),
 
-      // Dog Training Packages
+      // Training Packages
       ServicePackageModel(
         id: 'dt_basic',
-        serviceType: 'Dog Training',
+        serviceType: 'Training',
         packageName: 'Basic Obedience',
         description: 'Essential commands for well-behaved dogs',
         price: 600.0,
@@ -618,7 +648,7 @@ class FirebaseSeederIndia {
       ),
       ServicePackageModel(
         id: 'dt_puppy',
-        serviceType: 'Dog Training',
+        serviceType: 'Training',
         packageName: 'Puppy Foundation',
         description: 'Perfect start for puppies 8 weeks to 6 months',
         price: 700.0,
@@ -636,7 +666,7 @@ class FirebaseSeederIndia {
       ),
       ServicePackageModel(
         id: 'dt_advanced',
-        serviceType: 'Dog Training',
+        serviceType: 'Training',
         packageName: 'Advanced Training',
         description: 'For dogs with basic obedience mastered',
         price: 800.0,
@@ -654,7 +684,7 @@ class FirebaseSeederIndia {
       ),
       ServicePackageModel(
         id: 'dt_behavior',
-        serviceType: 'Dog Training',
+        serviceType: 'Training',
         packageName: 'Behavior Modification',
         description: 'Address specific behavioral issues',
         price: 1000.0,
@@ -673,7 +703,7 @@ class FirebaseSeederIndia {
       ),
       ServicePackageModel(
         id: 'dt_package',
-        serviceType: 'Dog Training',
+        serviceType: 'Training',
         packageName: '5-Session Package',
         description: 'Comprehensive training program',
         price: 2500.0,

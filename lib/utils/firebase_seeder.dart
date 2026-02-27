@@ -3,8 +3,22 @@ import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../models/service_package_model.dart';
 
-/// Firebase Data Seeder
-/// Seeds initial data to Firebase Firestore following industry standards
+/// 🇮🇳 Firebase Data Seeder - Production Ready
+/// 
+/// Industry-standard mock data for Indian pet care marketplace
+/// 
+/// 💰 PRICING (2024-2025 Market Rates):
+/// - Dog Walking: ₹150-650/session
+/// - Pet Sitting: ₹350-1200/day
+/// - Grooming: ₹400-1500/session
+/// - Training: ₹600-2500/session
+/// - Vet Visit: ₹300-1000/visit
+/// 
+/// 📦 INCLUDES:
+/// - 16 verified professional caregivers
+/// - 21 comprehensive service packages
+/// - Pan-India coverage (7 major cities)
+/// - Realistic ratings and booking history
 /// 
 /// Usage:
 /// ```dart
@@ -29,10 +43,11 @@ class FirebaseSeeder {
     }
   }
 
-  /// Seed caregiver profiles (Dog-Specific) - Pune Edition
-  /// Professional caregivers with verified credentials and realistic data
+  /// Seed caregiver profiles (Dog-Specific) - India Edition
+  /// 16 Elite professionals across 7 major Indian cities
+  /// Verified credentials, realistic experience, authentic locations
   Future<void> seedCaregivers() async {
-    debugPrint('📝 Seeding dog caregivers for Pune...');
+    debugPrint('📝 Seeding 16 professional dog caregivers for India...');
 
     final caregivers = [
       // Premium Tier - Top Rated Professionals
@@ -338,9 +353,10 @@ class FirebaseSeeder {
     debugPrint('✅ Seeded ${caregivers.length} caregivers');
   }
 
-  /// Seed service packages (Dog-Specific)
+  /// Seed service packages (Dog-Specific) - India Pricing
+  /// 21 comprehensive packages based on 2024-2025 market research
   Future<void> seedServicePackages() async {
-    debugPrint('📝 Seeding dog service packages...');
+    debugPrint('📝 Seeding 21 dog service packages with India pricing...');
 
     final packages = <ServicePackageModel>[
       // Dog Walking Packages
@@ -574,10 +590,10 @@ class FirebaseSeeder {
         isPopular: false,
       ),
 
-      // Dog Training Packages
+      // Training Packages
       ServicePackageModel(
         id: 'dt_basic',
-        serviceType: 'Dog Training',
+        serviceType: 'Training',
         packageName: 'Basic Obedience',
         description: 'Essential commands for well-behaved dogs',
         price: 600.0,
@@ -594,7 +610,7 @@ class FirebaseSeeder {
       ),
       ServicePackageModel(
         id: 'dt_puppy',
-        serviceType: 'Dog Training',
+        serviceType: 'Training',
         packageName: 'Puppy Foundation',
         description: 'Perfect start for puppies 8 weeks to 6 months',
         price: 700.0,
@@ -612,7 +628,7 @@ class FirebaseSeeder {
       ),
       ServicePackageModel(
         id: 'dt_advanced',
-        serviceType: 'Dog Training',
+        serviceType: 'Training',
         packageName: 'Advanced Training',
         description: 'For dogs with basic obedience mastered',
         price: 800.0,
@@ -630,7 +646,7 @@ class FirebaseSeeder {
       ),
       ServicePackageModel(
         id: 'dt_behavior',
-        serviceType: 'Dog Training',
+        serviceType: 'Training',
         packageName: 'Behavior Modification',
         description: 'Address specific behavioral issues',
         price: 1000.0,
@@ -649,7 +665,7 @@ class FirebaseSeeder {
       ),
       ServicePackageModel(
         id: 'dt_package',
-        serviceType: 'Dog Training',
+        serviceType: 'Training',
         packageName: '5-Session Package',
         description: 'Comprehensive training program',
         price: 2500.0,

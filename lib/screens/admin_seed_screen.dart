@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../utils/firebase_seeder.dart';
+import '../utils/firebase_seeder_india.dart';
 import '../theme/app_colors.dart';
 
 /// Admin screen for seeding Firebase data
@@ -16,7 +16,7 @@ class AdminSeedScreen extends StatefulWidget {
 }
 
 class _AdminSeedScreenState extends State<AdminSeedScreen> {
-  final FirebaseSeeder _seeder = FirebaseSeeder();
+  final FirebaseSeederIndia _seeder = FirebaseSeederIndia();
   bool _isSeeding = false;
   String _status = 'Ready to seed data';
   final List<String> _logs = [];
@@ -389,9 +389,10 @@ class _AdminSeedScreenState extends State<AdminSeedScreen> {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        '• 8 Caregiver profiles with ratings & experience\n'
-                        '• 12 Service packages (Dog Walking, Pet Sitting, Grooming, Vet Visit)\n'
-                        '• All data follows industry standards',
+                        '• 16 Elite caregiver profiles across 7 major Indian cities\n'
+                        '• 21 Service packages (Dog Walking, Pet Sitting, Grooming, Training, Vet Visit)\n'
+                        '• Market-researched pricing (₹150-2,500)\n'
+                        '• Professional credentials & certifications',
                         style: TextStyle(fontSize: 13),
                       ),
                     ],

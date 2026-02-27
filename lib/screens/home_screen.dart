@@ -718,7 +718,8 @@ class _HomeTabState extends State<HomeTab> {
       ServiceData('Dog Walking', Icons.directions_walk_rounded, AppColors.primary),
       ServiceData('Pet Sitting', Icons.home_rounded, AppColors.secondary),
       ServiceData('Grooming', Icons.content_cut_rounded, AppColors.accent),
-      ServiceData('Vet Visit', Icons.local_hospital_rounded, AppColors.tertiary),
+      ServiceData('Training', Icons.school_rounded, AppColors.tertiary),
+      ServiceData('Vet Visit', Icons.local_hospital_rounded, AppColors.primary),
     ];
 
     return Padding(

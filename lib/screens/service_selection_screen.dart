@@ -75,6 +75,12 @@ class ServiceSelectionScreen extends StatelessWidget {
         'From ₹500',
       ),
       ServiceData(
+        'Training',
+        Icons.school_rounded,
+        'Dog training and behavior',
+        'From ₹600',
+      ),
+      ServiceData(
         'Vet Visit',
         Icons.local_hospital_rounded,
         'Vet appointment transportation',
