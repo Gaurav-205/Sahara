@@ -313,12 +313,14 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
 
     _soundService.playClick();
 
-    // Capture context before async operations
+    // Capture permission service before async operations
     final permissionService = _permissionService;
 
     try {
       // Request MANDATORY permissions first (Location and Notifications)
+      // ignore: use_build_context_synchronously
       final locationGranted = await permissionService.requestLocationPermission(context);
+      // ignore: use_build_context_synchronously
       final notificationGranted = await permissionService.requestNotificationPermission(context);
 
       if (!mounted) return;
@@ -378,7 +380,9 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
       }
 
       // Request optional permissions (Camera and Photos)
+      // ignore: use_build_context_synchronously
       await permissionService.requestCameraPermission(context);
+      // ignore: use_build_context_synchronously
       await permissionService.requestPhotosPermission(context);
 
       if (!mounted) return;

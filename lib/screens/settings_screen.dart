@@ -75,6 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final permissionService = _permissionService;
       
       // Request notification permission if enabling
+      // ignore: use_build_context_synchronously
       final granted = await permissionService.requestNotificationPermission(context);
       if (!granted && mounted) {
         // Update state after async operation
