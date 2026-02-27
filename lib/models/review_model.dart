@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ReviewModel {
   final String id;
   final String caregiverId;
@@ -28,7 +30,9 @@ class ReviewModel {
       rating: map['rating']?.toDouble() ?? 0.0,
       comment: map['comment'] ?? '',
       createdAt: map['createdAt'] != null
-          ? DateTime.parse(map['createdAt'])
+          ? (map['createdAt'] is Timestamp 
+              ? (map['createdAt'] as Timestamp).toDate()
+              : DateTime.parse(map['createdAt']))
           : DateTime.now(),
       ownerPhotoUrl: map['ownerPhotoUrl'],
     );

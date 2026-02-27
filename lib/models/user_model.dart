@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class UserModel {
   final String uid;
   final String email;
@@ -54,7 +56,9 @@ class UserModel {
       rating: map['rating']?.toDouble(),
       completedBookings: map['completedBookings'],
       createdAt: map['createdAt'] != null 
-          ? DateTime.parse(map['createdAt']) 
+          ? (map['createdAt'] is Timestamp 
+              ? (map['createdAt'] as Timestamp).toDate()
+              : DateTime.parse(map['createdAt']))
           : DateTime.now(),
       bio: map['bio'],
       services: map['services'] != null ? List<String>.from(map['services']) : null,

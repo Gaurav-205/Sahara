@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
 import '../providers/auth_provider.dart';
 import '../providers/favorites_provider.dart';
 import '../services/firestore_service.dart';
@@ -14,6 +15,7 @@ import 'search_results_screen.dart';
 import 'service_selection_screen.dart';
 import 'package_selection_screen.dart';
 import 'my_pets_screen.dart';
+import 'messages_coming_soon_screen.dart';
 import '../theme/app_colors.dart';
 
 /// Home Screen - Main app entry point after authentication
@@ -274,15 +276,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppColors.secondary.withValues(alpha: 0.35),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-                spreadRadius: 0,
-              ),
-              BoxShadow(
                 color: AppColors.secondary.withValues(alpha: 0.2),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
                 spreadRadius: 0,
               ),
             ],
@@ -504,6 +500,15 @@ class _HomeTabState extends State<HomeTab> {
   
   /// Search text controller
   final TextEditingController _searchController = TextEditingController();
+  
+  /// Debounce timer for search
+  Timer? _debounceTimer;
+  
+  /// Search suggestions
+  List<UserModel> _searchSuggestions = [];
+  
+  /// Show suggestions overlay
+  bool _showSuggestions = false;
 
   // ============================================================================
   // LIFECYCLE METHODS
@@ -513,6 +518,7 @@ class _HomeTabState extends State<HomeTab> {
   void initState() {
     super.initState();
     _loadFavorites();
+    _searchController.addListener(_onSearchChanged);
   }
 
   /// Load user's favorites
@@ -525,10 +531,52 @@ class _HomeTabState extends State<HomeTab> {
       favProvider.loadFavorites(userId);
     }
   }
+  
+  /// Handle search text changes with debounce
+  void _onSearchChanged() {
+    if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
+    
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (_searchController.text.trim().isNotEmpty) {
+        _fetchSearchSuggestions(_searchController.text);
+      } else {
+        setState(() {
+          _showSuggestions = false;
+          _searchSuggestions = [];
+        });
+      }
+    });
+  }
+  
+  /// Fetch search suggestions
+  Future<void> _fetchSearchSuggestions(String query) async {
+    if (query.trim().isEmpty) return;
+    
+    try {
+      final caregivers = await _firestoreService.getTopCaregivers(limit: 50);
+      final results = caregivers.where((c) {
+        final queryLower = query.toLowerCase();
+        return c.name.toLowerCase().contains(queryLower) ||
+               (c.services?.any((s) => s.toLowerCase().contains(queryLower)) ?? false) ||
+               (c.location ?? '').toLowerCase().contains(queryLower);
+      }).take(5).toList();
+      
+      if (mounted) {
+        setState(() {
+          _searchSuggestions = results;
+          _showSuggestions = results.isNotEmpty;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching suggestions: $e');
+    }
+  }
 
   @override
   void dispose() {
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
@@ -579,26 +627,56 @@ class _HomeTabState extends State<HomeTab> {
         children: [
           Row(
             children: [
-              Flexible(
-                child: Text(
-                  'Hello, $userName!',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                    letterSpacing: -0.5,
-                    fontFamily: 'Montserrat',
-                    height: 1.2,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              Expanded(
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'Hello, $userName!',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                          letterSpacing: -0.5,
+                          fontFamily: 'Montserrat',
+                          height: 1.2,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.waving_hand_rounded,
+                      size: 22,
+                      color: Color(0xFFFFB74D),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 6),
-              const Icon(
-                Icons.waving_hand_rounded,
-                size: 22,
-                color: Color(0xFFFFB74D),
+              const SizedBox(width: 8),
+              // Messages button - Instagram style
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MessagesComingSoonScreen(),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(50),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    child: Icon(
+                      Icons.messenger_outline_rounded,
+                      size: 24,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -621,68 +699,241 @@ class _HomeTabState extends State<HomeTab> {
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-      child: Container(
-        height: 52,
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: TextField(
-          controller: _searchController,
-          style: const TextStyle(
-            fontSize: 15,
-            fontFamily: 'Montserrat',
-          ),
-          decoration: InputDecoration(
-            hintText: 'Search caregivers, services...',
-            hintStyle: TextStyle(
-              color: Colors.grey[500],
-              fontSize: 15,
-              fontFamily: 'Montserrat',
+      child: Column(
+        children: [
+          Container(
+            height: 52,
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
             ),
-            prefixIcon: Icon(Icons.search_rounded, color: Colors.grey[600], size: 20),
-            suffixIcon: IconButton(
-              icon: Icon(Icons.tune_rounded, color: Colors.grey[600], size: 20),
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (_) => FilterBottomSheet(
-                    onApplyFilters: (filters) {
-                      setState(() {});
-                    },
-                  ),
-                );
-              },
-            ),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          ),
-          onSubmitted: (query) async {
-            if (query.trim().isEmpty) return;
-            
-            final caregivers = await _firestoreService.getTopCaregivers(limit: 50);
-            final results = caregivers.where((c) =>
-              c.name.toLowerCase().contains(query.toLowerCase()) ||
-              (c.services?.any((s) => s.toLowerCase().contains(query.toLowerCase())) ?? false)
-            ).toList();
-            
-            if (!mounted) return;
-            
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => SearchResultsScreen(
-                  query: query,
-                  results: results,
-                ),
+            child: TextField(
+              controller: _searchController,
+              style: const TextStyle(
+                fontSize: 15,
+                fontFamily: 'Montserrat',
               ),
-            );
-          },
-        ),
+              decoration: InputDecoration(
+                hintText: 'Search caregivers, services...',
+                hintStyle: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 15,
+                  fontFamily: 'Montserrat',
+                ),
+                prefixIcon: Icon(Icons.search_rounded, color: Colors.grey[600], size: 20),
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_searchController.text.isNotEmpty)
+                      IconButton(
+                        icon: Icon(Icons.clear_rounded, color: Colors.grey[600], size: 18),
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                            _showSuggestions = false;
+                            _searchSuggestions = [];
+                          });
+                        },
+                      ),
+                    IconButton(
+                      icon: Icon(Icons.tune_rounded, color: Colors.grey[600], size: 20),
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => FilterBottomSheet(
+                            onApplyFilters: (filters) {
+                              setState(() {});
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
+              onChanged: (value) {
+                setState(() {}); // Update UI to show/hide clear button
+              },
+              onSubmitted: (query) => _performSearch(query),
+            ),
+          ),
+          // Search suggestions dropdown
+          if (_showSuggestions && _searchSuggestions.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: _searchSuggestions.length,
+                separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey[200]),
+                itemBuilder: (context, index) {
+                  final caregiver = _searchSuggestions[index];
+                  return ListTile(
+                    dense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        image: caregiver.photoUrl != null && caregiver.photoUrl!.isNotEmpty
+                            ? DecorationImage(
+                                image: NetworkImage(caregiver.photoUrl!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: caregiver.photoUrl == null || caregiver.photoUrl!.isEmpty
+                          ? Icon(
+                              Icons.person_rounded,
+                              size: 20,
+                              color: AppColors.primary.withValues(alpha: 0.6),
+                            )
+                          : null,
+                    ),
+                    title: Text(
+                      caregiver.name,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Montserrat',
+                      ),
+                    ),
+                    subtitle: Text(
+                      caregiver.location ?? 'No location',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        fontFamily: 'Montserrat',
+                      ),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.star_rounded, size: 14, color: Colors.amber),
+                        const SizedBox(width: 2),
+                        Text(
+                          caregiver.rating?.toStringAsFixed(1) ?? '0.0',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Montserrat',
+                          ),
+                        ),
+                      ],
+                    ),
+                    onTap: () {
+                      setState(() {
+                        _showSuggestions = false;
+                        _searchController.clear();
+                      });
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CaregiverDetailScreen(caregiver: caregiver),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+        ],
       ),
     );
+  }
+
+  /// Perform search and navigate to results
+  Future<void> _performSearch(String query) async {
+    if (query.trim().isEmpty) return;
+    
+    // Show loading indicator
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      ),
+    );
+    
+    try {
+      // Fetch all caregivers
+      final caregivers = await _firestoreService.getTopCaregivers(limit: 100);
+      
+      // Filter results based on query
+      final results = caregivers.where((c) {
+        final queryLower = query.toLowerCase();
+        final nameLower = c.name.toLowerCase();
+        final locationLower = (c.location ?? '').toLowerCase();
+        final bioLower = (c.bio ?? '').toLowerCase();
+        
+        // Search in name, services, location, and bio
+        return nameLower.contains(queryLower) ||
+               (c.services?.any((s) => s.toLowerCase().contains(queryLower)) ?? false) ||
+               locationLower.contains(queryLower) ||
+               bioLower.contains(queryLower);
+      }).toList();
+      
+      // Sort by relevance (name matches first, then others)
+      results.sort((a, b) {
+        final queryLower = query.toLowerCase();
+        final aNameMatch = a.name.toLowerCase().contains(queryLower);
+        final bNameMatch = b.name.toLowerCase().contains(queryLower);
+        
+        if (aNameMatch && !bNameMatch) return -1;
+        if (!aNameMatch && bNameMatch) return 1;
+        
+        // If both match or both don't match, sort by rating
+        return (b.rating ?? 0).compareTo(a.rating ?? 0);
+      });
+      
+      if (!mounted) return;
+      
+      // Close loading dialog
+      Navigator.pop(context);
+      
+      // Navigate to results
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SearchResultsScreen(
+            query: query,
+            results: results,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      
+      // Close loading dialog
+      Navigator.pop(context);
+      
+      // Show error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Search failed: ${e.toString()}'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   /// Build services grid section

@@ -114,9 +114,9 @@ class CustomBottomNav extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppColors.secondary.withValues(alpha: 0.3),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
+              color: AppColors.secondary.withValues(alpha: 0.15),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),

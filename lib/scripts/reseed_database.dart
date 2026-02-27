@@ -1,5 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import '../firebase_options.dart';
 import '../utils/firebase_seeder_india.dart';
 
@@ -13,30 +13,30 @@ import '../utils/firebase_seeder_india.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  print('🔥 Initializing Firebase...');
+  debugPrint('🔥 Initializing Firebase...');
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   
   final seeder = FirebaseSeederIndia();
   
-  print('\n📊 Current database status:');
+  debugPrint('\n📊 Current database status:');
   await seeder.checkDatabaseStatus();
   
-  print('\n🗑️  Clearing old seeded data...');
+  debugPrint('\n🗑️  Clearing old seeded data...');
   await seeder.clearAllData();
   
-  print('\n🌱 Re-seeding with corrected service types...');
+  debugPrint('\n🌱 Re-seeding with corrected service types...');
   await seeder.seedAll();
   
-  print('\n✅ Re-seeding complete!');
-  print('\n📊 New database status:');
+  debugPrint('\n✅ Re-seeding complete!');
+  debugPrint('\n📊 New database status:');
   await seeder.checkDatabaseStatus();
   
-  print('\n🎉 Done! Service types are now correct:');
-  print('   - Dog Walking ✅');
-  print('   - Pet Sitting ✅');
-  print('   - Grooming ✅');
-  print('   - Training ✅ (was "Dog Training")');
-  print('   - Vet Visit ✅');
+  debugPrint('\n🎉 Done! Service types are now correct:');
+  debugPrint('   - Dog Walking ✅');
+  debugPrint('   - Pet Sitting ✅');
+  debugPrint('   - Grooming ✅');
+  debugPrint('   - Training ✅ (was "Dog Training")');
+  debugPrint('   - Vet Visit ✅');
 }

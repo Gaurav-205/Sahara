@@ -7,6 +7,19 @@ import '../models/review_model.dart';
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // Get user by ID
+  Future<UserModel?> getUserById(String userId) async {
+    try {
+      final doc = await _firestore.collection('users').doc(userId).get();
+      if (doc.exists) {
+        return UserModel.fromMap(doc.data()!, doc.id);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting user by ID: $e');
+      return null;
+    }
+  }
 
   // Get all caregivers
   Stream<List<UserModel>> getCaregivers() {

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class PetModel {
   final String id;
   final String ownerId;
@@ -76,10 +78,14 @@ class PetModel {
           : null,
       isNeutered: map['isNeutered'] ?? false,
       createdAt: map['createdAt'] != null
-          ? DateTime.parse(map['createdAt'])
+          ? (map['createdAt'] is Timestamp 
+              ? (map['createdAt'] as Timestamp).toDate()
+              : DateTime.parse(map['createdAt']))
           : DateTime.now(),
       updatedAt: map['updatedAt'] != null
-          ? DateTime.parse(map['updatedAt'])
+          ? (map['updatedAt'] is Timestamp 
+              ? (map['updatedAt'] as Timestamp).toDate()
+              : DateTime.parse(map['updatedAt']))
           : null,
     );
   }

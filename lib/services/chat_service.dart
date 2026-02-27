@@ -13,6 +13,11 @@ class ChatService {
     required String user1Name,
     required String user2Name,
   }) async {
+    // Validate users are different
+    if (userId1 == userId2) {
+      throw Exception('Cannot create chat with yourself');
+    }
+    
     // Check if chat already exists
     final existingChat = await _firestore
         .collection('chats')

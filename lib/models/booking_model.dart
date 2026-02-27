@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class BookingModel {
   final String id;
   final String ownerId;
@@ -37,13 +39,17 @@ class BookingModel {
       packageName: map['packageName'] ?? '',
       duration: map['duration'] ?? '',
       scheduledDate: map['scheduledDate'] != null
-          ? DateTime.parse(map['scheduledDate'])
+          ? (map['scheduledDate'] is Timestamp 
+              ? (map['scheduledDate'] as Timestamp).toDate()
+              : DateTime.parse(map['scheduledDate']))
           : DateTime.now(),
       status: map['status'] ?? 'pending',
       price: map['price']?.toDouble() ?? 0.0,
       notes: map['notes'],
       createdAt: map['createdAt'] != null
-          ? DateTime.parse(map['createdAt'])
+          ? (map['createdAt'] is Timestamp 
+              ? (map['createdAt'] as Timestamp).toDate()
+              : DateTime.parse(map['createdAt']))
           : DateTime.now(),
     );
   }

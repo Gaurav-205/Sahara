@@ -112,14 +112,27 @@ class SearchResultsScreen extends StatelessWidget {
         ),
         child: Row(
           children: [
+            // Profile Picture
             Container(
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
+                image: caregiver.photoUrl != null && caregiver.photoUrl!.isNotEmpty
+                    ? DecorationImage(
+                        image: NetworkImage(caregiver.photoUrl!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
-              child: const Icon(Icons.person_rounded, size: 24, color: Colors.white),
+              child: caregiver.photoUrl == null || caregiver.photoUrl!.isEmpty
+                  ? Icon(
+                      Icons.person_rounded,
+                      size: 24,
+                      color: AppColors.primary.withValues(alpha: 0.6),
+                    )
+                  : null,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -143,14 +156,14 @@ class SearchResultsScreen extends StatelessWidget {
                         const Icon(
                           Icons.verified_rounded,
                           size: 16,
-                          color: AppColors.textPrimary,
+                          color: AppColors.primary,
                         ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.star_rounded, size: 13, color: AppColors.textPrimary),
+                      const Icon(Icons.star_rounded, size: 13, color: Colors.amber),
                       const SizedBox(width: 4),
                       Text(
                         '${caregiver.rating?.toStringAsFixed(1) ?? '0.0'} • ${caregiver.completedBookings ?? 0} bookings',
@@ -168,12 +181,16 @@ class SearchResultsScreen extends StatelessWidget {
                       children: [
                         Icon(Icons.location_on_outlined, size: 12, color: Colors.grey[500]),
                         const SizedBox(width: 4),
-                        Text(
-                          caregiver.location!,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey[500],
-                            fontFamily: 'Montserrat',
+                        Expanded(
+                          child: Text(
+                            caregiver.location!,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey[500],
+                              fontFamily: 'Montserrat',
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -182,18 +199,59 @@ class SearchResultsScreen extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  '${caregiver.yearsOfExperience ?? 0} yrs exp',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.secondary,
-                    fontFamily: 'Montserrat',
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '${caregiver.yearsOfExperience ?? 0} yrs',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.secondary,
+                      fontFamily: 'Montserrat',
+                    ),
                   ),
                 ),
+                if (caregiver.isAvailable == true) ...[
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: AppColors.success,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Text(
+                          'Available',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.success,
+                            fontFamily: 'Montserrat',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ],
