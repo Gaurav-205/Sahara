@@ -6,7 +6,6 @@ import '../models/user_model.dart';
 import '../services/sound_service.dart';
 import 'login_screen_enhanced.dart';
 import 'edit_profile_screen.dart';
-import 'my_pets_screen.dart';
 import 'settings_screen.dart';
 import 'help_support_screen.dart';
 import 'privacy_policy_screen.dart';
@@ -258,21 +257,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
           ),
           const SizedBox(height: 8), // 8pt grid
-          
-          _buildMenuItem(
-            context: context,
-            soundService: soundService,
-            icon: Icons.pets_rounded,
-            title: 'My Pets',
-            subtitle: 'Manage your pets',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const MyPetsScreen()),
-              );
-            },
-          ),
-          const SizedBox(height: 8),
           
           _buildMenuItem(
             context: context,
