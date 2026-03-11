@@ -12,6 +12,7 @@ import 'providers/pet_provider.dart';
 import 'providers/caregiver_provider.dart';
 import 'providers/favorites_provider.dart';
 import 'providers/location_provider.dart';
+import 'providers/cart_provider.dart';
 import 'screens/splash_screen_enhanced.dart';
 import 'services/notification_service.dart';
 import 'services/sound_service.dart';
@@ -82,6 +83,7 @@ class SaharaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CaregiverProvider()),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
         ChangeNotifierProvider(create: (_) => LocationProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: MaterialApp(
         title: 'Sahara',

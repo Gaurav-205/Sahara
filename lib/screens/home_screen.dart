@@ -17,8 +17,8 @@ import 'service_selection_screen.dart';
 import 'package_selection_screen.dart';
 import 'my_pets_screen.dart';
 import 'notifications_screen.dart';
-import 'tracking_screen.dart';
 import 'adopt_pet_screen.dart';
+import 'shop_screen.dart';
 import '../theme/app_colors.dart';
 
 /// Home Screen - Main app entry point after authentication
@@ -94,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     final List<Widget> screens = [
       const HomeTab(),
-      const TrackingScreen(),
+      const ShopScreen(),
       const BookingsScreen(),
       const ProfileScreen(),
     ];
@@ -175,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     _buildNavItem(Icons.home_rounded, 'Home', 0),
-                    _buildNavItem(Icons.location_on_rounded, 'Tracking', 1),
+                    _buildNavItem(Icons.shopping_bag_rounded, 'Shop', 1),
                     const SizedBox(width: 72), // Space for elevated FAB
                     _buildNavItem(Icons.calendar_today_rounded, 'Bookings', 2),
                     _buildNavItem(Icons.person_rounded, 'Profile', 3),
@@ -195,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  /// Build navigation item (Home, Tracking, Bookings, Profile)
+  /// Build navigation item (Home, Shop, Bookings, Profile)
   Widget _buildNavItem(IconData icon, String label, int index) {
     final isSelected = _selectedIndex == index;
     return Expanded(

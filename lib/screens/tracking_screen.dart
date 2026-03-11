@@ -21,7 +21,12 @@ import 'dart:async';
 /// - Caregiver contact information
 /// - Auto-refresh every 30 seconds
 class TrackingScreen extends StatefulWidget {
-  const TrackingScreen({super.key});
+  final String? preselectedBookingId;
+  
+  const TrackingScreen({
+    super.key,
+    this.preselectedBookingId,
+  });
 
   @override
   State<TrackingScreen> createState() => _TrackingScreenState();
@@ -240,7 +245,16 @@ class _TrackingScreenState extends State<TrackingScreen> {
           // Auto-select first active booking if none selected
           if (_selectedBooking == null && activeBookings.isNotEmpty) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _selectBooking(activeBookings.first);
+              // If preselected booking ID is provided, select it
+              if (widget.preselectedBookingId != null) {
+                final preselected = activeBookings.firstWhere(
+                  (b) => b.id == widget.preselectedBookingId,
+                  orElse: () => activeBookings.first,
+                );
+                _selectBooking(preselected);
+              } else {
+                _selectBooking(activeBookings.first);
+              }
             });
           }
 

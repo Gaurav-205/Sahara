@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Modify this file to customize your launch splash screen -->
+<!-- Sahara App Launch Screen -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@android:color/white" />
+    <!-- Background color matching app theme -->
+    <item android:drawable="@color/launch_background_color" />
 
-    <!-- You can insert your own image assets here -->
-    <!-- <item>
+    <!-- Optional: Add your logo here -->
+    <!-- Uncomment and add logo.png to drawable folder
+    <item>
         <bitmap
             android:gravity="center"
-            android:src="@mipmap/launch_image" />
-    </item> -->
+            android:src="@drawable/logo" />
+    </item>
+    -->
 </layer-list>
