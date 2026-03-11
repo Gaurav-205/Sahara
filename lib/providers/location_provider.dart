@@ -76,9 +76,9 @@ class LocationProvider with ChangeNotifier {
         // Permission granted, get location
         _permissionGranted = true;
         debugPrint('Location permission granted');
-        await getCurrentLocation();
         _isLoading = false;
         notifyListeners();
+        await getCurrentLocation();
         return true;
       } else if (permissionStatus.isDenied) {
         _errorMessage = 'Location permission denied. Please try again.';

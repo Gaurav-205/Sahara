@@ -88,7 +88,7 @@ class UserModel {
       'phone': phone,
       'rating': rating,
       'completedBookings': completedBookings,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': Timestamp.fromDate(createdAt),
       'bio': bio,
       'services': services,
       'hourlyRate': hourlyRate,

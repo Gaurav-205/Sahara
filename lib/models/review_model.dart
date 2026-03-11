@@ -45,7 +45,7 @@ class ReviewModel {
       'ownerName': ownerName,
       'rating': rating,
       'comment': comment,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': Timestamp.fromDate(createdAt),
       'ownerPhotoUrl': ownerPhotoUrl,
     };
   }

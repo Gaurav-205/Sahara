@@ -31,6 +31,11 @@ class BookingStatusService {
     }
 
     debugPrint('🚀 Starting booking status service...');
+    
+    // Cancel any existing timer first to prevent multiple timers
+    _statusCheckTimer?.cancel();
+    _statusCheckTimer = null;
+    
     _isRunning = true;
 
     // Run immediately
@@ -163,19 +168,38 @@ class BookingStatusService {
   }
 
   /// Parse duration string to minutes
-  /// Examples: "30 minutes", "1 hour", "2 hours", "1.5 hours"
+  /// Examples: "30 minutes", "1 hour", "2 hours", "1.5 hours", "90 min"
   int _parseDuration(String duration) {
     try {
-      final lower = duration.toLowerCase();
+      final lower = duration.toLowerCase().trim();
+      
+      // Handle empty or null duration
+      if (lower.isEmpty) {
+        debugPrint('⚠️ Empty duration string, using default 60 minutes');
+        return 60;
+      }
 
-      // Extract number
-      final numberMatch = RegExp(r'[\d.]+').firstMatch(lower);
-      if (numberMatch == null) return 60; // Default 1 hour
+      // Extract number (supports integers and decimals)
+      final numberMatch = RegExp(r'(\d+\.?\d*)').firstMatch(lower);
+      if (numberMatch == null) {
+        debugPrint('⚠️ No number found in duration "$duration", using default 60 minutes');
+        return 60;
+      }
 
-      final number = double.parse(numberMatch.group(0)!);
+      final numberStr = numberMatch.group(1);
+      if (numberStr == null) {
+        debugPrint('⚠️ Failed to extract number from duration "$duration", using default 60 minutes');
+        return 60;
+      }
 
-      // Check if hours or minutes
-      if (lower.contains('hour')) {
+      final number = double.tryParse(numberStr);
+      if (number == null) {
+        debugPrint('⚠️ Failed to parse number "$numberStr" from duration "$duration", using default 60 minutes');
+        return 60;
+      }
+
+      // Check if hours, minutes, or days
+      if (lower.contains('hour') || lower.contains('hr')) {
         return (number * 60).round();
       } else if (lower.contains('min')) {
         return number.round();
@@ -183,7 +207,8 @@ class BookingStatusService {
         return (number * 24 * 60).round();
       }
 
-      // Default to minutes
+      // If no unit specified, assume minutes
+      debugPrint('⚠️ No time unit found in duration "$duration", assuming minutes');
       return number.round();
     } catch (e) {
       debugPrint('❌ Error parsing duration "$duration": $e');

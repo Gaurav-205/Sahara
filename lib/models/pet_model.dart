@@ -49,11 +49,11 @@ class PetModel {
       'medicalNotes': medicalNotes,
       'vaccinations': vaccinations,
       'isNeutered': isNeutered,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
+      'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
     };
     
-    if (includeId) {
+    if (includeId && id.isNotEmpty) {
       map['id'] = id;
     }
     

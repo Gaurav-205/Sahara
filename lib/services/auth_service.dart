@@ -45,6 +45,11 @@ class AuthService {
 
       debugPrint('✅ Firebase account created');
 
+      // Safely check if user exists before accessing uid
+      if (credential.user == null) {
+        throw Exception('Failed to create user account. Please try again.');
+      }
+
       final user = UserModel(
         uid: credential.user!.uid,
         email: email,
@@ -113,6 +118,11 @@ class AuthService {
       );
 
       debugPrint('✅ Firebase authentication successful');
+
+      // Safely check if user exists before accessing uid
+      if (credential.user == null) {
+        throw Exception('Authentication failed. Please try again.');
+      }
 
       final doc = await _firestore
           .collection('users')
@@ -183,8 +193,13 @@ class AuthService {
 
       // Sign in to Firebase with the Google credential
       final userCredential = await _auth.signInWithCredential(credential);
+      
+      // Safely check if user exists
+      if (userCredential.user == null) {
+        throw Exception('Google Sign-In failed. Please try again.');
+      }
+      
       final user = userCredential.user!;
-
       debugPrint('Google Sign-In: Firebase authentication successful - ${user.uid}');
 
       // Check if user already exists in Firestore

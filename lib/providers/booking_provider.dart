@@ -68,7 +68,10 @@ class BookingProvider with ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
+    // Cancel existing subscription to prevent memory leaks
     _userBookingsSubscription?.cancel();
+    _userBookingsSubscription = null;
+    
     _userBookingsSubscription = _firestoreService
         .getUserBookings(userId)
         .listen(
@@ -91,7 +94,10 @@ class BookingProvider with ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
+    // Cancel existing subscription to prevent memory leaks
     _caregiverBookingsSubscription?.cancel();
+    _caregiverBookingsSubscription = null;
+    
     _caregiverBookingsSubscription = _firestoreService
         .getCaregiverBookings(caregiverId)
         .listen(

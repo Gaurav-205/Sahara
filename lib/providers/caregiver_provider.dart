@@ -65,7 +65,10 @@ class CaregiverProvider with ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
+    // Cancel existing subscription to prevent memory leaks
     _caregiversSubscription?.cancel();
+    _caregiversSubscription = null;
+    
     _caregiversSubscription = _firestoreService.getCaregivers().listen(
       (caregivers) {
         _allCaregivers = caregivers;

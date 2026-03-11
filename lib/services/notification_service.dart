@@ -14,48 +14,65 @@ class NotificationService {
   String? get fcmToken => _fcmToken;
 
   Future<void> initialize() async {
-    // Request permission
-    NotificationSettings settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      provisional: false,
-    );
+    try {
+      // Request permission
+      NotificationSettings settings = await _messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        provisional: false,
+      );
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      debugPrint('User granted notification permission');
-      
-      // Get FCM token
-      _fcmToken = await _messaging.getToken();
-      debugPrint('FCM Token: $_fcmToken');
-      
-      // Initialize local notifications
-      await _initializeLocalNotifications();
-      
-      // Setup message handlers
-      _setupMessageHandlers();
-    } else {
-      debugPrint('User declined notification permission');
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        debugPrint('✅ User granted notification permission');
+        
+        // Get FCM token
+        _fcmToken = await _messaging.getToken();
+        debugPrint('FCM Token: $_fcmToken');
+        
+        // Initialize local notifications
+        await _initializeLocalNotifications();
+        
+        // Setup message handlers
+        _setupMessageHandlers();
+      } else if (settings.authorizationStatus == AuthorizationStatus.denied) {
+        debugPrint('⚠️ User denied notification permission');
+        // App can still function without notifications
+      } else if (settings.authorizationStatus == AuthorizationStatus.notDetermined) {
+        debugPrint('⚠️ Notification permission not determined');
+      } else {
+        debugPrint('⚠️ Notification permission status: ${settings.authorizationStatus}');
+      }
+    } catch (e) {
+      debugPrint('❌ Error initializing notifications: $e');
+      // Don't throw - app should continue even if notifications fail
     }
   }
 
   Future<void> _initializeLocalNotifications() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
-    
-    const settings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
+    try {
+      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const iosSettings = DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
+      
+      const settings = InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      );
 
-    await _localNotifications.initialize(
-      onDidReceiveNotificationResponse: _onNotificationTapped,
-      settings: settings,
-    );
+      await _localNotifications.initialize(
+        onDidReceiveNotificationResponse: _onNotificationTapped,
+        settings: settings,
+      );
+      
+      debugPrint('✅ Local notifications initialized');
+    } catch (e) {
+      debugPrint('❌ Error initializing local notifications: $e');
+      // Don't throw - continue without local notifications
+    }
   }
 
   void _setupMessageHandlers() {

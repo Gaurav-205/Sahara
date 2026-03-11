@@ -59,6 +59,7 @@ class FavoritesProvider with ChangeNotifier {
   Future<bool> addFavorite(String userId, String caregiverId) async {
     try {
       if (isFavorite(caregiverId)) {
+        debugPrint('Caregiver already in favorites');
         return true;
       }
 
@@ -68,11 +69,19 @@ class FavoritesProvider with ChangeNotifier {
         'favoriteCaregiversIds': FieldValue.arrayUnion([caregiverId])
       });
 
-      // Reload favorites
-      await loadFavorites(userId);
+      // Optimistically update local state instead of reloading
+      final caregiverDoc = await _firestore.collection('users').doc(caregiverId).get();
+      if (caregiverDoc.exists) {
+        final caregiver = UserModel.fromMap(caregiverDoc.data()!, caregiverDoc.id);
+        _favoriteCaregivers.add(caregiver);
+        notifyListeners();
+      }
+      
       return true;
     } catch (e) {
       debugPrint('Error adding favorite: $e');
+      _error = 'Failed to add favorite: $e';
+      notifyListeners();
       return false;
     }
   }
@@ -86,11 +95,15 @@ class FavoritesProvider with ChangeNotifier {
         'favoriteCaregiversIds': FieldValue.arrayRemove([caregiverId])
       });
 
-      // Reload favorites
-      await loadFavorites(userId);
+      // Optimistically update local state instead of reloading
+      _favoriteCaregivers.removeWhere((c) => c.uid == caregiverId);
+      notifyListeners();
+      
       return true;
     } catch (e) {
       debugPrint('Error removing favorite: $e');
+      _error = 'Failed to remove favorite: $e';
+      notifyListeners();
       return false;
     }
   }

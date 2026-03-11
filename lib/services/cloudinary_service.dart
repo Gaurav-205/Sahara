@@ -14,6 +14,12 @@ class CloudinaryService {
   /// Upload image to Cloudinary
   /// Returns the secure URL of the uploaded image
   Future<String?> uploadImage(File imageFile, {String folder = 'sahara'}) async {
+    // Validate configuration before attempting upload
+    if (!CloudinaryService.isConfigured()) {
+      debugPrint('❌ Cloudinary is not configured. Check .env file.');
+      throw Exception('Cloudinary configuration missing. Please check your .env file.');
+    }
+
     try {
       final url = Uri.parse(
         'https://api.cloudinary.com/v1_1/$cloudName/image/upload',
@@ -37,7 +43,13 @@ class CloudinaryService {
 
       debugPrint('📤 Uploading image to Cloudinary...');
       
-      final response = await request.send();
+      final response = await request.send().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Upload timeout. Please check your internet connection.');
+        },
+      );
+      
       final responseData = await response.stream.toBytes();
       final responseString = String.fromCharCodes(responseData);
       
@@ -50,11 +62,11 @@ class CloudinaryService {
       } else {
         debugPrint('❌ Upload failed: ${response.statusCode}');
         debugPrint('Response: $responseString');
-        return null;
+        throw Exception('Upload failed with status ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('❌ Error uploading image: $e');
-      return null;
+      rethrow;
     }
   }
 

@@ -79,14 +79,14 @@ class BookingModel {
       'serviceType': serviceType,
       'packageName': packageName,
       'duration': duration,
-      'scheduledDate': scheduledDate.toIso8601String(),
+      'scheduledDate': Timestamp.fromDate(scheduledDate),
       'status': status,
       'price': price,
       'notes': notes,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': Timestamp.fromDate(createdAt),
       'cancellationReason': cancellationReason,
-      'actualStartTime': actualStartTime?.toIso8601String(),
-      'actualEndTime': actualEndTime?.toIso8601String(),
+      'actualStartTime': actualStartTime != null ? Timestamp.fromDate(actualStartTime!) : null,
+      'actualEndTime': actualEndTime != null ? Timestamp.fromDate(actualEndTime!) : null,
     };
   }
 }

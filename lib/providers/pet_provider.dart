@@ -58,8 +58,18 @@ class PetProvider with ChangeNotifier {
     }
   }
 
+  // Lock to prevent concurrent pet additions
+  bool _isAddingPet = false;
+
   /// Add new pet
   Future<bool> addPet(PetModel pet) async {
+    // Prevent concurrent additions
+    if (_isAddingPet) {
+      debugPrint('PetProvider: Pet addition already in progress, skipping');
+      return false;
+    }
+
+    _isAddingPet = true;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -76,6 +86,7 @@ class PetProvider with ChangeNotifier {
       _pets.insert(0, addedPet);
       
       _isLoading = false;
+      _isAddingPet = false;
       notifyListeners();
       debugPrint('PetProvider: Pet added to local list successfully');
       return true;
@@ -83,6 +94,7 @@ class PetProvider with ChangeNotifier {
       debugPrint('PetProvider: Error adding pet: $e');
       _errorMessage = 'Failed to add pet: $e';
       _isLoading = false;
+      _isAddingPet = false;
       notifyListeners();
       return false;
     }
@@ -128,7 +140,9 @@ class PetProvider with ChangeNotifier {
     // Find the pet to get ownerId before deletion
     final pet = getPetById(petId);
     if (pet == null) {
-      _errorMessage = 'Pet not found';
+      _errorMessage = 'Pet not found. Unable to delete.';
+      notifyListeners();
+      debugPrint('PetProvider: Pet with ID $petId not found in local list');
       return false;
     }
     
