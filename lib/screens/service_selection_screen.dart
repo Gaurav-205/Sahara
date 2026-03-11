@@ -138,9 +138,12 @@ class ServiceSelectionScreen extends StatelessWidget {
               
               // Service cards list
               ...services.map((service) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: 12),
                 child: _buildServiceCard(context, service),
               )),
+              
+              // Bottom spacing
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -154,89 +157,146 @@ class ServiceSelectionScreen extends StatelessWidget {
 
   /// Build individual service card with navigation
   Widget _buildServiceCard(BuildContext context, ServiceData service) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => PackageSelectionScreen(
-              serviceType: service.title,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PackageSelectionScreen(
+                serviceType: service.title,
+              ),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(16),
+        splashColor: AppColors.primary.withValues(alpha: 0.05),
+        highlightColor: AppColors.primary.withValues(alpha: 0.02),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 2),
+              ),
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.02),
+                blurRadius: 6,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Icon container with gradient
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary,
+                        AppColors.primaryLight,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    service.icon,
+                    size: 26,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Service details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        service.title,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                          fontFamily: 'Montserrat',
+                          letterSpacing: -0.2,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        service.description,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          fontFamily: 'Montserrat',
+                          height: 1.3,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.secondary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              service.price,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.secondary,
+                                fontFamily: 'Montserrat',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Arrow icon
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[200]!, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.textPrimary.withValues(alpha: 0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                service.icon,
-                size: 24,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    service.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                      fontFamily: 'Montserrat',
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    service.description,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                      fontFamily: 'Montserrat',
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    service.price,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                      fontFamily: 'Montserrat',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 16,
-              color: Colors.grey[400],
-            ),
-          ],
         ),
       ),
     );

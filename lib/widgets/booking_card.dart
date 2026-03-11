@@ -5,7 +5,7 @@ import '../models/user_model.dart';
 import '../theme/app_colors.dart';
 import '../services/sound_service.dart';
 import '../screens/chat_screen.dart';
-import '../screens/select_booking_to_track_screen.dart';
+import '../screens/tracking_screen.dart';
 
 /// Booking Card Widget
 /// 
@@ -384,7 +384,9 @@ class BookingCard extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const SelectBookingToTrackScreen(),
+                            builder: (_) => TrackingScreen(
+                              preselectedBookingId: booking.id,
+                            ),
                           ),
                         );
                       },

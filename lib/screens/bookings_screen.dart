@@ -278,50 +278,67 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
           return _buildEmptyState(status);
         }
 
-        return RefreshIndicator(
-          onRefresh: () async {
-            // Refresh the stream by waiting briefly
-            await Future.delayed(const Duration(milliseconds: 300));
-          },
-          color: AppColors.primary,
-          child: ListView.separated(
-            padding: const EdgeInsets.all(20),
-            itemCount: filteredBookings.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 10),
-            itemBuilder: (context, index) {
-              final booking = filteredBookings[index];
-              return _buildSingleBookingCard(booking);
-            },
-          ),
-        );
-      },
-    );
-  }
-
-
-
-  // ============================================================================
-  // UI BUILDERS - BOOKING CARD
-  // ============================================================================
-
-  /// Builds a single booking card with caregiver data loading
-  Widget _buildSingleBookingCard(BookingModel booking) {
-    return FutureBuilder<UserModel?>(
-      future: _firestoreService.getUserById(booking.caregiverId),
-      builder: (context, snapshot) {
-        return BookingCard(
-          booking: booking,
-          caregiver: snapshot.data,
-          onCancel: (booking.status == 'pending' || booking.status == 'confirmed')
-              ? () => _handleCancelBooking(booking)
-              : null,
-          onTap: () {
-            _soundService.playTap();
+        // Batch fetch all caregiver data to avoid N+1 queries
+        return FutureBuilder<Map<String, UserModel>>(
+          future: _batchFetchCaregivers(filteredBookings),
+          builder: (context, caregiverSnapshot) {
+            final caregiverMap = caregiverSnapshot.data ?? {};
+            
+            return RefreshIndicator(
+              onRefresh: () async {
+                // Refresh the stream by waiting briefly
+                await Future.delayed(const Duration(milliseconds: 300));
+              },
+              color: AppColors.primary,
+              child: ListView.separated(
+                padding: const EdgeInsets.all(20),
+                itemCount: filteredBookings.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final booking = filteredBookings[index];
+                  final caregiver = caregiverMap[booking.caregiverId];
+                  return BookingCard(
+                    booking: booking,
+                    caregiver: caregiver,
+                    onCancel: (booking.status == 'pending' || booking.status == 'confirmed')
+                        ? () => _handleCancelBooking(booking)
+                        : null,
+                    onTap: () {
+                      _soundService.playTap();
+                    },
+                  );
+                },
+              ),
+            );
           },
         );
       },
     );
   }
+
+  /// Batch fetch caregiver data to avoid N+1 queries
+  Future<Map<String, UserModel>> _batchFetchCaregivers(List<BookingModel> bookings) async {
+    final caregiverMap = <String, UserModel>{};
+    final uniqueCaregiverIds = bookings.map((b) => b.caregiverId).toSet();
+    
+    // Fetch all caregivers in parallel
+    await Future.wait(
+      uniqueCaregiverIds.map((caregiverId) async {
+        try {
+          final caregiver = await _firestoreService.getUserById(caregiverId);
+          if (caregiver != null) {
+            caregiverMap[caregiverId] = caregiver;
+          }
+        } catch (e) {
+          debugPrint('Error fetching caregiver $caregiverId: $e');
+        }
+      }),
+    );
+    
+    return caregiverMap;
+  }
+
+
 
   // ============================================================================
   // CANCELLATION FLOW

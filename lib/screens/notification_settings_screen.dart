@@ -242,7 +242,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             ),
           ),
         ),
-        activeColor: AppColors.primary,
+        activeThumbColor: AppColors.primary,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
     );
