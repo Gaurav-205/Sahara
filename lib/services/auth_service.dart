@@ -14,11 +14,9 @@ class AuthService {
   
   AuthService() {
     _googleSignIn = GoogleSignIn.instance;
-    // Initialize with serverClientId for Android
-    _googleSignIn.initialize(
-      // Web OAuth client ID from google-services.json (client_type: 3)
-      serverClientId: '953036067023-4gqt1krgr19mmch135vqml7pr136m1q6.apps.googleusercontent.com',
-    );
+    // Note: serverClientId should be configured in google-services.json
+    // This is loaded automatically by the GoogleSignIn plugin
+    // If you need to override, set it in your Firebase Console
   }
 
   User? get currentUser => _auth.currentUser;

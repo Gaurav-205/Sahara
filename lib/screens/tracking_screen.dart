@@ -270,25 +270,6 @@ class _TrackingScreenState extends State<TrackingScreen> {
     );
   }
   
-  /// Dummy caregiver for demo tracking
-  UserModel get _dummyCaregiver => UserModel(
-    uid: 'dummy_caregiver_001',
-    email: 'priya.sharma@sahara.com',
-    name: 'Priya Sharma',
-    userType: 'caregiver',
-    photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face',
-    phone: '+91 98765 43210',
-    rating: 4.8,
-    completedBookings: 127,
-    createdAt: DateTime(2024, 6, 15),
-    bio: 'Certified pet care specialist with 5+ years of experience.',
-    location: 'Bengaluru, Karnataka',
-    services: ['Dog Walking', 'Pet Sitting', 'Grooming'],
-    yearsOfExperience: 5,
-    isVerified: true,
-    isAvailable: true,
-  );
-
   /// Dummy active booking (today, in progress)
   BookingModel get _dummyActiveBooking {
     final now = DateTime.now();
@@ -312,13 +293,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
   /// Select a booking for tracking
   Future<void> _selectBooking(BookingModel booking) async {
     try {
-      // Use dummy caregiver for dummy bookings, otherwise fetch from Firestore
-      UserModel? caregiver;
-      if (booking.id == 'dummy_active_001') {
-        caregiver = _dummyCaregiver;
-      } else {
-        caregiver = await _firestoreService.getUserById(booking.caregiverId);
-      }
+      // Fetch caregiver from Firestore
+      final caregiver = await _firestoreService.getUserById(booking.caregiverId);
       
       if (mounted) {
         setState(() {
@@ -437,98 +413,6 @@ class _TrackingScreenState extends State<TrackingScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-  
-  /// Build empty state
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.location_off_rounded,
-                size: 64,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'No Bookings Yet',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-                fontFamily: 'Montserrat',
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Book a service to start tracking your pet',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-                fontFamily: 'Montserrat',
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  /// Build no active bookings state
-  Widget _buildNoActiveBookings() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.schedule_rounded,
-                size: 64,
-                color: AppColors.accent,
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'No Active Services',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-                fontFamily: 'Montserrat',
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'You have no active bookings to track right now',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-                fontFamily: 'Montserrat',
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

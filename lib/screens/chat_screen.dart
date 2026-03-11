@@ -119,13 +119,27 @@ class _ChatScreenState extends State<ChatScreen> {
 
   /// Make a phone call to the caregiver
   Future<void> _makeCall() async {
-    final phoneNumber = '+919970065440';
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: phoneNumber,
-    );
-
     try {
+      // Fetch caregiver data to get phone number
+      final caregiver = await _firestoreService.getUserById(widget.caregiverId);
+      
+      if (caregiver == null || caregiver.phone == null || caregiver.phone!.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Phone number not available'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+      
+      final Uri launchUri = Uri(
+        scheme: 'tel',
+        path: caregiver.phone,
+      );
+
       if (await canLaunchUrl(launchUri)) {
         await launchUrl(launchUri);
       } else {

@@ -238,25 +238,6 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
   // DUMMY DATA
   // ============================================================================
 
-  /// Dummy caregiver for demo cards
-  UserModel get _dummyCaregiver => UserModel(
-    uid: 'dummy_caregiver_001',
-    email: 'priya.sharma@sahara.com',
-    name: 'Priya Sharma',
-    userType: 'caregiver',
-    photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face',
-    phone: '+91 98765 43210',
-    rating: 4.8,
-    completedBookings: 127,
-    createdAt: DateTime(2024, 6, 15),
-    bio: 'Certified pet care specialist with 5+ years of experience.',
-    location: 'Bengaluru, Karnataka',
-    services: ['Dog Walking', 'Pet Sitting', 'Grooming'],
-    yearsOfExperience: 5,
-    isVerified: true,
-    isAvailable: true,
-  );
-
   /// Dummy active booking (today, in progress)
   BookingModel get _dummyActiveBooking {
     final now = DateTime.now();
@@ -353,14 +334,6 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
             separatorBuilder: (context, index) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final booking = filteredBookings[index];
-              // Use local dummy caregiver for dummy bookings
-              if (booking.id == 'dummy_active_001' || booking.id == 'dummy_past_001') {
-                return BookingCard(
-                  booking: booking,
-                  caregiver: _dummyCaregiver,
-                  onTap: () { _soundService.playTap(); },
-                );
-              }
               return _buildSingleBookingCard(booking);
             },
           ),
