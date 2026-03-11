@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../services/sound_service.dart';
+import '../services/cloudinary_service.dart';
 import '../providers/auth_provider.dart';
 import '../providers/pet_provider.dart';
 import '../models/pet_model.dart';
@@ -9,6 +10,8 @@ import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/empty_state_widget.dart';
 import '../utils/validators.dart';
+import '../utils/image_picker_helper.dart';
+import 'dart:io';
 
 class MyPetsScreen extends StatefulWidget {
   const MyPetsScreen({super.key});
@@ -44,7 +47,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
       backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: const Text(
-          'My Dogs',
+          'My Pets',
           style: TextStyle(
             fontFamily: 'Montserrat',
             fontWeight: FontWeight.w700,
@@ -53,14 +56,34 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
-        automaticallyImplyLeading: false,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add_rounded),
-            onPressed: () {
-              _soundService.playTap();
-              _showAddPetDialog();
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Center(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  _soundService.playTap();
+                  _showAddPetDialog();
+                },
+                icon: const Icon(Icons.add_rounded, size: 20),
+                label: const Text(
+                  'Add',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -126,17 +149,33 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(
-              Icons.pets_rounded,
-              size: 24,
-              color: Colors.white,
+          // Pet photo or icon
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: pet.photoUrl != null
+                  ? Image.network(
+                      pet.photoUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.pets_rounded,
+                          size: 24,
+                          color: Colors.white,
+                        );
+                      },
+                    )
+                  : const Icon(
+                      Icons.pets_rounded,
+                      size: 24,
+                      color: Colors.white,
+                    ),
             ),
           ),
           const SizedBox(width: 12),
@@ -242,7 +281,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
           borderRadius: BorderRadius.circular(16),
         ),
         title: const Text(
-          'Delete Dog',
+          'Delete Pet',
           style: TextStyle(
             fontFamily: 'Montserrat',
             fontWeight: FontWeight.w700,
@@ -338,23 +377,27 @@ class AddPetDialog extends StatefulWidget {
 class _AddPetDialogState extends State<AddPetDialog> {
   final _formKey = GlobalKey<FormState>();
   final _soundService = SoundService();
+  final _cloudinaryService = CloudinaryService();
   late final TextEditingController _nameController;
   late final TextEditingController _ageController;
   late final TextEditingController _weightController;
   late String _selectedBreed;
   bool _isSubmitting = false;
+  File? _selectedPhotoFile;
+  String? _petPhotoUrl;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.existingPet?.name ?? '');
+    _nameController = TextEditingController(text: widget.existingPet?.name ?? 'Max');
     _ageController = TextEditingController(
-      text: widget.existingPet != null ? widget.existingPet!.age.toString() : '',
+      text: widget.existingPet != null ? widget.existingPet!.age.toString() : '2',
     );
     _weightController = TextEditingController(
-      text: widget.existingPet != null ? widget.existingPet!.weight.toString() : '',
+      text: widget.existingPet != null ? widget.existingPet!.weight.toString() : '25.0',
     );
     _selectedBreed = widget.existingPet?.breed ?? 'Labrador Retriever';
+    _petPhotoUrl = widget.existingPet?.photoUrl;
   }
 
   @override
@@ -405,6 +448,29 @@ class _AddPetDialogState extends State<AddPetDialog> {
       return;
     }
 
+    // Upload image if selected
+    if (_selectedPhotoFile != null) {
+      debugPrint('📤 Uploading pet image...');
+      _petPhotoUrl = await _cloudinaryService.uploadImage(
+        _selectedPhotoFile!,
+        folder: 'sahara/pets',
+      );
+      if (_petPhotoUrl == null) {
+        if (mounted) {
+          _soundService.playError();
+          setState(() => _isSubmitting = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to upload pet image'),
+              backgroundColor: AppColors.error,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return;
+        }
+      }
+    }
+
     final petData = PetModel(
       id: _isEditing ? widget.existingPet!.id : '',
       ownerId: authProvider.currentUser!.uid,
@@ -413,6 +479,7 @@ class _AddPetDialogState extends State<AddPetDialog> {
       breed: _selectedBreed,
       age: age,
       weight: weight,
+      photoUrl: _petPhotoUrl,
       createdAt: _isEditing ? widget.existingPet!.createdAt : DateTime.now(),
       updatedAt: DateTime.now(),
       isNeutered: false,
@@ -465,7 +532,7 @@ class _AddPetDialogState extends State<AddPetDialog> {
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Text(
-        _isEditing ? 'Edit Dog' : 'Add Dog',
+        _isEditing ? 'Edit Pet' : 'Add Pet',
         style: const TextStyle(
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.w700,
@@ -478,6 +545,86 @@ class _AddPetDialogState extends State<AddPetDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Pet photo section
+              Center(
+                child: Column(
+                  children: [
+                    // Photo preview or placeholder
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.3),
+                          width: 2,
+                        ),
+                      ),
+                      child: _selectedPhotoFile != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(14),
+                              child: Image.file(
+                                _selectedPhotoFile!,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : _petPhotoUrl != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: Image.network(
+                                    _petPhotoUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Center(
+                                        child: Icon(
+                                          Icons.pets_rounded,
+                                          size: 50,
+                                          color: AppColors.primary.withValues(alpha: 0.5),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                )
+                              : Center(
+                                  child: Icon(
+                                    Icons.pets_rounded,
+                                    size: 50,
+                                    color: AppColors.primary.withValues(alpha: 0.5),
+                                  ),
+                                ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Upload photo button
+                    ElevatedButton.icon(
+                      onPressed: _isSubmitting
+                          ? null
+                          : () async {
+                              final photoFile = await ImagePickerHelper.pickImage(context);
+                              if (photoFile != null) {
+                                setState(() => _selectedPhotoFile = photoFile);
+                                _soundService.playClick();
+                              }
+                            },
+                      icon: const Icon(Icons.camera_alt_rounded),
+                      label: Text(
+                        _selectedPhotoFile != null || _petPhotoUrl != null
+                            ? 'Change Photo'
+                            : 'Upload Photo',
+                        style: const TextStyle(fontFamily: 'Montserrat'),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
               TextFormField(
                 controller: _nameController,
                 enabled: !_isSubmitting,
@@ -486,7 +633,7 @@ class _AddPetDialogState extends State<AddPetDialog> {
                   color: AppColors.textPrimary,
                 ),
                 decoration: InputDecoration(
-                  labelText: 'Dog Name',
+                  labelText: 'Pet Name',
                   labelStyle: const TextStyle(fontFamily: 'Montserrat'),
                   prefixIcon: const Icon(Icons.pets_rounded, color: AppColors.primary),
                   border: OutlineInputBorder(

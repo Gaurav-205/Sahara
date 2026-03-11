@@ -35,57 +35,75 @@ class FirestoreService {
   // Get top rated caregivers
   Future<List<UserModel>> getTopCaregivers({int limit = 10}) async {
     try {
-      // Try with orderBy first
+      debugPrint('Fetching top caregivers (limit: $limit)');
+      
+      // Get all caregivers and sort in memory to avoid index requirements
       final snapshot = await _firestore
           .collection('users')
           .where('userType', isEqualTo: 'caregiver')
-          .orderBy('rating', descending: true)
-          .limit(limit)
           .get();
 
-      return snapshot.docs
+      final caregivers = snapshot.docs
           .map((doc) => UserModel.fromMap(doc.data(), doc.id))
           .toList();
-    } catch (e) {
-      debugPrint('Error with orderBy query, falling back to simple query: $e');
-      // Fallback: Get all caregivers and sort in memory
-      try {
-        final snapshot = await _firestore
-            .collection('users')
-            .where('userType', isEqualTo: 'caregiver')
-            .get();
-
-        final caregivers = snapshot.docs
-            .map((doc) => UserModel.fromMap(doc.data(), doc.id))
-            .toList();
-        
-        // Sort by rating in memory
-        caregivers.sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
-        
-        // Return limited results
-        return caregivers.take(limit).toList();
-      } catch (e2) {
-        debugPrint('Error getting caregivers: $e2');
+      
+      if (caregivers.isEmpty) {
+        debugPrint('No caregivers found');
         return [];
       }
+      
+      // Sort by rating in memory
+      caregivers.sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
+      
+      final result = caregivers.take(limit).toList();
+      debugPrint('Found ${result.length} top caregivers');
+      return result;
+    } catch (e) {
+      debugPrint('Error getting top caregivers: $e');
+      return [];
     }
+  }
+
+  // Get top rated caregivers as a stream for real-time updates
+  Stream<List<UserModel>> getTopCaregiversStream({int limit = 10}) {
+    return getCaregivers().map((caregivers) {
+      // Sort by rating in memory
+      caregivers.sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
+      return caregivers.take(limit).toList();
+    });
   }
 
   // Search caregivers by service
   Future<List<UserModel>> searchCaregiversByService(String service) async {
     try {
+      // Normalize service name for matching
+      final normalizedService = _normalizeServiceName(service);
+      
       final snapshot = await _firestore
           .collection('users')
           .where('userType', isEqualTo: 'caregiver')
-          .where('services', arrayContains: service)
           .get();
 
       return snapshot.docs
           .map((doc) => UserModel.fromMap(doc.data(), doc.id))
+          .where((user) {
+            if (user.services == null) return false;
+            // Check if caregiver has the service (accounting for variations like "Training" vs "Dog Training")
+            return user.services!.any((caregiverService) => 
+              _normalizeServiceName(caregiverService).contains(normalizedService) ||
+              normalizedService.contains(_normalizeServiceName(caregiverService))
+            );
+          })
           .toList();
     } catch (e) {
+      debugPrint('Error searching caregivers by service: $e');
       return [];
     }
+  }
+
+  /// Normalize service names to handle variations (e.g., "Training" -> "training")
+  String _normalizeServiceName(String service) {
+    return service.toLowerCase().trim();
   }
 
   // Search caregivers by location
@@ -138,21 +156,12 @@ class FirestoreService {
       return _firestore
           .collection('bookings')
           .where('ownerId', isEqualTo: userId)
-          .orderBy('scheduledDate', descending: true)
           .snapshots()
-          .handleError((error) {
-            debugPrint('Error with orderBy query: $error');
-            // Fallback to query without orderBy
-            return _firestore
-                .collection('bookings')
-                .where('ownerId', isEqualTo: userId)
-                .snapshots();
-          })
           .map((snapshot) {
             final bookings = snapshot.docs
                 .map((doc) => BookingModel.fromMap(doc.data(), doc.id))
                 .toList();
-            // Sort in memory if orderBy failed
+            // Sort by date in memory to avoid index requirement
             bookings.sort((a, b) => b.scheduledDate.compareTo(a.scheduledDate));
             return bookings;
           });
@@ -169,21 +178,12 @@ class FirestoreService {
       return _firestore
           .collection('bookings')
           .where('caregiverId', isEqualTo: caregiverId)
-          .orderBy('scheduledDate', descending: true)
           .snapshots()
-          .handleError((error) {
-            debugPrint('Error with orderBy query: $error');
-            // Fallback to query without orderBy
-            return _firestore
-                .collection('bookings')
-                .where('caregiverId', isEqualTo: caregiverId)
-                .snapshots();
-          })
           .map((snapshot) {
             final bookings = snapshot.docs
                 .map((doc) => BookingModel.fromMap(doc.data(), doc.id))
                 .toList();
-            // Sort in memory if orderBy failed
+            // Sort by date in memory to avoid index requirement
             bookings.sort((a, b) => b.scheduledDate.compareTo(a.scheduledDate));
             return bookings;
           });
@@ -198,6 +198,14 @@ class FirestoreService {
   Future<void> updateBookingStatus(String bookingId, String status) async {
     await _firestore.collection('bookings').doc(bookingId).update({
       'status': status,
+    });
+  }
+
+  // Cancel booking with reason
+  Future<void> cancelBookingWithReason(String bookingId, String reason) async {
+    await _firestore.collection('bookings').doc(bookingId).update({
+      'status': 'cancelled',
+      'cancellationReason': reason,
     });
   }
 
@@ -259,5 +267,215 @@ class FirestoreService {
   Future<void> updatePaymentStatus(String paymentId, String status) async {
     // No-op
   }
+
+  // ============================================================================
+  // CHAT METHODS
+  // ============================================================================
+
+  /// Get or create a chat room between owner and caregiver
+  Future<String?> getOrCreateChatRoom({
+    required String ownerId,
+    required String caregiverId,
+    required String ownerName,
+    required String caregiverName,
+    required String? caregiverPhotoUrl,
+    required String? caregiverEmail,
+  }) async {
+    try {
+      // Check if chat room exists
+      final snapshot = await _firestore
+          .collection('chat_rooms')
+          .where('ownerId', isEqualTo: ownerId)
+          .where('caregiverId', isEqualTo: caregiverId)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs.first.id;
+      }
+
+      // Create new chat room
+      final chatRoomRef = await _firestore.collection('chat_rooms').add({
+        'ownerId': ownerId,
+        'caregiverId': caregiverId,
+        'ownerName': ownerName,
+        'caregiverName': caregiverName,
+        'caregiverPhotoUrl': caregiverPhotoUrl,
+        'caregiverEmail': caregiverEmail,
+        'createdAt': Timestamp.now(),
+        'lastMessageAt': Timestamp.now(),
+        'lastMessage': '',
+        'unreadCount': 0,
+      });
+
+      return chatRoomRef.id;
+    } catch (e) {
+      debugPrint('Error creating chat room: $e');
+      return null;
+    }
+  }
+
+  /// Send a message in a chat room
+  Future<bool> sendChatMessage({
+    required String chatRoomId,
+    required String senderId,
+    required String senderName,
+    required String message,
+  }) async {
+    try {
+      debugPrint('📤 Sending message to chat room: $chatRoomId');
+      
+      // First verify the chat room exists
+      final roomDoc = await _firestore
+          .collection('chat_rooms')
+          .doc(chatRoomId)
+          .get();
+      
+      if (!roomDoc.exists) {
+        debugPrint('❌ Chat room does not exist: $chatRoomId');
+        throw Exception('Chat room not found. Please refresh and try again.');
+      }
+      
+      // Add message
+      await _firestore
+          .collection('chat_rooms')
+          .doc(chatRoomId)
+          .collection('messages')
+          .add({
+        'chatRoomId': chatRoomId,
+        'senderId': senderId,
+        'senderName': senderName,
+        'message': message,
+        'timestamp': Timestamp.now(),
+        'isRead': false,
+        'imageUrl': null,
+      });
+
+      // Update last message in chat room
+      await _firestore.collection('chat_rooms').doc(chatRoomId).update({
+        'lastMessage': message,
+        'lastMessageAt': Timestamp.now(),
+      });
+
+      debugPrint('✅ Message sent successfully');
+      return true;
+    } catch (e) {
+      debugPrint('❌ Error sending message: $e');
+      return false;
+    }
+  }
+
+  /// Get messages stream for a chat room
+  Stream<List<Map<String, dynamic>>> getChatMessages(String chatRoomId) {
+    debugPrint('📥 Getting messages for chat room: $chatRoomId');
+    
+    return _firestore
+        .collection('chat_rooms')
+        .doc(chatRoomId)
+        .collection('messages')
+        .orderBy('timestamp', descending: false)
+        .snapshots()
+        .map((snapshot) {
+          final messages = snapshot.docs
+              .map((doc) => {...doc.data(), 'id': doc.id})
+              .toList();
+          debugPrint('✅ Retrieved ${messages.length} messages');
+          return messages;
+        });
+  }
+
+  /// Update a message in a chat room
+  Future<void> updateMessage(
+    String chatRoomId,
+    String messageId,
+    String newMessage,
+  ) async {
+    try {
+      debugPrint('✏️ Updating message: $messageId');
+      await _firestore
+          .collection('chat_rooms')
+          .doc(chatRoomId)
+          .collection('messages')
+          .doc(messageId)
+          .update({
+            'message': newMessage,
+            'edited': true,
+            'editedAt': Timestamp.now(),
+          });
+      debugPrint('✅ Message updated successfully');
+    } catch (e) {
+      debugPrint('❌ Error updating message: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a message from a chat room
+  Future<void> deleteMessage(String chatRoomId, String messageId) async {
+    try {
+      debugPrint('🗑️ Deleting message: $messageId');
+      await _firestore
+          .collection('chat_rooms')
+          .doc(chatRoomId)
+          .collection('messages')
+          .doc(messageId)
+          .delete();
+      debugPrint('✅ Message deleted successfully');
+    } catch (e) {
+      debugPrint('❌ Error deleting message: $e');
+      rethrow;
+    }
+  }
+
+  // ============================================================================
+  // REPORT METHODS
+  // ============================================================================
+
+  /// Submit a report against a caregiver
+  Future<bool> submitReport({
+    required String reporterId,
+    required String reporterName,
+    required String caregiverId,
+    required String caregiverName,
+    required String reason,
+    required String description,
+  }) async {
+    try {
+      await _firestore.collection('caregiver_reports').add({
+        'reporterId': reporterId,
+        'reporterName': reporterName,
+        'caregiverId': caregiverId,
+        'caregiverName': caregiverName,
+        'reason': reason,
+        'description': description,
+        'createdAt': Timestamp.now(),
+        'status': 'pending',
+        'adminNotes': null,
+      });
+
+      return true;
+    } catch (e) {
+      debugPrint('Error submitting report: $e');
+      return false;
+    }
+  }
+
+  /// Get reports for a caregiver (admin only)
+  Future<List<Map<String, dynamic>>> getCaregiverReports(String caregiverId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('caregiver_reports')
+          .where('caregiverId', isEqualTo: caregiverId)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => {...doc.data(), 'id': doc.id})
+          .toList();
+    } catch (e) {
+      debugPrint('Error getting reports: $e');
+      return [];
+    }
+  }
 }
+
 

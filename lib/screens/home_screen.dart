@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
 import '../providers/auth_provider.dart';
 import '../providers/favorites_provider.dart';
+import '../providers/location_provider.dart';
 import '../services/firestore_service.dart';
 import '../models/user_model.dart';
 import '../widgets/filter_bottom_sheet.dart';
@@ -15,7 +16,9 @@ import 'search_results_screen.dart';
 import 'service_selection_screen.dart';
 import 'package_selection_screen.dart';
 import 'my_pets_screen.dart';
-import 'messages_coming_soon_screen.dart';
+import 'notifications_screen.dart';
+import 'tracking_screen.dart';
+import 'adopt_pet_screen.dart';
 import '../theme/app_colors.dart';
 
 /// Home Screen - Main app entry point after authentication
@@ -91,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     final List<Widget> screens = [
       const HomeTab(),
-      const MyPetsScreen(),
+      const TrackingScreen(),
       const BookingsScreen(),
       const ProfileScreen(),
     ];
@@ -172,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     _buildNavItem(Icons.home_rounded, 'Home', 0),
-                    _buildNavItem(Icons.pets_rounded, 'Pets', 1),
+                    _buildNavItem(Icons.location_on_rounded, 'Tracking', 1),
                     const SizedBox(width: 72), // Space for elevated FAB
                     _buildNavItem(Icons.calendar_today_rounded, 'Bookings', 2),
                     _buildNavItem(Icons.person_rounded, 'Profile', 3),
@@ -192,14 +195,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  /// Build navigation item (Home, Pets, Bookings, Profile)
+  /// Build navigation item (Home, Tracking, Bookings, Profile)
   Widget _buildNavItem(IconData icon, String label, int index) {
     final isSelected = _selectedIndex == index;
     return Expanded(
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => setState(() => _selectedIndex = index),
+          onTap: () {
+            // Close quick actions overlay and navigate
+            setState(() {
+              _showQuickActions = false;
+              _selectedIndex = index;
+            });
+          },
           borderRadius: BorderRadius.circular(12),
           splashColor: Colors.white.withValues(alpha: 0.04),
           highlightColor: Colors.transparent,
@@ -390,8 +399,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           
           // Perform action immediately (overlay stays in tree, just invisible)
           if (label.contains('Pet')) {
-            // Switch to Pets tab
-            setState(() => _selectedIndex = 1);
+            // Navigate to My Pets screen
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const MyPetsScreen()),
+            );
           } else if (label.contains('Service')) {
             Navigator.push(
               context,
@@ -509,6 +521,18 @@ class _HomeTabState extends State<HomeTab> {
   
   /// Show suggestions overlay
   bool _showSuggestions = false;
+  
+  /// Carousel page controller
+  late PageController _carouselController;
+  
+  /// Current carousel page
+  int _currentCarouselPage = 0;
+  
+  /// Carousel auto-play timer
+  Timer? _carouselTimer;
+  
+  /// Cached top caregivers future to prevent reloading on carousel slide
+  late Future<List<UserModel>> _topCaregiversFuture;
 
   // ============================================================================
   // LIFECYCLE METHODS
@@ -517,8 +541,31 @@ class _HomeTabState extends State<HomeTab> {
   @override
   void initState() {
     super.initState();
+    _carouselController = PageController(initialPage: 0);
+    _topCaregiversFuture = _firestoreService.getTopCaregivers(limit: 5);
     _loadFavorites();
     _searchController.addListener(_onSearchChanged);
+    _startCarouselAutoPlay();
+    
+    // Automatically request location permission on app load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _requestLocationAutomatically();
+    });
+  }
+  
+  /// Automatically request location permission when user lands on home
+  Future<void> _requestLocationAutomatically() async {
+    try {
+      final locationProvider = Provider.of<LocationProvider>(context, listen: false);
+      
+      // Only request if not already granted
+      if (!locationProvider.permissionGranted) {
+        debugPrint('Auto-requesting location permission...');
+        await locationProvider.requestLocationPermission();
+      }
+    } catch (e) {
+      debugPrint('Error auto-requesting location: $e');
+    }
   }
 
   /// Load user's favorites
@@ -577,6 +624,8 @@ class _HomeTabState extends State<HomeTab> {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _debounceTimer?.cancel();
+    _carouselTimer?.cancel();
+    _carouselController.dispose();
     super.dispose();
   }
 
@@ -599,13 +648,19 @@ class _HomeTabState extends State<HomeTab> {
           color: AppColors.secondary,
           child: CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(child: _buildHeader(userName)),
+              // Scrollable header with greeting and location
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                  child: _buildStickyHeader(userName),
+                ),
+              ),
               SliverToBoxAdapter(child: _buildSearchBar()),
               SliverToBoxAdapter(child: _buildServices()),
               SliverToBoxAdapter(child: _buildFeaturedSection()),
               SliverToBoxAdapter(child: _buildTopCaregivers()),
+              SliverToBoxAdapter(child: _buildAdoptPet()),
               SliverToBoxAdapter(child: _buildTipsSection()),
-              SliverToBoxAdapter(child: _buildTestimonials()),
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           ),
@@ -614,86 +669,145 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  // ============================================================================
-  // UI BUILDER METHODS
-  // ============================================================================
-
-  /// Build header with greeting
-  Widget _buildHeader(String userName) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        'Hello, $userName!',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                          letterSpacing: -0.5,
-                          fontFamily: 'Montserrat',
-                          height: 1.2,
+  /// Build sticky header with greeting and location
+  Widget _buildStickyHeader(String userName) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Greeting row with messages
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Greeting text
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'Hello, $userName!',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.5,
+                            fontFamily: 'Montserrat',
+                            height: 1.2,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    const Icon(
-                      Icons.waving_hand_rounded,
-                      size: 22,
-                      color: Color(0xFFFFB74D),
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.waving_hand_rounded,
+                        size: 22,
+                        color: Color(0xFFFFB74D),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Location Display
+                  Consumer<LocationProvider>(
+                    builder: (context, locationProvider, _) {
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: Container(
+                          key: ValueKey(locationProvider.permissionGranted),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.accent.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: AppColors.accent.withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.location_on_rounded,
+                                size: 16,
+                                color: AppColors.accent,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  locationProvider.isLoading
+                                      ? 'Getting location...'
+                                      : locationProvider.permissionGranted
+                                          ? locationProvider.getLocationString()
+                                          : 'Requesting location...',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.accent,
+                                    fontFamily: 'Montserrat',
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (locationProvider.isLoading)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 6),
+                                  child: SizedBox(
+                                    width: 12,
+                                    height: 12,
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        AppColors.accent.withValues(alpha: 0.6),
+                                      ),
+                                      strokeWidth: 1.5,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              // Messages button - Instagram style
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const MessagesComingSoonScreen(),
-                      ),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(50),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    child: Icon(
-                      Icons.messenger_outline_rounded,
-                      size: 24,
-                      color: AppColors.textPrimary,
+            ),
+            const SizedBox(width: 8),
+            // Notifications button
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationsScreen(),
                     ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(50),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  child: Icon(
+                    Icons.notifications_outlined,
+                    size: 24,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Find perfect care for your pet',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w400,
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
+
+  // ============================================================================
+  // UI BUILDER METHODS
+  // ============================================================================
 
   /// Build search bar with filter button
   Widget _buildSearchBar() {
@@ -942,27 +1056,32 @@ class _HomeTabState extends State<HomeTab> {
       ServiceData(
         'Dog Walking',
         Icons.directions_walk_rounded,
-        AppColors.primary,
+        'Take your pet for a walk',
+        '₹299',
       ),
       ServiceData(
         'Pet Sitting',
         Icons.home_rounded,
-        AppColors.primary,
+        'Pet care while you are away',
+        '₹499',
       ),
       ServiceData(
         'Grooming',
         Icons.content_cut_rounded,
-        AppColors.primary,
+        'Professional grooming service',
+        '₹599',
       ),
       ServiceData(
-        'Training',
+        'Dog Training',
         Icons.school_rounded,
-        AppColors.primary,
+        'Train your pet effectively',
+        '₹799',
       ),
       ServiceData(
         'Vet Visit',
         Icons.local_hospital_rounded,
-        AppColors.primary,
+        'Visit to veterinarian',
+        '₹699',
       ),
     ];
 
@@ -1036,7 +1155,7 @@ class _HomeTabState extends State<HomeTab> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: service.color,
+                color: AppColors.primary,
                 borderRadius: BorderRadius.circular(11),
               ),
               child: Icon(service.icon, size: 22, color: Colors.white),
@@ -1107,7 +1226,7 @@ class _HomeTabState extends State<HomeTab> {
           ),
           const SizedBox(height: 14),
           FutureBuilder<List<UserModel>>(
-            future: _firestoreService.getTopCaregivers(limit: 5),
+            future: _topCaregiversFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
@@ -1323,8 +1442,43 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  /// Build featured promotion section
+  /// Start carousel auto-play timer
+  void _startCarouselAutoPlay() {
+    _carouselTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (_carouselController.hasClients) {
+        final nextPage = (_currentCarouselPage + 1) % 3;
+        _carouselController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  /// Build featured promotion section with carousel
   Widget _buildFeaturedSection() {
+    final offers = [
+      {
+        'title': 'Premium Care',
+        'subtitle': 'Get quality service',
+        'image': 'assets/images/Offer1.jpg',
+        'color': AppColors.secondary,
+      },
+      {
+        'title': 'Special Offer',
+        'subtitle': 'Exclusive deals today',
+        'image': 'assets/images/Offer2.jpg',
+        'color': AppColors.primary,
+      },
+      {
+        'title': 'Best Service',
+        'subtitle': 'Trusted caregivers',
+        'image': 'assets/images/Offer3.jpg',
+        'color': AppColors.accent,
+      },
+    ];
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       child: Column(
@@ -1341,88 +1495,56 @@ class _HomeTabState extends State<HomeTab> {
             ),
           ),
           const SizedBox(height: 14),
-          InkWell(
-            onTap: () {
-              // Navigate to premium care details
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Premium Care - 20% off first booking!'),
-                  backgroundColor: AppColors.primary,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+          SizedBox(
+            height: 180,
+            child: PageView.builder(
+              controller: _carouselController,
+              onPageChanged: (index) {
+                setState(() => _currentCarouselPage = index);
+              },
+              itemCount: offers.length,
+              itemBuilder: (context, index) {
+                final offer = offers[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: _buildOfferCard(
+                    offer['title'] as String,
+                    offer['subtitle'] as String,
+                    offer['image'] as String,
+                    offer['color'] as Color,
                   ),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.secondary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Premium Care',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            fontFamily: 'Montserrat',
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Get 20% off on your first booking with verified caregivers',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.white.withValues(alpha: 0.85),
-                            fontFamily: 'Montserrat',
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            'Learn More',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                              fontFamily: 'Montserrat',
-                            ),
-                          ),
-                        ),
-                      ],
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Carousel indicators
+          Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (int i = 0; i < offers.length; i++)
+                  GestureDetector(
+                    onTap: () {
+                      _carouselController.animateToPage(
+                        i,
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    child: Container(
+                      width: _currentCarouselPage == i ? 24 : 8,
+                      height: 8,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        color: _currentCarouselPage == i
+                            ? AppColors.primary
+                            : AppColors.border,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.star_rounded,
-                      size: 32,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
+              ],
             ),
           ),
         ],
@@ -1430,7 +1552,235 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  /// Build pet care tips section
+  /// Build individual offer card with gradient and image
+  Widget _buildOfferCard(String title, String subtitle, String imagePath, Color color) {
+    return InkWell(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$title - $subtitle'),
+            backgroundColor: color,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Background image with fade effect from right
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  imagePath,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            // Gradient overlay from left (full color to center, then fade)
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        color.withValues(alpha: 0.98),
+                        color.withValues(alpha: 0.98),
+                        color.withValues(alpha: 0.5),
+                        color.withValues(alpha: 0.1),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.4, 0.6, 0.8, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Text content on the left
+            Positioned(
+              left: 20,
+              top: 20,
+              bottom: 20,
+              right: 80,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      fontFamily: 'Montserrat',
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontFamily: 'Montserrat',
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'Tap to view',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        fontFamily: 'Montserrat',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build Adopt a Pet section with CTA button
+  Widget _buildAdoptPet() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Background pet image with fade
+              Positioned.fill(
+                child: Image.network(
+                  'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&h=300&fit=crop',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(color: AppColors.primary),
+                ),
+              ),
+              // Fade overlay
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        AppColors.primary.withValues(alpha: 0.88),
+                        AppColors.primary.withValues(alpha: 0.55),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Give a Pet a Loving Home',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        fontFamily: 'Montserrat',
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Browse our selection of pets awaiting adoption. Find your perfect companion today.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white70,
+                        fontFamily: 'Montserrat',
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const AdoptPetScreen()),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.secondary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'Explore Pets for Adoption',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Montserrat',
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Build pet care tips section with 2-column vertical layout
   Widget _buildTipsSection() {
     final tips = [
       // Seasonal Tips
@@ -1473,300 +1823,103 @@ class _HomeTabState extends State<HomeTab> {
             ),
           ),
           const SizedBox(height: 14),
-          ...tips.map((tip) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: InkWell(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${tip['title']} - Learn more about pet care'),
-                    backgroundColor: AppColors.primary,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+          // 2-column grid layout
+          GridView.builder(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.85,
+            ),
+            itemCount: tips.length,
+            itemBuilder: (context, index) {
+              final tip = tips[index];
+              return InkWell(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${tip['title']} - Learn more about pet care'),
+                      backgroundColor: AppColors.primary,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      duration: const Duration(seconds: 2),
                     ),
-                    duration: const Duration(seconds: 2),
+                  );
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[200]!, width: 1),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.textPrimary.withValues(alpha: 0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                );
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[200]!, width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.textPrimary.withValues(alpha: 0.03),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: AppColors.accent,
-                        borderRadius: BorderRadius.circular(11),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          color: AppColors.accent,
+                          borderRadius: BorderRadius.circular(11),
+                        ),
+                        child: Icon(
+                          tip['icon'] as IconData,
+                          size: 22,
+                          color: Colors.white,
+                        ),
                       ),
-                      child: Icon(
-                        tip['icon'] as IconData,
-                        size: 22,
-                        color: Colors.white,
+                      const SizedBox(height: 12),
+                      Text(
+                        tip['title'] as String,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                          fontFamily: 'Montserrat',
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            tip['title'] as String,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                              fontFamily: 'Montserrat',
-                            ),
+                      const SizedBox(height: 6),
+                      Expanded(
+                        child: Text(
+                          tip['description'] as String,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                            fontFamily: 'Montserrat',
+                            height: 1.3,
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            tip['description'] as String,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                              fontFamily: 'Montserrat',
-                            ),
-                          ),
-                        ],
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 16,
-                      color: Colors.grey[400],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ),
-          )),
-        ],
-      ),
-    );
-  }
-
-  /// Build testimonials section
-  Widget _buildTestimonials() {
-    final testimonials = [
-      {
-        'name': 'Priya Malhotra',
-        'location': 'Koregaon Park, Pune',
-        'rating': '5.0',
-        'text': 'Absolutely wonderful! My Golden Retriever Bruno loves his daily walks with Rahul. Very punctual and sends photo updates every time.',
-        'photoUrl': 'https://xsgames.co/randomusers/assets/avatars/female/20.jpg',
-      },
-      {
-        'name': 'Arjun Reddy',
-        'location': 'Baner, Pune',
-        'rating': '5.0',
-        'text': 'Best dog sitting service! Anjali took amazing care of my Labrador during my vacation. She even sent videos of playtime. Highly recommended!',
-        'photoUrl': 'https://xsgames.co/randomusers/assets/avatars/male/78.jpg',
-      },
-      {
-        'name': 'Sneha Kapoor',
-        'location': 'Viman Nagar, Pune',
-        'rating': '4.9',
-        'text': 'My Pug Momo was anxious at first, but the caregiver was so patient and gentle. Now Momo gets excited whenever she sees her!',
-        'photoUrl': 'https://xsgames.co/randomusers/assets/avatars/female/40.jpg',
-      },
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'What Pet Owners Say',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-              fontFamily: 'Montserrat',
-              letterSpacing: -0.3,
-            ),
+              );
+            },
           ),
-          const SizedBox(height: 14),
-          ...testimonials.map((testimonial) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: InkWell(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Review by ${testimonial['name']}'),
-                    backgroundColor: AppColors.primary,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[200]!, width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.textPrimary.withValues(alpha: 0.03),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary,
-                            borderRadius: BorderRadius.circular(11),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(11),
-                            child: CachedNetworkImage(
-                              imageUrl: testimonial['photoUrl'] as String,
-                              fit: BoxFit.cover,
-                              width: 44,
-                              height: 44,
-                              placeholder: (context, url) => Container(
-                                color: AppColors.secondary,
-                                child: const Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                  ),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) {
-                                debugPrint('Error loading testimonial image: $error');
-                                return const Icon(
-                                  Icons.person_rounded,
-                                  size: 22,
-                                  color: Colors.white,
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                testimonial['name'] as String,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
-                                  fontFamily: 'Montserrat',
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.location_on_rounded,
-                                    size: 12,
-                                    color: Colors.grey[500],
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Flexible(
-                                    child: Text(
-                                      testimonial['location'] as String,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[500],
-                                        fontFamily: 'Montserrat',
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              size: 14,
-                              color: AppColors.secondary,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              testimonial['rating'] as String,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                                fontFamily: 'Montserrat',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      testimonial['text'] as String,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                        fontFamily: 'Montserrat',
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          )),
         ],
       ),
     );
   }
 }
 
-// ============================================================================
-// DATA MODEL
-// ============================================================================
-
-/// Service data model for service cards
-class ServiceData {
-  final String title;
-  final IconData icon;
-  final Color color;
-  final String? imageUrl;
-
-  ServiceData(this.title, this.icon, this.color, {this.imageUrl});
-}
 
 
 

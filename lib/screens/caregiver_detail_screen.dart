@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 import '../models/user_model.dart';
 import '../models/review_model.dart';
 import '../models/service_package_model.dart';
-import '../services/firestore_service.dart';
 import '../services/sound_service.dart';
 import '../services/package_service.dart';
+import '../providers/auth_provider.dart';
+import '../providers/favorites_provider.dart';
 import '../widgets/custom_button.dart';
 import '../theme/app_colors.dart';
-import 'messages_coming_soon_screen.dart';
+
 import 'booking_confirmation_screen.dart';
 
 /// Caregiver Detail Screen
@@ -53,7 +55,6 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
   // STATE VARIABLES
   // ============================================================================
 
-  final FirestoreService _firestoreService = FirestoreService();
   final SoundService _soundService = SoundService();
   List<ReviewModel> _reviews = [];
   bool _isLoadingReviews = true;
@@ -73,12 +74,14 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
   // ============================================================================
 
   /// Loads reviews for the caregiver from Firestore
+  /// For now, generates dummy reviews based on caregiver rating
   Future<void> _loadReviews() async {
     try {
-      final reviews = await _firestoreService.getCaregiverReviews(widget.caregiver.uid);
+      // Generate 3-4 dummy reviews based on caregiver rating
+      _reviews = _generateDummyReviews();
+      
       if (mounted) {
         setState(() {
-          _reviews = reviews;
           _isLoadingReviews = false;
         });
       }
@@ -91,21 +94,71 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
     }
   }
 
+  /// Generates dummy reviews based on caregiver rating
+  List<ReviewModel> _generateDummyReviews() {
+    final rating = widget.caregiver.rating ?? 4.5;
+    final reviewCount = rating >= 4.8 ? 4 : 3; // 4 reviews for highly rated, 3 for others
+    
+    final List<Map<String, dynamic>> reviewTemplates = [
+      {
+        'name': 'Priya Sharma',
+        'text': 'Absolutely excellent service! My Golden Retriever Bruno loves spending time with this caregiver. Very professional and caring.',
+        'rating': 5.0,
+      },
+      {
+        'name': 'Arjun Patel',
+        'text': 'Amazing experience! The caregiver was punctual, responsible, and my Labrador was so happy. Highly recommended!',
+        'rating': 5.0,
+      },
+      {
+        'name': 'Sneha Kapoor',
+        'text': 'Great caregiver! Took wonderful care of my Persian cat. Very gentle and sends regular updates with photos.',
+        'rating': rating >= 4.7 ? 5.0 : 4.0,
+      },
+      {
+        'name': 'Rahul Desai',
+        'text': 'Very satisfied with the service. My Beagle was well taken care of. Professional and reliable. Will book again!',
+        'rating': rating >= 4.5 ? 5.0 : 4.0,
+      },
+      {
+        'name': 'Ananya Verma',
+        'text': 'Good service overall. The caregiver was attentive and caring. My Pug seemed comfortable and happy.',
+        'rating': rating >= 4.8 ? 5.0 : 4.0,
+      },
+      {
+        'name': 'Vikram Singh',
+        'text': 'Fantastic experience! Very knowledgeable about pet care. My German Shepherd was in great hands. Thank you!',
+        'rating': 5.0,
+      },
+    ];
+
+    // Shuffle and take required number of reviews
+    final selectedReviews = (reviewTemplates..shuffle()).take(reviewCount).toList();
+    
+    // Convert to ReviewModel objects
+    return selectedReviews.asMap().entries.map((entry) {
+      final index = entry.key;
+      final review = entry.value;
+      
+      // Calculate dates (most recent to oldest)
+      final daysAgo = index * 7 + (index * 3); // Spacing reviews apart
+      final reviewDate = DateTime.now().subtract(Duration(days: daysAgo));
+      
+      return ReviewModel(
+        id: 'review_${widget.caregiver.uid}_$index',
+        caregiverId: widget.caregiver.uid,
+        ownerId: 'owner_$index',
+        ownerName: review['name'] as String,
+        rating: review['rating'] as double,
+        comment: review['text'] as String,
+        createdAt: reviewDate,
+      );
+    }).toList();
+  }
+
   // ============================================================================
   // ACTION HANDLERS
   // ============================================================================
-
-  /// Handles favorite button press
-  void _handleFavorite() {
-    _soundService.playTap();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Added to favorites!'),
-        backgroundColor: AppColors.success,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
 
   /// Handles share button press
   void _handleShare() {
@@ -115,19 +168,6 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
         content: const Text('Share profile'),
         backgroundColor: AppColors.info,
         duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  /// Handles message button press
-  Future<void> _handleMessage() async {
-    _soundService.playClick();
-    
-    // Navigate to Coming Soon screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const MessagesComingSoonScreen(),
       ),
     );
   }
@@ -194,10 +234,6 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
         },
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.favorite_border, color: Colors.white),
-          onPressed: _handleFavorite,
-        ),
         IconButton(
           icon: const Icon(Icons.share, color: Colors.white),
           onPressed: _handleShare,
@@ -876,18 +912,48 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
   // UI BUILDERS - ACTION BUTTONS
   // ============================================================================
 
-  /// Builds the action buttons (message, book now)
+  /// Builds the action buttons (favorite, message, book now)
   Widget _buildActionButtons() {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final favoritesProvider = Provider.of<FavoritesProvider>(context);
+    final userId = authProvider.currentUser?.uid;
+    final isFavorite = favoritesProvider.isFavorite(widget.caregiver.uid);
+
     return Row(
       children: [
-        Expanded(
-          child: CustomButton(
-            text: 'Message',
-            backgroundColor: AppColors.surface,
-            textColor: AppColors.primary,
-            onPressed: _handleMessage,
+        // Favorite button
+        if (userId != null)
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: isFavorite ? AppColors.error : AppColors.textTertiary,
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: IconButton(
+              onPressed: () async {
+                _soundService.playTap();
+                await favoritesProvider.toggleFavorite(userId, widget.caregiver.uid);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isFavorite
+                            ? 'Removed from favorites'
+                            : 'Added to favorites',
+                      ),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
+              icon: Icon(
+                isFavorite ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
+                color: isFavorite ? AppColors.error : AppColors.textSecondary,
+              ),
+            ),
           ),
-        ),
         const SizedBox(width: 12),
         Expanded(
           child: CustomButton(
@@ -933,6 +999,7 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
       case 'grooming':
         return Icons.content_cut;
       case 'training':
+      case 'dog training':
         return Icons.school;
       case 'vet visit':
       case 'medication administration':

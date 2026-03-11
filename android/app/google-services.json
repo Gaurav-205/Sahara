@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "953036067023-vrevkksj2b3e297l376nm7tgo3u53oda.apps.googleusercontent.com",
+          "client_id": "953036067023-31f7552ucl4f7b57oj3rh315dgt1cagk.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.sahara",
-            "certificate_hash": "ed023c0bbc123d83bddf560fe0ad165c14ef632b"
+            "certificate_hash": "1d90489247114f8e7117ce2eef0d900ccead2add"
           }
         },
         {

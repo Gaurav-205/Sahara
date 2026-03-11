@@ -11,8 +11,11 @@ import 'providers/booking_provider.dart';
 import 'providers/pet_provider.dart';
 import 'providers/caregiver_provider.dart';
 import 'providers/favorites_provider.dart';
+import 'providers/location_provider.dart';
 import 'screens/splash_screen_enhanced.dart';
 import 'services/notification_service.dart';
+import 'services/sound_service.dart';
+import 'services/booking_status_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +25,13 @@ void main() async {
     await dotenv.load(fileName: ".env");
   } catch (e) {
     debugPrint('Error loading .env file: $e');
+  }
+  
+  // Initialize Sound Service early
+  try {
+    await SoundService().init();
+  } catch (e) {
+    debugPrint('SoundService initialization error: $e');
   }
   
   // Initialize Firebase
@@ -53,6 +63,9 @@ void main() async {
     ),
   );
   
+  // Start booking status service for automatic status updates
+  BookingStatusService().startService();
+  
   runApp(const SaharaApp());
 }
 
@@ -68,6 +81,7 @@ class SaharaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PetProvider()),
         ChangeNotifierProvider(create: (_) => CaregiverProvider()),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()),
       ],
       child: MaterialApp(
         title: 'Sahara',
