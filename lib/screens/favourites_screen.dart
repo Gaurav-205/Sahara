@@ -55,7 +55,8 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    // Use listen: false to prevent unnecessary rebuilds
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
     final userId = authProvider.currentUser?.uid;
 

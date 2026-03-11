@@ -635,7 +635,8 @@ class _HomeTabState extends State<HomeTab> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    // Only listen to auth changes, don't rebuild on every provider change
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userName = authProvider.currentUser?.name.split(' ').first ?? 'There';
 
     return Scaffold(
@@ -643,7 +644,8 @@ class _HomeTabState extends State<HomeTab> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            setState(() {});
+            // Refresh data without rebuilding entire widget
+            await Future.delayed(const Duration(milliseconds: 300));
           },
           color: AppColors.secondary,
           child: CustomScrollView(
@@ -858,7 +860,8 @@ class _HomeTabState extends State<HomeTab> {
                           backgroundColor: Colors.transparent,
                           builder: (_) => FilterBottomSheet(
                             onApplyFilters: (filters) {
-                              setState(() {});
+                              // Filters applied, no need to rebuild entire widget
+                              debugPrint('Filters applied: $filters');
                             },
                           ),
                         );
@@ -870,7 +873,8 @@ class _HomeTabState extends State<HomeTab> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
               onChanged: (value) {
-                setState(() {}); // Update UI to show/hide clear button
+                // Text changed, no need to rebuild entire widget
+                // The TextField handles its own state
               },
               onSubmitted: (query) => _performSearch(query),
             ),

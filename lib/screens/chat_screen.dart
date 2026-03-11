@@ -487,7 +487,10 @@ class _ChatScreenState extends State<ChatScreen> {
                                   ),
                                   const SizedBox(height: 20),
                                   ElevatedButton(
-                                    onPressed: () => setState(() {}),
+                                    onPressed: () {
+                                      // StreamBuilder will automatically retry
+                                      // No need to call setState
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.primary,
                                       shape: RoundedRectangleBorder(

@@ -41,7 +41,8 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
   @override
   Widget build(BuildContext context) {
     final petProvider = Provider.of<PetProvider>(context);
-    final authProvider = Provider.of<AuthProvider>(context);
+    // Use listen: false for auth since we only need it once
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
     return Scaffold(
       backgroundColor: AppColors.surface,

@@ -149,7 +149,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    // Use listen: false to prevent rebuilds on every auth change
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final currentUser = authProvider.currentUser;
 
     if (currentUser == null) {
@@ -373,43 +374,204 @@ class _TrackingScreenState extends State<TrackingScreen> {
     }
   }
   
-  /// Build booking selector dropdown
+  /// Build booking selector with horizontal scrolling cards
   Widget _buildBookingSelector(List<BookingModel> bookings) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.pets_rounded, color: AppColors.primary, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _selectedBooking?.id,
-                hint: const Text('Select booking to track'),
-                isExpanded: true,
-                items: bookings.map((booking) {
-                  return DropdownMenuItem(
-                    value: booking.id,
-                    child: Text(
-                      '${booking.serviceType} - ${DateFormat('MMM dd, hh:mm a').format(booking.scheduledDate)}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontFamily: 'Montserrat',
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                const Icon(Icons.pets_rounded, color: AppColors.primary, size: 20),
+                const SizedBox(width: 8),
+                const Text(
+                  'Active Bookings',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                    fontFamily: 'Montserrat',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${bookings.length}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                      fontFamily: 'Montserrat',
                     ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  final booking = bookings.firstWhere((b) => b.id == value);
-                  _selectBooking(booking);
-                },
-              ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 100,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              scrollDirection: Axis.horizontal,
+              itemCount: bookings.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final booking = bookings[index];
+                final isSelected = _selectedBooking?.id == booking.id;
+                
+                return GestureDetector(
+                  onTap: () => _selectBooking(booking),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 280,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isSelected 
+                          ? AppColors.primary 
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected 
+                            ? AppColors.primary 
+                            : AppColors.border,
+                        width: isSelected ? 2 : 1,
+                      ),
+                      boxShadow: isSelected ? [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ] : [],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                booking.serviceType,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected 
+                                      ? Colors.white 
+                                      : AppColors.textPrimary,
+                                  fontFamily: 'Montserrat',
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            _buildMiniStatusBadge(booking.status, isSelected),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          booking.packageName,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isSelected 
+                                ? Colors.white.withValues(alpha: 0.9) 
+                                : AppColors.textSecondary,
+                            fontFamily: 'Montserrat',
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        const Spacer(),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.calendar_today_rounded,
+                              size: 12,
+                              color: isSelected 
+                                  ? Colors.white.withValues(alpha: 0.8) 
+                                  : AppColors.textTertiary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              DateFormat('MMM dd, hh:mm a').format(booking.scheduledDate),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isSelected 
+                                    ? Colors.white.withValues(alpha: 0.9) 
+                                    : AppColors.textSecondary,
+                                fontFamily: 'Montserrat',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// Build mini status badge for booking cards
+  Widget _buildMiniStatusBadge(String status, bool isSelected) {
+    Color bgColor;
+    Color dotColor;
+    
+    if (status == 'in_progress') {
+      bgColor = isSelected 
+          ? Colors.white.withValues(alpha: 0.2) 
+          : AppColors.success.withValues(alpha: 0.1);
+      dotColor = isSelected ? Colors.white : AppColors.success;
+    } else {
+      bgColor = isSelected 
+          ? Colors.white.withValues(alpha: 0.2) 
+          : AppColors.secondary.withValues(alpha: 0.1);
+      dotColor = isSelected ? Colors.white : AppColors.secondary;
+    }
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 5,
+            height: 5,
+            decoration: BoxDecoration(
+              color: dotColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            status == 'in_progress' ? 'Live' : 'Soon',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: dotColor,
+              fontFamily: 'Montserrat',
             ),
           ),
         ],

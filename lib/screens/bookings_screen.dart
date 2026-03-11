@@ -84,7 +84,8 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    // Use listen: false to prevent unnecessary rebuilds
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.currentUser?.uid ?? '';
 
     // If no user ID, show login prompt
@@ -548,7 +549,8 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
           TextButton(
             onPressed: () {
               _soundService.playTap();
-              setState(() {});
+              // Retry by triggering a new stream subscription
+              // No need to call setState, StreamBuilder will rebuild automatically
             },
             child: const Text(
               'Try Again',

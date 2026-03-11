@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'onboarding_screen_enhanced.dart';
 import 'permissions_screen.dart';
+import 'home_screen.dart';
 import '../theme/app_colors.dart';
 
 /// Splash Screen - Industry Standard Implementation
@@ -139,6 +141,32 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   void _scheduleNavigation() {
     Timer(const Duration(milliseconds: 2800), () async {
       if (!mounted) return;
+      
+      // Check Firebase auth state first
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+      
+      if (firebaseUser != null) {
+        // User is logged in, go directly to home
+        debugPrint('🔐 User already logged in: ${firebaseUser.email}');
+        
+        // Navigate to home screen
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => 
+                const HomeScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 500),
+          ),
+        );
+        return;
+      }
+      
+      // No user logged in, proceed with normal flow
+      debugPrint('🔓 No user logged in, showing onboarding');
       
       // Check if this is first launch
       final prefs = await SharedPreferences.getInstance();

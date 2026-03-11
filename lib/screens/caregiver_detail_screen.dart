@@ -914,7 +914,8 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
 
   /// Builds the action buttons (favorite, message, book now)
   Widget _buildActionButtons() {
-    final authProvider = Provider.of<AuthProvider>(context);
+    // Use listen: false for auth, only listen to favorites changes
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
     final userId = authProvider.currentUser?.uid;
     final isFavorite = favoritesProvider.isFavorite(widget.caregiver.uid);

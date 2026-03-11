@@ -370,38 +370,69 @@ class BookingCard extends StatelessWidget {
             ],
             
             // Action Buttons
-            if (caregiver != null && (booking.status == 'confirmed' || booking.status == 'pending')) ...[
+            if (caregiver != null && (booking.status == 'confirmed' || booking.status == 'pending' || booking.status == 'in_progress')) ...[
               const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  onPressed: () {
-                    soundService.playTap();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChatScreen(
-                          ownerId: booking.ownerId,
-                          ownerName: 'User', // Will be set by current user in ChatScreen
-                          caregiverId: booking.caregiverId,
-                          caregiverName: caregiver!.name,
-                          caregiverPhotoUrl: caregiver!.photoUrl ?? '',
-                          caregiverEmail: caregiver!.email,
-                          caregiverRating: caregiver!.rating,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Track button for active bookings
+                  if (booking.status == 'in_progress' || booking.status == 'confirmed') ...[
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        soundService.playTap();
+                        Navigator.pushNamed(context, '/tracking');
+                      },
+                      icon: const Icon(Icons.location_on_rounded, size: 16),
+                      label: const Text(
+                        'Track',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Montserrat',
                         ),
                       ),
-                    );
-                  },
-                  icon: const Icon(Icons.chat_rounded),
-                  color: AppColors.primary,
-                  tooltip: 'Chat with ${caregiver!.name}',
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  // Chat button
+                  IconButton(
+                    onPressed: () {
+                      soundService.playTap();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatScreen(
+                            ownerId: booking.ownerId,
+                            ownerName: 'User', // Will be set by current user in ChatScreen
+                            caregiverId: booking.caregiverId,
+                            caregiverName: caregiver!.name,
+                            caregiverPhotoUrl: caregiver!.photoUrl ?? '',
+                            caregiverEmail: caregiver!.email,
+                            caregiverRating: caregiver!.rating,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.chat_rounded),
+                    color: AppColors.primary,
+                    tooltip: 'Chat with ${caregiver!.name}',
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             ],
             

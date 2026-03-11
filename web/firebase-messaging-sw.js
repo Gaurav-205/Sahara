@@ -5,7 +5,8 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js'
 importScripts('https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js');
 
 // Firebase config from firebase_options.dart (Web platform)
-firebase.initializeApp({
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
   apiKey: "AIzaSyCpNvKNhWx_5LUQvlyWBhWOm4cIsleHqGY",
   authDomain: "sahara-a72.firebaseapp.com",
   projectId: "sahara-a72",
@@ -13,7 +14,7 @@ firebase.initializeApp({
   messagingSenderId: "953036067023",
   appId: "1:953036067023:web:4a38e3d0949a0da9e6e7ba",
   measurementId: "G-JK11PVGXV4"
-});
+};
 
 const messaging = firebase.messaging();
 
