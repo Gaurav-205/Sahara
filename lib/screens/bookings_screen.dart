@@ -235,47 +235,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
   // UI BUILDERS - BOOKINGS LIST
   // ============================================================================
 
-  // ============================================================================
-  // DUMMY DATA
-  // ============================================================================
-
-  /// Dummy active booking (today, in progress)
-  BookingModel get _dummyActiveBooking {
-    final now = DateTime.now();
-    return BookingModel(
-      id: 'dummy_active_001',
-      ownerId: 'current_user',
-      caregiverId: 'dummy_caregiver_001',
-      petId: 'dummy_pet_001',
-      serviceType: 'Dog Walking',
-      packageName: 'Premium Walk - 60 min',
-      duration: '1 hour',
-      scheduledDate: DateTime(now.year, now.month, now.day, now.hour, 0),
-      status: 'in_progress',
-      price: 499,
-      notes: 'Please use the harness instead of collar. He pulls a lot!',
-      createdAt: now.subtract(const Duration(hours: 2)),
-      actualStartTime: now.subtract(const Duration(minutes: 30)),
-    );
-  }
-
-  /// Dummy past booking (completed)
-  BookingModel get _dummyPastBooking => BookingModel(
-    id: 'dummy_past_001',
-    ownerId: 'current_user',
-    caregiverId: 'dummy_caregiver_001',
-    petId: 'dummy_pet_001',
-    serviceType: 'Pet Sitting',
-    packageName: 'Full Day Care',
-    duration: '8 hours',
-    scheduledDate: DateTime(2026, 3, 5, 9, 0),
-    status: 'completed',
-    price: 1299,
-    notes: 'Fed twice, played in the park. Very well behaved!',
-    createdAt: DateTime(2026, 3, 4, 18, 0),
-    actualStartTime: DateTime(2026, 3, 5, 9, 0),
-    actualEndTime: DateTime(2026, 3, 5, 17, 0),
-  );
+  // Dummy data removed - app now uses only real Firestore data
 
   // ============================================================================
   // UI BUILDERS - BOOKINGS LIST
@@ -312,12 +272,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
           }
         }).toList();
 
-        // Inject dummy cards for Active and Past tabs
-        if (status == 'active') {
-          filteredBookings.insert(0, _dummyActiveBooking);
-        } else if (status == 'completed') {
-          filteredBookings.insert(0, _dummyPastBooking);
-        }
+        // No dummy data - using only real bookings from Firestore
 
         if (filteredBookings.isEmpty) {
           return _buildEmptyState(status);

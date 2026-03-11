@@ -239,8 +239,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
             b.status == 'confirmed' || b.status == 'in_progress'
           ).toList();
 
-          // Inject dummy active booking so tracking always has something to show
-          activeBookings.insert(0, _dummyActiveBooking);
+          // No dummy data - using only real active bookings from Firestore
 
           // Auto-select first active booking if none selected
           if (_selectedBooking == null && activeBookings.isNotEmpty) {
@@ -285,25 +284,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
     );
   }
   
-  /// Dummy active booking (today, in progress)
-  BookingModel get _dummyActiveBooking {
-    final now = DateTime.now();
-    return BookingModel(
-      id: 'dummy_active_001',
-      ownerId: 'current_user',
-      caregiverId: 'dummy_caregiver_001',
-      petId: 'dummy_pet_001',
-      serviceType: 'Dog Walking',
-      packageName: 'Premium Walk - 60 min',
-      duration: '1 hour',
-      scheduledDate: DateTime(now.year, now.month, now.day, now.hour, 0),
-      status: 'in_progress',
-      price: 499,
-      notes: 'Please use the harness instead of collar. He pulls a lot!',
-      createdAt: now.subtract(const Duration(hours: 2)),
-      actualStartTime: now.subtract(const Duration(minutes: 30)),
-    );
-  }
+  // Dummy data removed - app now uses only real Firestore data
 
   /// Select a booking for tracking
   Future<void> _selectBooking(BookingModel booking) async {

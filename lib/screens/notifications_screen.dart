@@ -16,69 +16,25 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  // Dummy notifications data
-  final List<Map<String, dynamic>> _notifications = [
-    {
-      'id': '1',
-      'type': 'booking',
-      'title': 'Booking Confirmed!',
-      'message': 'Your dog walking session with Rahul Kumar is confirmed for tomorrow at 6:00 PM.',
-      'time': '2 hours ago',
-      'isRead': false,
-      'icon': Icons.check_circle_rounded,
-      'iconColor': AppColors.success,
-    },
-    {
-      'id': '2',
-      'type': 'reminder',
-      'title': 'Upcoming Appointment',
-      'message': 'Pet grooming session scheduled for today at 4:00 PM with Anjali Sharma.',
-      'time': '5 hours ago',
-      'isRead': false,
-      'icon': Icons.alarm_rounded,
-      'iconColor': AppColors.secondary,
-    },
-    {
-      'id': '3',
-      'type': 'offer',
-      'title': '20% Off on First Booking!',
-      'message': 'Get 20% discount on your first pet sitting service. Use code: FIRST20',
-      'time': '1 day ago',
-      'isRead': true,
-      'icon': Icons.local_offer_rounded,
-      'iconColor': AppColors.accent,
-    },
-    {
-      'id': '4',
-      'type': 'review',
-      'title': 'Rate Your Experience',
-      'message': 'How was your dog walking service with Priya? Please share your feedback.',
-      'time': '2 days ago',
-      'isRead': true,
-      'icon': Icons.star_rounded,
-      'iconColor': AppColors.warning,
-    },
-    {
-      'id': '5',
-      'type': 'update',
-      'title': 'Profile Updated',
-      'message': 'Your pet profile for Bruno has been successfully updated.',
-      'time': '3 days ago',
-      'isRead': true,
-      'icon': Icons.pets_rounded,
-      'iconColor': AppColors.primary,
-    },
-    {
-      'id': '6',
-      'type': 'booking',
-      'title': 'Booking Cancelled',
-      'message': 'Your vet visit appointment for March 10 has been cancelled by the caregiver.',
-      'time': '4 days ago',
-      'isRead': true,
-      'icon': Icons.cancel_rounded,
-      'iconColor': AppColors.error,
-    },
-  ];
+  // Real notifications will come from Firebase Cloud Messaging
+  // This list will be populated from Firestore 'notifications' collection
+  final List<Map<String, dynamic>> _notifications = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  /// Load notifications from Firestore
+  Future<void> _loadNotifications() async {
+    // TODO: Implement real notification fetching from Firestore
+    // Query: firestore.collection('notifications').where('userId', '==', currentUserId).orderBy('createdAt', descending: true)
+    // For now, notifications will only come from FCM push notifications
+    setState(() {
+      // Empty list - will be populated when notification system is fully integrated
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

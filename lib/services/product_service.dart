@@ -10,12 +10,16 @@ class ProductService {
     return _firestore
         .collection('products')
         .where('isAvailable', isEqualTo: true)
-        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
+      final products = snapshot.docs
           .map((doc) => ProductModel.fromMap(doc.data(), doc.id))
           .toList();
+      
+      // Sort by name if createdAt is not available
+      products.sort((a, b) => a.name.compareTo(b.name));
+      
+      return products;
     });
   }
 
@@ -29,12 +33,16 @@ class ProductService {
         .collection('products')
         .where('category', isEqualTo: category)
         .where('isAvailable', isEqualTo: true)
-        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
+      final products = snapshot.docs
           .map((doc) => ProductModel.fromMap(doc.data(), doc.id))
           .toList();
+      
+      // Sort by name
+      products.sort((a, b) => a.name.compareTo(b.name));
+      
+      return products;
     });
   }
 
@@ -72,148 +80,218 @@ class ProductService {
   }
 
   /// Seed sample products (for development)
+  /// 
+  /// NOTE: For comprehensive seeding with better data, use ComprehensiveDataSeeder instead
   Future<void> seedProducts() async {
     final products = [
+      // FOOD CATEGORY
       {
-        'name': 'Premium Dog Food 5kg',
-        'description':
-            'High-quality dog food with real chicken, vegetables, and essential nutrients. Perfect for adult dogs of all breeds.',
-        'price': 999.0,
+        'name': 'Royal Canin Maxi Adult Dog Food',
+        'description': 'Premium nutrition for large breed adult dogs (26-44kg). Supports bone & joint health with optimal protein content.',
+        'price': 3499.0,
         'category': 'Food',
-        'images': ['https://via.placeholder.com/400x400?text=Dog+Food'],
-        'rating': 4.5,
-        'reviewCount': 120,
-        'stock': 50,
-        'isAvailable': true,
-        'discount': '20% OFF',
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      },
-      {
-        'name': 'Interactive Cat Toy Bundle',
-        'description':
-            'Set of 5 interactive toys including feather wand, balls, and mice. Keeps your cat entertained for hours.',
-        'price': 499.0,
-        'category': 'Toys',
-        'images': ['https://via.placeholder.com/400x400?text=Cat+Toys'],
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Froyal-canin-dog-food.jpg?alt=media'],
         'rating': 4.8,
-        'reviewCount': 85,
-        'stock': 30,
-        'isAvailable': true,
-        'discount': '15% OFF',
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      },
-      {
-        'name': 'Adjustable Pet Collar',
-        'description':
-            'Durable nylon collar with quick-release buckle. Adjustable size fits most pets. Available in multiple colors.',
-        'price': 299.0,
-        'category': 'Accessories',
-        'images': ['https://via.placeholder.com/400x400?text=Pet+Collar'],
-        'rating': 4.3,
-        'reviewCount': 65,
-        'stock': 100,
-        'isAvailable': true,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      },
-      {
-        'name': 'Stainless Steel Food Bowl Set',
-        'description':
-            'Set of 2 stainless steel bowls with non-slip rubber base. Easy to clean and dishwasher safe.',
-        'price': 399.0,
-        'category': 'Accessories',
-        'images': ['https://via.placeholder.com/400x400?text=Food+Bowls'],
-        'rating': 4.6,
-        'reviewCount': 95,
-        'stock': 75,
-        'isAvailable': true,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      },
-      {
-        'name': 'Natural Pet Shampoo',
-        'description':
-            'Gentle, pH-balanced shampoo with natural ingredients. Suitable for sensitive skin. Pleasant lavender scent.',
-        'price': 249.0,
-        'category': 'Grooming',
-        'images': ['https://via.placeholder.com/400x400?text=Pet+Shampoo'],
-        'rating': 4.7,
-        'reviewCount': 110,
-        'stock': 60,
-        'isAvailable': true,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      },
-      {
-        'name': 'Dental Chew Toys Pack',
-        'description':
-            'Pack of 3 dental chew toys that help clean teeth and massage gums. Made from safe, non-toxic rubber.',
-        'price': 349.0,
-        'category': 'Toys',
-        'images': ['https://via.placeholder.com/400x400?text=Chew+Toys'],
-        'rating': 4.4,
-        'reviewCount': 78,
+        'reviewCount': 245,
         'stock': 45,
         'isAvailable': true,
+        'discount': '15% OFF',
+        'brand': 'Royal Canin',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       },
       {
-        'name': 'Orthopedic Pet Bed Large',
-        'description':
-            'Memory foam pet bed with removable, washable cover. Provides excellent support for joints and muscles.',
-        'price': 1499.0,
-        'category': 'Accessories',
-        'images': ['https://via.placeholder.com/400x400?text=Pet+Bed'],
-        'rating': 4.9,
-        'reviewCount': 145,
-        'stock': 25,
+        'name': 'Whiskas Adult Cat Food - Ocean Fish',
+        'description': 'Complete and balanced nutrition for adult cats. Rich in Omega 3 & 6 for healthy skin and shiny coat.',
+        'price': 899.0,
+        'category': 'Food',
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Fwhiskas-cat-food.jpg?alt=media'],
+        'rating': 4.6,
+        'reviewCount': 189,
+        'stock': 78,
         'isAvailable': true,
-        'discount': '25% OFF',
+        'brand': 'Whiskas',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      {
+        'name': 'Pedigree Puppy Dry Dog Food',
+        'description': 'Specially formulated for puppies with DHA for brain development and calcium for strong bones.',
+        'price': 1299.0,
+        'category': 'Food',
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Fpedigree-puppy-food.jpg?alt=media'],
+        'rating': 4.7,
+        'reviewCount': 312,
+        'stock': 62,
+        'isAvailable': true,
+        'discount': '10% OFF',
+        'brand': 'Pedigree',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       },
       {
         'name': 'Healthy Treats Variety Pack',
-        'description':
-            'Assorted pack of healthy treats including chicken, beef, and fish flavors. No artificial preservatives.',
-        'price': 199.0,
+        'description': 'Assorted pack of healthy treats including chicken jerky, dental sticks, and training treats.',
+        'price': 449.0,
         'category': 'Food',
-        'images': ['https://via.placeholder.com/400x400?text=Pet+Treats'],
-        'rating': 4.5,
-        'reviewCount': 92,
-        'stock': 80,
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Fhealthy-treats.jpg?alt=media'],
+        'rating': 4.9,
+        'reviewCount': 423,
+        'stock': 125,
         'isAvailable': true,
+        'discount': '20% OFF',
+        'brand': 'PetTreats',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+
+      // TOYS CATEGORY
+      {
+        'name': 'Kong Classic Dog Toy - Large',
+        'description': 'Durable rubber toy for aggressive chewers. Can be stuffed with treats for mental stimulation.',
+        'price': 799.0,
+        'category': 'Toys',
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Fkong-toy.jpg?alt=media'],
+        'rating': 4.9,
+        'reviewCount': 567,
+        'stock': 89,
+        'isAvailable': true,
+        'brand': 'Kong',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       },
       {
-        'name': 'Professional Grooming Kit',
-        'description':
-            'Complete grooming kit with brush, comb, nail clipper, and scissors. Everything you need for home grooming.',
+        'name': 'Interactive Cat Feather Wand',
+        'description': 'Retractable feather wand toy for cats. Encourages exercise and bonding.',
+        'price': 299.0,
+        'category': 'Toys',
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Fcat-feather-wand.jpg?alt=media'],
+        'rating': 4.7,
+        'reviewCount': 234,
+        'stock': 156,
+        'isAvailable': true,
+        'brand': 'PetPlay',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      {
+        'name': 'Puzzle Treat Dispenser',
+        'description': 'Interactive puzzle toy that dispenses treats. Adjustable difficulty levels.',
         'price': 899.0,
-        'category': 'Grooming',
-        'images': ['https://via.placeholder.com/400x400?text=Grooming+Kit'],
-        'rating': 4.6,
-        'reviewCount': 68,
-        'stock': 35,
+        'category': 'Toys',
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Fpuzzle-toy.jpg?alt=media'],
+        'rating': 4.9,
+        'reviewCount': 412,
+        'stock': 67,
         'isAvailable': true,
+        'discount': '10% OFF',
+        'brand': 'SmartPet',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+
+      // ACCESSORIES CATEGORY
+      {
+        'name': 'Premium Leather Collar with ID Tag',
+        'description': 'Genuine leather collar with stainless steel buckle. Includes free personalized ID tag.',
+        'price': 699.0,
+        'category': 'Accessories',
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Fleather-collar.jpg?alt=media'],
+        'rating': 4.8,
+        'reviewCount': 345,
+        'stock': 78,
+        'isAvailable': true,
+        'brand': 'PetLuxe',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       },
       {
-        'name': 'Multivitamin Supplements',
-        'description':
-            'Daily multivitamin supplements for overall health. Supports immune system, coat, and joint health.',
+        'name': 'Stainless Steel Food & Water Bowl Set',
+        'description': 'Set of 2 stainless steel bowls with non-slip rubber base. Dishwasher safe.',
+        'price': 599.0,
+        'category': 'Accessories',
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Fsteel-bowls.jpg?alt=media'],
+        'rating': 4.9,
+        'reviewCount': 456,
+        'stock': 134,
+        'isAvailable': true,
+        'brand': 'PetDine',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      {
+        'name': 'Orthopedic Memory Foam Pet Bed',
+        'description': 'Premium memory foam bed with removable washable cover. Provides excellent support for joints.',
+        'price': 2499.0,
+        'category': 'Accessories',
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Fmemory-foam-bed.jpg?alt=media'],
+        'rating': 4.9,
+        'reviewCount': 389,
+        'stock': 45,
+        'isAvailable': true,
+        'discount': '25% OFF',
+        'brand': 'ComfyPet',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+
+      // HEALTHCARE CATEGORY
+      {
+        'name': 'Multivitamin Supplements for Dogs',
+        'description': 'Complete multivitamin with glucosamine for joint health and omega-3 for coat. 60 chewable tablets.',
+        'price': 899.0,
+        'category': 'Healthcare',
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Fmultivitamin.jpg?alt=media'],
+        'rating': 4.7,
+        'reviewCount': 312,
+        'stock': 89,
+        'isAvailable': true,
+        'brand': 'PetHealth',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      {
+        'name': 'Dental Care Kit - Complete',
+        'description': 'Complete dental care kit with toothbrush, toothpaste, and dental wipes.',
         'price': 599.0,
         'category': 'Healthcare',
-        'images': ['https://via.placeholder.com/400x400?text=Vitamins'],
-        'rating': 4.7,
-        'reviewCount': 103,
-        'stock': 55,
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Fdental-kit.jpg?alt=media'],
+        'rating': 4.6,
+        'reviewCount': 198,
+        'stock': 112,
         'isAvailable': true,
+        'brand': 'FreshPet',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+
+      // GROOMING CATEGORY
+      {
+        'name': 'Professional Grooming Kit - 7 Pieces',
+        'description': 'Complete grooming kit with slicker brush, comb, nail clipper, scissors, and more.',
+        'price': 1299.0,
+        'category': 'Grooming',
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Fgrooming-kit.jpg?alt=media'],
+        'rating': 4.9,
+        'reviewCount': 378,
+        'stock': 67,
+        'isAvailable': true,
+        'brand': 'GroomPro',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      {
+        'name': 'Natural Pet Shampoo & Conditioner Set',
+        'description': 'pH-balanced shampoo and conditioner with natural ingredients. Suitable for sensitive skin.',
+        'price': 699.0,
+        'category': 'Grooming',
+        'images': ['https://firebasestorage.googleapis.com/v0/b/sahara-a72.appspot.com/o/products%2Fshampoo-set.jpg?alt=media'],
+        'rating': 4.8,
+        'reviewCount': 289,
+        'stock': 98,
+        'isAvailable': true,
+        'discount': '15% OFF',
+        'brand': 'NaturalPet',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       },
