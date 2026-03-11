@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../theme/app_colors.dart';
 import '../services/sound_service.dart';
+import '../services/product_service.dart';
+import '../providers/cart_provider.dart';
+import '../models/product_model.dart';
+import 'cart_screen.dart';
 
 /// Shop Screen - E-commerce for pet products
-/// 
-/// Features:
-/// - Product categories (Food, Toys, Accessories, Healthcare)
-/// - Featured products
-/// - Search functionality
-/// - Shopping cart
-/// - Product details
 class ShopScreen extends StatefulWidget {
   const ShopScreen({super.key});
 
@@ -19,9 +18,10 @@ class ShopScreen extends StatefulWidget {
 
 class _ShopScreenState extends State<ShopScreen> {
   final SoundService _soundService = SoundService();
+  final ProductService _productService = ProductService();
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = 'All';
-  int _cartItemCount = 0;
+  String _searchQuery = '';
 
   final List<String> _categories = [
     'All',
@@ -40,16 +40,17 @@ class _ShopScreenState extends State<ShopScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            _buildAppBar(),
+            _buildAppBar(cartProvider),
             _buildSearchBar(),
             _buildCategories(),
-            _buildFeaturedSection(),
-            _buildProductGrid(),
+            _buildProductsSection(),
           ],
         ),
       ),
@@ -57,7 +58,7 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   /// Build app bar
-  Widget _buildAppBar() {
+  Widget _buildAppBar(CartProvider cartProvider) {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
@@ -95,7 +96,10 @@ class _ShopScreenState extends State<ShopScreen> {
                 IconButton(
                   onPressed: () {
                     _soundService.playTap();
-                    _showCartSheet();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CartScreen()),
+                    );
                   },
                   icon: const Icon(Icons.shopping_cart_rounded),
                   style: IconButton.styleFrom(
@@ -103,7 +107,7 @@ class _ShopScreenState extends State<ShopScreen> {
                     foregroundColor: AppColors.primary,
                   ),
                 ),
-                if (_cartItemCount > 0)
+                if (cartProvider.itemCount > 0)
                   Positioned(
                     right: 8,
                     top: 8,
@@ -118,7 +122,7 @@ class _ShopScreenState extends State<ShopScreen> {
                         minHeight: 16,
                       ),
                       child: Text(
-                        '$_cartItemCount',
+                        '${cartProvider.itemCount}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
@@ -156,7 +160,7 @@ class _ShopScreenState extends State<ShopScreen> {
                     icon: const Icon(Icons.clear_rounded, color: AppColors.textTertiary),
                     onPressed: () {
                       _searchController.clear();
-                      setState(() {});
+                      setState(() => _searchQuery = '');
                     },
                   )
                 : null,
@@ -176,7 +180,7 @@ class _ShopScreenState extends State<ShopScreen> {
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           ),
-          onChanged: (value) => setState(() {}),
+          onChanged: (value) => setState(() => _searchQuery = value),
         ),
       ),
     );
@@ -230,186 +234,116 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
-  /// Build featured section
-  Widget _buildFeaturedSection() {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Featured Products',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-                fontFamily: 'Montserrat',
+  /// Build products section with Firestore data
+  Widget _buildProductsSection() {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
+    Stream<List<ProductModel>> productsStream;
+    
+    if (_searchQuery.isNotEmpty) {
+      productsStream = _productService.searchProducts(_searchQuery);
+    } else {
+      productsStream = _productService.getProductsByCategory(_selectedCategory);
+    }
+
+    return StreamBuilder<List<ProductModel>>(
+      stream: productsStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SliverToBoxAdapter(
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(40),
+                child: CircularProgressIndicator(color: AppColors.primary),
               ),
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 180,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: 3,
-                separatorBuilder: (context, index) => const SizedBox(width: 12),
-                itemBuilder: (context, index) => _buildFeaturedCard(index),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+          );
+        }
 
-  /// Build featured card
-  Widget _buildFeaturedCard(int index) {
-    final products = [
-      {
-        'name': 'Premium Dog Food',
-        'price': '₹1,299',
-        'discount': '20% OFF',
-        'image': '🍖',
-      },
-      {
-        'name': 'Interactive Toy Set',
-        'price': '₹599',
-        'discount': '15% OFF',
-        'image': '🎾',
-      },
-      {
-        'name': 'Grooming Kit',
-        'price': '₹899',
-        'discount': '25% OFF',
-        'image': '✂️',
-      },
-    ];
-
-    final product = products[index];
-
-    return Container(
-      width: 160,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary,
-            AppColors.primary.withValues(alpha: 0.8),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            _soundService.playTap();
-            _showProductDetails(product);
-          },
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        if (snapshot.hasError) {
+          return SliverToBoxAdapter(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(40),
+                child: Column(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        product['discount']!,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          fontFamily: 'Montserrat',
-                        ),
-                      ),
-                    ),
+                    const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.error),
+                    const SizedBox(height: 12),
                     Text(
-                      product['image']!,
-                      style: const TextStyle(fontSize: 32),
+                      'Error: ${snapshot.error}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                        fontFamily: 'Montserrat',
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
-                const Spacer(),
-                Text(
-                  product['name']!,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    fontFamily: 'Montserrat',
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          );
+        }
+
+        final products = snapshot.data ?? [];
+
+        if (products.isEmpty) {
+          return SliverToBoxAdapter(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(40),
+                child: Column(
+                  children: [
+                    const Icon(Icons.shopping_bag_outlined, size: 64, color: AppColors.textTertiary),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No products found',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                        fontFamily: 'Montserrat',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _searchQuery.isNotEmpty
+                          ? 'Try a different search term'
+                          : 'Products will appear here',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                        fontFamily: 'Montserrat',
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  product['price']!,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    fontFamily: 'Montserrat',
-                  ),
-                ),
-              ],
+              ),
+            ),
+          );
+        }
+
+        return SliverPadding(
+          padding: const EdgeInsets.all(20),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.75,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => _buildProductCard(products[index], cartProvider),
+              childCount: products.length,
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  /// Build product grid
-  Widget _buildProductGrid() {
-    return SliverPadding(
-      padding: const EdgeInsets.all(20),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.75,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-        ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) => _buildProductCard(index),
-          childCount: 8,
-        ),
-      ),
-    );
-  }
-
-  /// Build product card
-  Widget _buildProductCard(int index) {
-    final products = [
-      {'name': 'Dog Food 5kg', 'price': '₹999', 'rating': '4.5', 'image': '🍖'},
-      {'name': 'Cat Toy Bundle', 'price': '₹499', 'rating': '4.8', 'image': '🎾'},
-      {'name': 'Pet Collar', 'price': '₹299', 'rating': '4.3', 'image': '🎀'},
-      {'name': 'Food Bowl Set', 'price': '₹399', 'rating': '4.6', 'image': '🥣'},
-      {'name': 'Pet Shampoo', 'price': '₹249', 'rating': '4.7', 'image': '🧴'},
-      {'name': 'Chew Toys', 'price': '₹349', 'rating': '4.4', 'image': '🦴'},
-      {'name': 'Pet Bed', 'price': '₹1,499', 'rating': '4.9', 'image': '🛏️'},
-      {'name': 'Treats Pack', 'price': '₹199', 'rating': '4.5', 'image': '🍪'},
-    ];
-
-    final product = products[index % products.length];
-
+  /// Build product card with real data
+  Widget _buildProductCard(ProductModel product, CartProvider cartProvider) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -428,7 +362,7 @@ class _ShopScreenState extends State<ShopScreen> {
         child: InkWell(
           onTap: () {
             _soundService.playTap();
-            _showProductDetails(product);
+            _showProductDetails(product, cartProvider);
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
@@ -445,18 +379,36 @@ class _ShopScreenState extends State<ShopScreen> {
                       color: AppColors.background,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Center(
-                      child: Text(
-                        product['image']!,
-                        style: const TextStyle(fontSize: 48),
-                      ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: product.images.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: product.images.first,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => const Icon(
+                                Icons.pets_rounded,
+                                size: 32,
+                                color: AppColors.textTertiary,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.pets_rounded,
+                              size: 32,
+                              color: AppColors.textTertiary,
+                            ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 12),
                 // Product name
                 Text(
-                  product['name']!,
+                  product.name,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -473,7 +425,7 @@ class _ShopScreenState extends State<ShopScreen> {
                     const Icon(Icons.star, size: 14, color: AppColors.star),
                     const SizedBox(width: 4),
                     Text(
-                      product['rating']!,
+                      product.rating.toStringAsFixed(1),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -489,7 +441,7 @@ class _ShopScreenState extends State<ShopScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      product['price']!,
+                      '₹${product.price.toStringAsFixed(0)}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -500,11 +452,30 @@ class _ShopScreenState extends State<ShopScreen> {
                     IconButton(
                       onPressed: () {
                         _soundService.playTap();
-                        _addToCart(product);
+                        if (product.stock > 0) {
+                          cartProvider.addToCart(product);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${product.name} added to cart'),
+                              backgroundColor: AppColors.success,
+                              duration: const Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Product out of stock'),
+                              backgroundColor: AppColors.error,
+                              duration: Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
                       },
                       icon: const Icon(Icons.add_shopping_cart_rounded),
                       style: IconButton.styleFrom(
-                        backgroundColor: AppColors.secondary,
+                        backgroundColor: product.stock > 0 ? AppColors.secondary : AppColors.textTertiary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.all(8),
                       ),
@@ -520,22 +491,8 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
-  /// Add to cart
-  void _addToCart(Map<String, String> product) {
-    setState(() => _cartItemCount++);
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${product['name']} added to cart'),
-        backgroundColor: AppColors.success,
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  /// Show product details
-  void _showProductDetails(Map<String, String> product) {
+  /// Show product details with real data
+  void _showProductDetails(ProductModel product, CartProvider cartProvider) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -565,15 +522,41 @@ class _ShopScreenState extends State<ShopScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Product image
                     Center(
-                      child: Text(
-                        product['image']!,
-                        style: const TextStyle(fontSize: 100),
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: AppColors.background,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: product.images.isNotEmpty
+                              ? CachedNetworkImage(
+                                  imageUrl: product.images.first,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator(color: AppColors.primary),
+                                  ),
+                                  errorWidget: (context, url, error) => const Icon(
+                                    Icons.pets_rounded,
+                                    size: 64,
+                                    color: AppColors.textTertiary,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.pets_rounded,
+                                  size: 64,
+                                  color: AppColors.textTertiary,
+                                ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      product['name']!,
+                      product.name,
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
@@ -582,29 +565,61 @@ class _ShopScreenState extends State<ShopScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    if (product['rating'] != null)
-                      Row(
-                        children: [
-                          const Icon(Icons.star, size: 18, color: AppColors.star),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${product['rating']} (120 reviews)',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textSecondary,
-                              fontFamily: 'Montserrat',
+                    Row(
+                      children: [
+                        const Icon(Icons.star, size: 18, color: AppColors.star),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${product.rating.toStringAsFixed(1)} (${product.reviewCount} reviews)',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                            fontFamily: 'Montserrat',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Text(
+                          '₹${product.price.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                            fontFamily: 'Montserrat',
+                          ),
+                        ),
+                        if (product.discount != null) ...[
+                          const SizedBox(width: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.secondary,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              product.discount!,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                fontFamily: 'Montserrat',
+                              ),
                             ),
                           ),
                         ],
-                      ),
-                    const SizedBox(height: 16),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
                     Text(
-                      product['price']!,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
+                      product.stock > 0 ? 'In Stock (${product.stock} available)' : 'Out of Stock',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: product.stock > 0 ? AppColors.success : AppColors.error,
                         fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -618,9 +633,9 @@ class _ShopScreenState extends State<ShopScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'High-quality product for your beloved pet. Made with premium materials and designed for maximum comfort and durability.',
-                      style: TextStyle(
+                    Text(
+                      product.description,
+                      style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
                         fontFamily: 'Montserrat',
@@ -631,15 +646,25 @@ class _ShopScreenState extends State<ShopScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          _soundService.playTap();
-                          Navigator.pop(context);
-                          _addToCart(product);
-                        },
+                        onPressed: product.stock > 0
+                            ? () {
+                                _soundService.playTap();
+                                cartProvider.addToCart(product);
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('${product.name} added to cart'),
+                                    backgroundColor: AppColors.success,
+                                    duration: const Duration(seconds: 2),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            : null,
                         icon: const Icon(Icons.shopping_cart_rounded),
-                        label: const Text(
-                          'Add to Cart',
-                          style: TextStyle(
+                        label: Text(
+                          product.stock > 0 ? 'Add to Cart' : 'Out of Stock',
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             fontFamily: 'Montserrat',
@@ -656,59 +681,6 @@ class _ShopScreenState extends State<ShopScreen> {
                       ),
                     ),
                   ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Show cart sheet
-  void _showCartSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: 300,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Icon(Icons.shopping_cart_rounded, size: 64, color: AppColors.textTertiary),
-            const SizedBox(height: 16),
-            Text(
-              _cartItemCount > 0 ? 'Cart ($_cartItemCount items)' : 'Cart is Empty',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-                fontFamily: 'Montserrat',
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                'Full cart functionality coming soon!',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                  fontFamily: 'Montserrat',
                 ),
               ),
             ),

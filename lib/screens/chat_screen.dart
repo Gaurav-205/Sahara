@@ -42,7 +42,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final _firestoreService = FirestoreService();
   final _soundService = SoundService();
   late String _currentUserId;
-  late String _actualChatRoomId = ''; // Initialize with empty string
+  String? _actualChatRoomId; // Nullable to properly track initialization
   bool _isSending = false;
   bool _hasReported = false;
   bool _isInitializing = true;
@@ -200,7 +200,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
     
     // Check if chat room ID is valid
-    if (_actualChatRoomId.isEmpty) {
+    if (_actualChatRoomId == null || _actualChatRoomId!.isEmpty) {
       debugPrint('❌ Chat room ID is empty');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -225,7 +225,7 @@ class _ChatScreenState extends State<ChatScreen> {
       debugPrint('📤 Chat room ID: $_actualChatRoomId');
       
       final success = await _firestoreService.sendChatMessage(
-        chatRoomId: _actualChatRoomId,
+        chatRoomId: _actualChatRoomId!,
         senderId: _currentUserId,
         senderName: FirebaseAuth.instance.currentUser?.displayName ?? 'User',
         message: message,
@@ -450,7 +450,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                       )
                     : StreamBuilder<List<Map<String, dynamic>>>(
-                        stream: _firestoreService.getChatMessages(_actualChatRoomId),
+                        stream: _firestoreService.getChatMessages(_actualChatRoomId!),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return const Center(
@@ -933,18 +933,18 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              if (_messageController.text.trim().isNotEmpty) {
+              if (_messageController.text.trim().isNotEmpty && _actualChatRoomId != null) {
                 try {
                   await _firestoreService.updateMessage(
-                    _actualChatRoomId,
+                    _actualChatRoomId!,
                     message.id,
                     _messageController.text.trim(),
                   );
-                  _soundService.playSuccess();
+                  await _soundService.playSuccess();
                   _messageController.clear();
                   if (mounted && context.mounted) Navigator.pop(context);
                 } catch (e) {
-                  _soundService.playError();
+                  await _soundService.playError();
                   debugPrint('Error updating message: $e');
                 }
               }
@@ -988,12 +988,13 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
+              if (_actualChatRoomId == null) return;
               try {
-                await _firestoreService.deleteMessage(_actualChatRoomId, messageId);
-                _soundService.playSuccess();
+                await _firestoreService.deleteMessage(_actualChatRoomId!, messageId);
+                await _soundService.playSuccess();
                 if (mounted && context.mounted) Navigator.pop(context);
               } catch (e) {
-                _soundService.playError();
+                await _soundService.playError();
                 debugPrint('Error deleting message: $e');
               }
             },
