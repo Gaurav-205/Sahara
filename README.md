@@ -57,15 +57,17 @@ The project is backed by Firebase services for authentication, data, and messagi
 
 ## Screenshots
 
-> Current screenshots are sourced from existing repository assets.
+> Replace these placeholders with real mobile screenshots.
 
-| Home | Caregiver Discovery | Booking |
+| Mobile Home | Mobile Booking | Mobile Shop |
 |:---:|:---:|:---:|
-| <img src="assets/images/Offer1.jpg" alt="Home" width="260" /> | <img src="assets/images/Offer2.jpg" alt="Caregivers" width="260" /> | <img src="assets/images/Offer3.jpg" alt="Booking" width="260" /> |
+| <img src="https://placehold.co/260x520?text=Mobile+Home+Screenshot" alt="Mobile Home Placeholder" width="260" /> | <img src="https://placehold.co/260x520?text=Mobile+Booking+Screenshot" alt="Mobile Booking Placeholder" width="260" /> | <img src="https://placehold.co/260x520?text=Mobile+Shop+Screenshot" alt="Mobile Shop Placeholder" width="260" /> |
 
-| Shopping | Tracking | Chat |
-|:---:|:---:|:---:|
-| <img src="assets/images/Offer1.jpg" alt="Shopping" width="260" /> | <img src="assets/images/Offer2.jpg" alt="Tracking" width="260" /> | <img src="assets/images/Offer3.jpg" alt="Chat" width="260" /> |
+Suggested local filenames for replacement:
+
+- assets/images/mobile-home.png
+- assets/images/mobile-booking.png
+- assets/images/mobile-shop.png
 
 ---
 

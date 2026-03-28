@@ -306,14 +306,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
             ),
             if (enabled)
-              Radio<String>(
-                value: value,
-                groupValue: _selectedPaymentMethod,
-                onChanged: (val) {
-                  _soundService.playTap();
-                  setState(() => _selectedPaymentMethod = val!);
-                },
-                activeColor: AppColors.primary,
+              Icon(
+                _selectedPaymentMethod == value
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                color: _selectedPaymentMethod == value
+                    ? AppColors.primary
+                    : AppColors.textTertiary,
               ),
           ],
         ),
