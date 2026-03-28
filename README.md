@@ -5,10 +5,13 @@
 
   Full-stack Flutter app for pet care booking, adoption, commerce, and caregiver coordination
 
+  [![Repository](https://img.shields.io/badge/Repository-Gaurav--205%2FSahara-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/Gaurav-205/Sahara)
+  [![CI Workflow](https://github.com/Gaurav-205/Sahara/actions/workflows/ci.yml/badge.svg)](https://github.com/Gaurav-205/Sahara/actions/workflows/ci.yml)
   [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
   [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev)
   [![Firebase](https://img.shields.io/badge/Firebase-Enabled-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
   [![Platform](https://img.shields.io/badge/Platforms-Android%20%7C%20iOS%20%7C%20Web%20%7C%20Desktop-5C6BC0?style=flat-square)](#)
+  [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
   [![Version](https://img.shields.io/badge/Version-1.0.0%2B1-success?style=flat-square)](pubspec.yaml)
 </div>
 
@@ -54,15 +57,15 @@ The project is backed by Firebase services for authentication, data, and messagi
 
 ## Screenshots
 
-> Add your latest app screenshots under assets/images and update paths below.
+> Current screenshots are sourced from existing repository assets.
 
 | Home | Caregiver Discovery | Booking |
 |:---:|:---:|:---:|
-| <img src="assets/images/screenshot-home.png" alt="Home" width="260" /> | <img src="assets/images/screenshot-caregivers.png" alt="Caregivers" width="260" /> | <img src="assets/images/screenshot-booking.png" alt="Booking" width="260" /> |
+| <img src="assets/images/Offer1.jpg" alt="Home" width="260" /> | <img src="assets/images/Offer2.jpg" alt="Caregivers" width="260" /> | <img src="assets/images/Offer3.jpg" alt="Booking" width="260" /> |
 
 | Shopping | Tracking | Chat |
 |:---:|:---:|:---:|
-| <img src="assets/images/screenshot-shop.png" alt="Shopping" width="260" /> | <img src="assets/images/screenshot-tracking.png" alt="Tracking" width="260" /> | <img src="assets/images/screenshot-chat.png" alt="Chat" width="260" /> |
+| <img src="assets/images/Offer1.jpg" alt="Shopping" width="260" /> | <img src="assets/images/Offer2.jpg" alt="Tracking" width="260" /> | <img src="assets/images/Offer3.jpg" alt="Chat" width="260" /> |
 
 ---
 
@@ -79,7 +82,7 @@ The project is backed by Firebase services for authentication, data, and messagi
 ### 1. Clone and install dependencies
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/Gaurav-205/Sahara.git
 cd Sahara
 flutter pub get
 ```
@@ -198,6 +201,14 @@ flutter build web --release
 
 ---
 
+## CI/CD
+
+| Workflow | Trigger | What it does |
+|----------|---------|--------------|
+| ci.yml | Push and pull_request on main | Sets up Flutter, restores dependencies, runs flutter analyze and flutter test |
+
+---
+
 ## Deployment Checklist
 
 Before release:
@@ -234,7 +245,7 @@ See DEPLOYMENT_CHECKLIST.md for full details.
 
 ## License
 
-No LICENSE file is currently present in this repository. Add one if you plan public distribution.
+MIT
 
 ---
 
