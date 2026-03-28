@@ -1,142 +1,193 @@
-# Sahara Pet Care
+<div align="center">
+  <img src="assets/images/logo.png" alt="Sahara Pet Care Logo" width="100" />
 
-Sahara is a Flutter application for pet-care service booking, caregiver discovery, messaging, and in-app commerce.
+  # Sahara Pet Care
 
-This README has been refreshed from actual repository state so setup instructions, file paths, and feature notes match the current codebase.
+  Full-stack Flutter app for pet care booking, adoption, commerce, and caregiver coordination
 
-## Repository Analysis Snapshot
+  [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
+  [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev)
+  [![Firebase](https://img.shields.io/badge/Firebase-Enabled-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
+  [![Platform](https://img.shields.io/badge/Platforms-Android%20%7C%20iOS%20%7C%20Web%20%7C%20Desktop-5C6BC0?style=flat-square)](#)
+  [![Version](https://img.shields.io/badge/Version-1.0.0%2B1-success?style=flat-square)](pubspec.yaml)
+</div>
 
-Based on current workspace scan:
+---
 
-- Total files: 330
-- Dart files: 101
-- Dart files under lib: 100
-- Markdown docs: 13
-- Current app version: 1.0.0+1
+## Overview
 
-## What The App Includes
+Sahara Pet Care is a production-oriented Flutter application built to streamline modern pet care workflows. It combines caregiver discovery, service booking, product shopping, adoption flows, live tracking, and chat in a single cross-platform experience.
 
-- Auth: Firebase email/password and Google sign-in
-- Booking flow: caregiver discovery, service/package selection, booking lifecycle
-- Messaging: chat and notification support
-- Pet management: pet profiles and favorites
-- Commerce: product listing, cart, checkout, orders
-- Adoption: adoptable pets browsing
-- Location: Google Maps + Geolocator + Geocoding
+The project is backed by Firebase services for authentication, data, and messaging, with Provider-based state management and modular code organization for maintainability.
+
+---
+
+## Features
+
+| Module | Description |
+|--------|-------------|
+| Authentication | Email/password and Google Sign-In flows with Firebase Auth |
+| Caregiver Discovery | Browse, filter, and view caregiver profiles by service and location |
+| Booking System | End-to-end booking flow with status lifecycle and booking history |
+| Pet Profiles | Manage pets, favorites, and profile-linked pet context |
+| Messaging | Chat and message models for caregiver communication workflows |
+| Shopping | Product listing, cart, order placement, and order tracking |
+| Adoption | Browse adoptable pets and manage adoption enquiries |
+| Location and Maps | Geolocator, geocoding, and Google Maps powered flows |
+| Notifications | Firebase Cloud Messaging and local notifications support |
+| Admin Utilities | In-app admin seeding screen and script-based reseed support |
+
+---
 
 ## Tech Stack
 
-- Framework: Flutter (Dart 3, Material 3)
-- State management: Provider
-- Backend: Firebase Core, Auth, Firestore, Messaging
-- Media: Cloudinary
-- Notifications: Firebase Messaging + flutter_local_notifications
+| Layer | Technologies |
+|-------|-------------|
+| Frontend | Flutter, Dart, Material 3, Provider |
+| Backend Services | Firebase Core, Firebase Auth, Cloud Firestore, Firebase Messaging |
+| Media and Assets | Cloudinary, Cached Network Image, Image Picker |
+| Mapping and Geo | Google Maps Flutter, Geolocator, Geocoding |
+| Utilities | Shared Preferences, Intl, URL Launcher, UUID |
+| Platforms | Android, iOS, Web, Windows, macOS, Linux |
 
-## Architecture Overview
+---
 
-Important runtime entrypoints:
+## Screenshots
 
-- App bootstrap: lib/main.dart
-- Firebase options: lib/firebase_options.dart
-- Runtime config wrapper: lib/config/app_config.dart
+> Add your latest app screenshots under assets/images and update paths below.
 
-Module layout:
+| Home | Caregiver Discovery | Booking |
+|:---:|:---:|:---:|
+| <img src="assets/images/screenshot-home.png" alt="Home" width="260" /> | <img src="assets/images/screenshot-caregivers.png" alt="Caregivers" width="260" /> | <img src="assets/images/screenshot-booking.png" alt="Booking" width="260" /> |
 
-- Models: lib/models
-- Providers: lib/providers
-- Services: lib/services
-- Screens: lib/screens
-- Shared UI: lib/widgets
-- Utilities: lib/utils
-- Scripts: lib/scripts
+| Shopping | Tracking | Chat |
+|:---:|:---:|:---:|
+| <img src="assets/images/screenshot-shop.png" alt="Shopping" width="260" /> | <img src="assets/images/screenshot-tracking.png" alt="Tracking" width="260" /> | <img src="assets/images/screenshot-chat.png" alt="Chat" width="260" /> |
 
-## Current Folder Structure
+---
 
-- lib: application code
-- assets: images, icons, sounds, and env asset registration
-- android, ios, web, windows, linux, macos: platform runners
-- firestore.rules, firestore.indexes.json: Firestore authorization/index config
-- firebase.json: Firebase project configuration
-- test: widget test(s)
-- docs: reserved docs folder (currently empty)
+## Local Setup
 
-## Prerequisites
+### Prerequisites
 
 - Flutter SDK 3.x
 - Dart SDK 3.x
-- A Firebase project configured for your target platform(s)
+- Firebase project configured for target platforms
 - Android Studio or VS Code with Flutter tooling
-- Cloudinary account (for image upload features)
-- Google Maps API key(s) if map screens are used
+- Optional: Cloudinary account for media upload features
 
-## Setup
-
-1. Install dependencies.
+### 1. Clone and install dependencies
 
 ```bash
+git clone <your-repository-url>
+cd Sahara
 flutter pub get
 ```
 
-2. Create your local env file.
+### 2. Configure environment variables
 
-Copy .env.example to .env and set real values:
+Create a .env file in the project root with values used by runtime config:
 
 ```env
-CLOUDINARY_CLOUD_NAME=...
-CLOUDINARY_UPLOAD_PRESET=...
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_UPLOAD_PRESET=your_upload_preset
 APP_NAME=Sahara Pet Care
 APP_PRIMARY_COLOR=#1A2332
-SUPPORT_EMAIL=...
-SUPPORT_PHONE=...
-PRIVACY_EMAIL=...
-COMPANY_ADDRESS=...
+SUPPORT_EMAIL=support@example.com
+SUPPORT_PHONE=+91XXXXXXXXXX
+PRIVACY_EMAIL=privacy@example.com
+COMPANY_ADDRESS=Your company address
 ```
 
-3. Add Firebase platform files.
+### 3. Add Firebase platform files
 
 - android/app/google-services.json
 - ios/Runner/GoogleService-Info.plist
 
-If Firebase project settings change, regenerate/update lib/firebase_options.dart.
+If your Firebase project values changed, regenerate firebase options and update lib/firebase_options.dart.
 
-4. Configure Google Maps keys in platform-specific files (Android/iOS).
-
-5. Run the app.
+### 4. Run locally
 
 ```bash
 flutter run
 ```
 
-## Data Seeding
+---
 
-Supported paths found in source:
+## Project Structure
 
-- In-app admin seeding UI: lib/screens/admin_seed_screen.dart
-- Script-based reseed target: lib/scripts/reseed_database.dart
+```text
+Sahara/
+├── lib/
+│   ├── main.dart
+│   ├── firebase_options.dart
+│   ├── config/
+│   ├── models/
+│   ├── providers/
+│   ├── screens/
+│   ├── services/
+│   ├── theme/
+│   ├── utils/
+│   └── widgets/
+├── assets/
+│   ├── icons/
+│   ├── images/
+│   └── sounds/
+├── test/
+├── android/
+├── ios/
+├── web/
+├── windows/
+├── linux/
+├── macos/
+├── firebase.json
+├── firestore.rules
+├── firestore.indexes.json
+├── QUICK_START_GUIDE.md
+├── DATA_SEEDING_GUIDE.md
+├── DEPLOYMENT_CHECKLIST.md
+└── pubspec.yaml
+```
 
-Use seeding only against non-production projects unless you explicitly intend production writes.
+---
 
-## Useful Commands
+## Core App Modules
 
-Analyze:
+| Path | Responsibility |
+|------|----------------|
+| lib/main.dart | App bootstrap, provider wiring, and route entry |
+| lib/config/app_config.dart | Runtime configuration and environment parsing |
+| lib/models | Domain entities for booking, products, chat, pets, orders, users |
+| lib/providers | State and business flow orchestration |
+| lib/screens | User-facing feature screens |
+| lib/services | Data access and integration services |
+| lib/widgets | Reusable UI components |
+| lib/scripts/reseed_database.dart | Script-based data reseeding |
+| lib/screens/admin_seed_screen.dart | In-app admin data seeding controls |
+
+---
+
+## Data and Firebase Notes
+
+| Area | Details |
+|------|---------|
+| Firestore Rules | Controlled by firestore.rules |
+| Firestore Indexes | Defined in firestore.indexes.json |
+| Firebase Config | Centralized in firebase.json and lib/firebase_options.dart |
+| Messaging | Firebase Messaging is included in dependencies |
+| Security | Harden rules and key restrictions before production deployment |
+
+---
+
+## Running Checks
 
 ```bash
 flutter analyze
-```
-
-Test:
-
-```bash
 flutter test
-```
-
-Coverage:
-
-```bash
 flutter test --coverage
 ```
 
-Build:
+Release builds:
 
 ```bash
 flutter build apk --release
@@ -145,36 +196,48 @@ flutter build ios --release
 flutter build web --release
 ```
 
-## Security Checklist Before Production
+---
 
-- Replace placeholder values in .env and rotate any exposed credentials
-- Restrict API keys by package/bundle/signature and enabled APIs
-- Review and harden firestore.rules (least privilege)
-- Enable Firebase App Check
-- Remove or lock down any admin/demo seeding paths
+## Deployment Checklist
 
-## Documentation Map
+Before release:
 
-Root-level docs currently present:
+- Verify production Firebase project configuration
+- Confirm .env values are production-safe
+- Restrict API keys for package name, bundle id, and allowed APIs
+- Review firestore.rules for least privilege
+- Disable or guard any admin-only seed workflows
+- Test critical flows: auth, booking, checkout, chat, and notifications
 
-- QUICK_START_GUIDE.md
-- DATA_SEEDING_GUIDE.md
-- DEPLOYMENT_CHECKLIST.md
+See DEPLOYMENT_CHECKLIST.md for full details.
 
-For repo minimization, legacy analysis/progress reports were removed.
+---
 
-## Quality Notes
+## Documentation
 
-- Automated tests are currently minimal (single widget smoke test in test/widget_test.dart)
-- Consider expanding test coverage for providers, services, and booking/cart flows
+| Document | Purpose |
+|----------|---------|
+| QUICK_START_GUIDE.md | Fast onboarding for development setup |
+| DATA_SEEDING_GUIDE.md | Seeding strategy and safety notes |
+| DEPLOYMENT_CHECKLIST.md | Production release readiness checklist |
+
+---
 
 ## Contributing
 
-1. Create a feature branch
-2. Keep changes scoped and test locally
-3. Run flutter analyze and flutter test before opening a PR
-4. Update relevant docs when behavior or setup changes
+1. Create a feature branch from main.
+2. Keep changes focused and test locally.
+3. Run analyze and test checks before opening a PR.
+4. Update docs when setup or behavior changes.
+
+---
 
 ## License
 
-No LICENSE file is currently present in the repository root.
+No LICENSE file is currently present in this repository. Add one if you plan public distribution.
+
+---
+
+<div align="center">
+  Built with Flutter and Firebase for modern pet care workflows
+</div>
