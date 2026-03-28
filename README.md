@@ -1,288 +1,189 @@
-# Sahara Pet Care Application
+# Sahara Pet Care
 
-A comprehensive Flutter application for pet care services, connecting pet owners with professional caregivers.
+Sahara is a Flutter application for pet-care service booking, caregiver discovery, messaging, and in-app commerce.
 
-## 🐾 Features
+This README has been refreshed from actual repository state so setup instructions, file paths, and feature notes match the current codebase.
 
-### For Pet Owners
-- **Find Caregivers**: Browse and search for verified pet caregivers
-- **Book Services**: Dog walking, pet sitting, grooming, training, and vet visits
-- **Real-time Chat**: Communicate with caregivers
-- **Track Bookings**: Monitor service status and history
-- **Manage Pets**: Add and manage multiple pets
-- **Favorites**: Save your preferred caregivers
-- **Reviews & Ratings**: Read and write caregiver reviews
+## Repository Analysis Snapshot
 
-### For Caregivers
-- **Profile Management**: Showcase services and expertise
-- **Service Packages**: Offer customized service packages
-- **Booking Management**: Accept and manage bookings
-- **Chat with Clients**: Direct communication with pet owners
-- **Ratings & Reviews**: Build reputation through client feedback
+Based on current workspace scan:
 
-## 🏗️ Architecture
+- Total files: 330
+- Dart files: 101
+- Dart files under lib: 100
+- Markdown docs: 13
+- Current app version: 1.0.0+1
 
-### Frontend
-- **Framework**: Flutter 3.0+
-- **State Management**: Provider
-- **UI**: Material Design 3 with custom theme
-- **Navigation**: Custom navigation helper with consistent transitions
+## What The App Includes
 
-### Backend
-- **Authentication**: Firebase Auth (Email/Password, Google Sign-In)
-- **Database**: Cloud Firestore
-- **Storage**: Cloudinary (images)
-- **Notifications**: Firebase Cloud Messaging
-- **Maps**: Google Maps Flutter
+- Auth: Firebase email/password and Google sign-in
+- Booking flow: caregiver discovery, service/package selection, booking lifecycle
+- Messaging: chat and notification support
+- Pet management: pet profiles and favorites
+- Commerce: product listing, cart, checkout, orders
+- Adoption: adoptable pets browsing
+- Location: Google Maps + Geolocator + Geocoding
 
-## 📁 Project Structure
+## Tech Stack
 
-```
-lib/
-├── config/              # App configuration
-│   └── app_config.dart  # Environment variables
-├── models/              # Data models (10 files)
-│   ├── user_model.dart
-│   ├── booking_model.dart
-│   ├── pet_model.dart
-│   └── ...
-├── providers/           # State management (6 providers)
-│   ├── auth_provider.dart
-│   ├── booking_provider.dart
-│   └── ...
-├── screens/             # UI screens (31 screens)
-│   ├── home_screen.dart
-│   ├── login_screen_enhanced.dart
-│   └── ...
-├── services/            # Business logic (10 services)
-│   ├── auth_service.dart
-│   ├── firestore_service.dart
-│   └── ...
-├── theme/               # UI theme
-│   ├── app_colors.dart
-│   └── app_theme.dart
-├── utils/               # Utilities
-│   ├── navigation_helper.dart
-│   ├── validators.dart
-│   └── ...
-├── widgets/             # Reusable components (15+ widgets)
-│   ├── custom_button.dart
-│   ├── booking_card.dart
-│   └── ...
-├── firebase_options.dart
-└── main.dart
-```
+- Framework: Flutter (Dart 3, Material 3)
+- State management: Provider
+- Backend: Firebase Core, Auth, Firestore, Messaging
+- Media: Cloudinary
+- Notifications: Firebase Messaging + flutter_local_notifications
 
-## 🚀 Getting Started
+## Architecture Overview
 
-### Prerequisites
-- Flutter SDK 3.0 or higher
-- Dart SDK 3.0 or higher
-- Android Studio / VS Code
-- Firebase account
-- Cloudinary account
-- Google Cloud Console account (for Maps API)
+Important runtime entrypoints:
 
-### Installation
+- App bootstrap: lib/main.dart
+- Firebase options: lib/firebase_options.dart
+- Runtime config wrapper: lib/config/app_config.dart
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd Sahara-main
-   ```
+Module layout:
 
-2. **Install dependencies**
-   ```bash
-   flutter pub get
-   ```
+- Models: lib/models
+- Providers: lib/providers
+- Services: lib/services
+- Screens: lib/screens
+- Shared UI: lib/widgets
+- Utilities: lib/utils
+- Scripts: lib/scripts
 
-3. **Configure environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Update `.env` with your credentials:
-   ```env
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_UPLOAD_PRESET=your_upload_preset
-   SUPPORT_EMAIL=support@yourdomain.com
-   SUPPORT_PHONE=+91 XXXXX XXXXX
-   PRIVACY_EMAIL=privacy@yourdomain.com
-   COMPANY_ADDRESS=Your Company Address
-   ```
+## Current Folder Structure
 
-4. **Configure Firebase**
-   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
-   - Add Android, iOS, and Web apps
-   - Download configuration files:
-     - Android: `google-services.json` → `android/app/`
-     - iOS: `GoogleService-Info.plist` → `ios/Runner/`
-   - Run: `flutterfire configure` (or update `lib/firebase_options.dart` manually)
+- lib: application code
+- assets: images, icons, sounds, and env asset registration
+- android, ios, web, windows, linux, macos: platform runners
+- firestore.rules, firestore.indexes.json: Firestore authorization/index config
+- firebase.json: Firebase project configuration
+- test: widget test(s)
+- docs: reserved docs folder (currently empty)
 
-5. **Configure Google Maps**
-   - Get API keys from [Google Cloud Console](https://console.cloud.google.com/)
-   - Enable Maps SDK for Android, iOS, and JavaScript
-   - Update API keys in:
-     - Android: `android/app/src/main/AndroidManifest.xml`
-     - iOS: `ios/Runner/Info.plist` and `ios/Runner/AppDelegate.swift`
-     - Web: `web/index.html`
-   
-   See `GOOGLE_MAPS_SETUP_GUIDE.md` for detailed instructions.
+## Prerequisites
 
-6. **Run the app**
-   ```bash
-   flutter run
-   ```
+- Flutter SDK 3.x
+- Dart SDK 3.x
+- A Firebase project configured for your target platform(s)
+- Android Studio or VS Code with Flutter tooling
+- Cloudinary account (for image upload features)
+- Google Maps API key(s) if map screens are used
 
-### Seed Test Data
+## Setup
 
-To populate the database with test caregivers and service packages:
-
-1. Run the app
-2. Navigate to Profile → Admin Seed Screen
-3. Tap "Seed All Data"
-4. Wait for completion
-
-This will add 8 caregivers and 21 service packages to your Firestore database.
-
-## 📱 Screens & Navigation
-
-### Authentication Flow
-```
-Splash → Permissions (first launch) → Onboarding → Login/Signup → Home
-```
-
-### Main Navigation (Bottom Tabs)
-- **Home**: Browse caregivers, services, and quick actions
-- **Bookings**: View and manage bookings
-- **Messages**: Chat with caregivers
-- **Profile**: User settings and preferences
-
-### Booking Flow
-```
-Service Selection → Caregiver Selection → Package Selection → Confirmation
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-All configurable values are in `.env`:
-- Cloudinary credentials
-- Contact information
-- App branding
-
-### Firebase Security Rules
-Deploy security rules:
-```bash
-firebase deploy --only firestore:rules --project your-project-id
-```
-
-## 🔐 Security
-
-### ⚠️ Before Production Deployment
-
-1. **Rotate all API keys** (Firebase, Google Maps, Cloudinary)
-2. **Configure API key restrictions** in Google Cloud Console
-3. **Deploy Firebase Security Rules** (`firestore.rules`)
-4. **Enable Firebase App Check**
-5. **Remove `.env` from version control**
-6. **Implement backend server** for sensitive operations
-
-## 🧪 Testing
+1. Install dependencies.
 
 ```bash
-# Run tests
-flutter test
+flutter pub get
+```
 
-# Run with coverage
-flutter test --coverage
+2. Create your local env file.
 
-# Analyze code
+Copy .env.example to .env and set real values:
+
+```env
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_UPLOAD_PRESET=...
+APP_NAME=Sahara Pet Care
+APP_PRIMARY_COLOR=#1A2332
+SUPPORT_EMAIL=...
+SUPPORT_PHONE=...
+PRIVACY_EMAIL=...
+COMPANY_ADDRESS=...
+```
+
+3. Add Firebase platform files.
+
+- android/app/google-services.json
+- ios/Runner/GoogleService-Info.plist
+
+If Firebase project settings change, regenerate/update lib/firebase_options.dart.
+
+4. Configure Google Maps keys in platform-specific files (Android/iOS).
+
+5. Run the app.
+
+```bash
+flutter run
+```
+
+## Data Seeding
+
+Supported paths found in source:
+
+- In-app admin seeding UI: lib/screens/admin_seed_screen.dart
+- Script-based reseed target: lib/scripts/reseed_database.dart
+
+Use seeding only against non-production projects unless you explicitly intend production writes.
+
+## Useful Commands
+
+Analyze:
+
+```bash
 flutter analyze
 ```
 
-## 📦 Dependencies
+Test:
 
-### Core
-- `firebase_core`, `firebase_auth`, `cloud_firestore`, `firebase_messaging`
-- `provider` - State management
-- `google_sign_in` - Google authentication
+```bash
+flutter test
+```
 
-### UI
-- `google_fonts` - Typography
-- `cached_network_image` - Image caching
+Coverage:
 
-### Location & Maps
-- `geolocator`, `geocoding`, `google_maps_flutter`
+```bash
+flutter test --coverage
+```
 
-### Media
-- `image_picker`, `cloudinary_public`, `audioplayers`
+Build:
 
-### Utilities
-- `flutter_dotenv`, `shared_preferences`, `intl`, `uuid`
+```bash
+flutter build apk --release
+flutter build appbundle --release
+flutter build ios --release
+flutter build web --release
+```
 
-See `pubspec.yaml` for complete list.
+## Security Checklist Before Production
 
-## 📚 Documentation
+- Replace placeholder values in .env and rotate any exposed credentials
+- Restrict API keys by package/bundle/signature and enabled APIs
+- Review and harden firestore.rules (least privilege)
+- Enable Firebase App Check
+- Remove or lock down any admin/demo seeding paths
 
-- `COMPLETE_SETUP_GUIDE.md` - Detailed setup instructions
-- `GOOGLE_MAPS_SETUP_GUIDE.md` - Google Maps configuration
-- `BOOKING_FIX_GUIDE.md` - Booking system and data seeding guide
-- `FINAL_STATUS.md` - Project status and bug fixes
+## Documentation Map
 
-## ✅ Project Status
+Root-level docs currently present:
 
-### Code Quality
-- ✅ All code bugs fixed
-- ✅ No compilation errors
-- ✅ No runtime errors
-- ✅ Proper null safety
-- ✅ Clean diagnostics
+- QUICK_START_GUIDE.md
+- DATA_SEEDING_GUIDE.md
+- DEPLOYMENT_CHECKLIST.md
+- DATA_FETCHING_ANALYSIS.md
+- ANALYSIS_SUMMARY.md
+- CRITICAL_BUGS_FIXED.md
+- COMPLETION_SUMMARY.md
+- FIRESTORE_INDEX_FIX.md
+- UI_UX_IMPROVEMENTS.md
+- UI_UX_IMPROVEMENTS_COMPLETED.md
+- FINAL_REPORT.md
+- MOCK_DATA_REMOVAL_REPORT.md
 
-### Features Complete
-- ✅ Authentication (Email/Password, Google Sign-In)
-- ✅ Booking system with automatic status updates
-- ✅ Real-time chat
-- ✅ Location tracking
-- ✅ Push notifications
-- ✅ Profile management
-- ✅ Pet management
-- ✅ Reviews & ratings
+Note: Some historical guides may contain older setup examples. Use this README and source files as primary truth.
 
-### Known Limitations
-- ⚠️ Payment integration (coming soon)
-- ⚠️ API keys need to be secured before production (see Security section)
+## Quality Notes
 
-## 🤝 Contributing
+- Automated tests are currently minimal (single widget smoke test in test/widget_test.dart)
+- Consider expanding test coverage for providers, services, and booking/cart flows
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## Contributing
 
-## 📄 License
+1. Create a feature branch
+2. Keep changes scoped and test locally
+3. Run flutter analyze and flutter test before opening a PR
+4. Update relevant docs when behavior or setup changes
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## License
 
-## 👥 Authors
-
-- Development Team - Initial work
-
-## 🙏 Acknowledgments
-
-- Firebase for backend services
-- Cloudinary for image hosting
-- Google Maps for location services
-- Flutter community for excellent packages
-
-## 📞 Support
-
-For support, email support@sahara.com or visit our Help & Support section in the app.
-
----
-
-**Version**: 1.0.0  
-**Last Updated**: March 11, 2026  
-**Status**: ✅ Code Complete - All Bugs Fixed  
-**Production Ready**: ⚠️ No (Security hardening required - see Security section)
+No LICENSE file is currently present in the repository root.
