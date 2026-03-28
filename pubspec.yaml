@@ -100,7 +100,7 @@ flutter:
 
   # Assets
   assets:
-    - .env
+    - .env.example
     - assets/images/
     - assets/icons/
     - assets/sounds/

@@ -25,7 +25,12 @@ void main() async {
   try {
     await dotenv.load(fileName: ".env");
   } catch (e) {
-    debugPrint('Error loading .env file: $e');
+    try {
+      await dotenv.load(fileName: ".env.example");
+      debugPrint('Loaded .env.example as fallback.');
+    } catch (fallbackError) {
+      debugPrint('Error loading environment file: $fallbackError');
+    }
   }
   
   // Initialize Sound Service early
