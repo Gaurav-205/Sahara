@@ -160,17 +160,8 @@ Root-level docs currently present:
 - QUICK_START_GUIDE.md
 - DATA_SEEDING_GUIDE.md
 - DEPLOYMENT_CHECKLIST.md
-- DATA_FETCHING_ANALYSIS.md
-- ANALYSIS_SUMMARY.md
-- CRITICAL_BUGS_FIXED.md
-- COMPLETION_SUMMARY.md
-- FIRESTORE_INDEX_FIX.md
-- UI_UX_IMPROVEMENTS.md
-- UI_UX_IMPROVEMENTS_COMPLETED.md
-- FINAL_REPORT.md
-- MOCK_DATA_REMOVAL_REPORT.md
 
-Note: Some historical guides may contain older setup examples. Use this README and source files as primary truth.
+For repo minimization, legacy analysis/progress reports were removed.
 
 ## Quality Notes
 
