@@ -558,7 +558,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                 backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                 child: _selectedCaregiver!.photoUrl == null
                     ? Text(
-                        _selectedCaregiver!.name[0].toUpperCase(),
+                        _selectedCaregiver!.name.isNotEmpty ? _selectedCaregiver!.name[0].toUpperCase() : '?',
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,

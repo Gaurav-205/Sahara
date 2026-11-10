@@ -213,7 +213,7 @@ class _SelectBookingToTrackScreenState extends State<SelectBookingToTrackScreen>
                         backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                         child: caregiver.photoUrl == null
                             ? Text(
-                                caregiver.name[0].toUpperCase(),
+                                caregiver.name.isNotEmpty ? caregiver.name[0].toUpperCase() : '?',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,

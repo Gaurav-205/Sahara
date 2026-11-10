@@ -780,7 +780,7 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
                 radius: 20,
                 backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                 child: Text(
-                  review.ownerName[0].toUpperCase(),
+                  review.ownerName.isNotEmpty ? review.ownerName[0].toUpperCase() : '?',
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.bold,
