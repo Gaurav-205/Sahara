@@ -92,3 +92,6 @@ GoogleService-Info.plist
 
 # Documentation archive
 /docs/archive/
+.flutter/
+.vercel
+.env*
