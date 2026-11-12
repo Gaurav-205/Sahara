@@ -167,7 +167,7 @@ flutter build ios --release
 - [ ] Configure service worker
 
 ### Hosting
-- [ ] Choose hosting provider (Firebase Hosting, Netlify, etc.)
+- [ ] Choose hosting provider (Vercel, Firebase Hosting, etc.)
 - [ ] Configure custom domain
 - [ ] Set up SSL certificate
 - [ ] Configure CDN
