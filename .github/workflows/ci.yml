@@ -24,8 +24,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      # Flutter 3.47 deprecates package:flutter/material.dart (info only); infos must not fail CI
       - name: Analyze
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos
 
       - name: Run tests
         run: flutter test
